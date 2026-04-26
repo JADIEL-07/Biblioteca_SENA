@@ -11,7 +11,7 @@
 }
 
 .report-stat-card {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-card);
   padding: 1.5rem;
   border-radius: 16px;
   border: 1px solid var(--admin-border-color);
@@ -65,16 +65,16 @@
 .reports-filters .search-box input {
   width: 100%;
   padding: 0.7rem 1rem 0.7rem 2.8rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--admin-bg-main);
   border: 1px solid var(--admin-border-color);
   border-radius: 10px;
-  color: white;
+  color: var(--admin-text-primary);
   outline: none;
 }
 
 /* TABLA */
 .reports-table-wrapper {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-card);
   border-radius: 20px;
   border: 1px solid var(--admin-border-color);
   overflow: hidden;

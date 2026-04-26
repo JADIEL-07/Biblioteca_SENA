@@ -894,11 +894,11 @@ body {
 
 /* TEMA CLARO */
 .theme-light {
-  --bg-dark: #f5f5f0;
-  --bg-body: #ffffff; /* El fondo tendra que ser blanco */
-  --bg-surface: #f5f5f0; /* Los bloques tendran que ser de color hueso */
-  --text-main: #0f172a; /* Texto principal más fuerte */
-  --text-muted: #1e293b; /* Gris muy oscuro para máxima legibilidad */
+  --bg-dark: #F1F5F9;
+  --bg-body: #F1F5F9; 
+  --bg-surface: #FFFFFF; 
+  --text-main: #0f172a; 
+  --text-muted: #1e293b; 
 
   --glass-bg: rgba(255, 255, 255, 0.15) !important;
   --glass-border: rgba(255, 255, 255, 0.6);

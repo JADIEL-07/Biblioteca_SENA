@@ -13,19 +13,21 @@
   --admin-item-hover: rgba(255, 255, 255, 0.05);
   --admin-toggle-bg: #1e293b;
   --admin-toggle-text: #ffffff;
+  --admin-bg: var(--admin-bg-main);
 }
 
 .dashboard-layout.admin-specific.theme-light {
-  --admin-bg-main: #f1f5f9;
-  --admin-bg-card: #ffffff;
-  --admin-bg-sidebar: #ffffff;
+  --admin-bg-main: #F1F5F9;
+  --admin-bg-card: #FFFFFF;
+  --admin-bg-sidebar: #FFFFFF;
   --admin-border-color: #e2e8f0;
   --admin-text-primary: #0f172a;
   --admin-text-secondary: #475569;
   --admin-text-muted: #94a3b8;
-  --admin-item-hover: #f1f5f9;
-  --admin-toggle-bg: #f1f5f9;
+  --admin-item-hover: #F1F5F9;
+  --admin-toggle-bg: #F1F5F9;
   --admin-toggle-text: #0f172a;
+  --admin-bg: var(--admin-bg-main);
 }
 
 .dashboard-layout.admin-specific {

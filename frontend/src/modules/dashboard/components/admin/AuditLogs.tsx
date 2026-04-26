@@ -10,6 +10,7 @@ interface AuditLog {
   user: string;
   user_id: string | null;
   user_email: string | null;
+  user_phone: string | null;
   action: string;
   entity: string;
   entity_id: number;
@@ -49,7 +50,10 @@ export const AuditLogs: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchLogs();
+    const timeoutId = setTimeout(() => {
+      fetchLogs();
+    }, 400); // 400ms de espera antes de buscar
+    return () => clearTimeout(timeoutId);
   }, [searchTerm, startDate, endDate]);
 
   const getActionClass = (action: string) => {
@@ -62,23 +66,24 @@ export const AuditLogs: React.FC = () => {
     return '';
   };
 
+  // Ya no filtramos localmente porque el backend ya lo hace, 
+  // pero mantenemos la variable para no romper el resto del componente
+  // y agregamos seguridad ante valores nulos por si acaso.
   const filteredLogs = logs.filter(log => {
+    if (!searchTerm) return true;
     const s = searchTerm.toLowerCase();
-    const logDate = new Date(log.created_at);
     
-    const matchesSearch = 
-      log.user.toLowerCase().includes(s) || 
-      log.action.toLowerCase().includes(s) || 
-      log.entity.toLowerCase().includes(s) ||
-      log.id.toString().includes(searchTerm);
-    
-    const start = startDate ? new Date(startDate + 'T00:00:00') : null;
-    const end = endDate ? new Date(endDate + 'T23:59:59') : null;
-    let matchesDate = true;
-    if (start && logDate < start) matchesDate = false;
-    if (end && logDate > end) matchesDate = false;
-    
-    return matchesSearch && matchesDate;
+    return (
+      (log.user?.toLowerCase() || '').includes(s) || 
+      (log.user_email?.toLowerCase() || '').includes(s) || 
+      (log.user_id?.toLowerCase() || '').includes(s) || 
+      (log.user_phone?.toLowerCase() || '').includes(s) || 
+      (log.action?.toLowerCase() || '').includes(s) || 
+      (log.entity?.toLowerCase() || '').includes(s) ||
+      (log.ip?.toLowerCase() || '').includes(s) ||
+      (log.details?.toLowerCase() || '').includes(s) ||
+      log.id.toString().includes(searchTerm)
+    );
   });
 
   return (

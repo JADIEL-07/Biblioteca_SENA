@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt
 from ..models.audit_log import AuditLog
 from ..models.user import User
-from sqlalchemy import func
+from sqlalchemy import func, or_, String
 
 audit_bp = Blueprint('audit', __name__)
 
@@ -28,7 +28,17 @@ def get_audit_logs():
     if search:
         search_filter = f"%{search}%"
         query = query.filter(
-            func.concat(AuditLog.id, ' ', User.name, ' ', AuditLog.action, ' ', AuditLog.entity).ilike(search_filter)
+            or_(
+                AuditLog.id.cast(String).ilike(search_filter),
+                User.name.ilike(search_filter),
+                User.email.ilike(search_filter),
+                User.phone.ilike(search_filter),
+                User.id.ilike(search_filter),
+                AuditLog.action.ilike(search_filter),
+                AuditLog.entity.ilike(search_filter),
+                AuditLog.ip.ilike(search_filter),
+                AuditLog.details.ilike(search_filter)
+            )
         )
         
     if start_date:
@@ -39,12 +49,17 @@ def get_audit_logs():
     logs = query.order_by(AuditLog.created_at.desc()).limit(100).all()
     result = []
     for log in logs:
-        user = User.query.get(log.user_id) if log.user_id else None
+        # Usamos la relación ya cargada por el outerjoin si es posible, 
+        # o consultamos manualmente como estaba antes.
+        # log.user ya está disponible por el backref='user' en el modelo User
+        # pero para mayor seguridad seguimos la estructura anterior:
+        user_obj = User.query.get(log.user_id) if log.user_id else None
         result.append({
             "id": log.id,
-            "user": user.name if user else "Sistema/Anónimo",
+            "user": user_obj.name if user_obj else "Sistema/Anónimo",
             "user_id": log.user_id,
-            "user_email": user.email if user else "",
+            "user_email": user_obj.email if user_obj else "",
+            "user_phone": user_obj.phone if user_obj else "",
             "action": log.action,
             "entity": log.entity,
             "entity_id": log.entity_id,

@@ -23,27 +23,27 @@
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    color: white;
+    color: #FEFFFF;
     box-shadow: 0 4px 15px rgba(57, 169, 0, 0.3);
 }
 
 .header-title h1 {
     font-size: 1.8rem;
     font-weight: 800;
-    color: var(--text-primary);
+    color: var(--admin-text-primary);
     margin: 0;
 }
 
 .header-title p {
-    color: var(--text-secondary);
+    color: var(--admin-text-muted);
     margin: 0;
 }
 
 /* Tabla Estilo Premium */
 .audit-table-wrapper {
-    background: var(--bg-secondary);
+    background: var(--admin-bg-card);
     border-radius: 16px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--admin-border-color);
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
@@ -54,21 +54,21 @@
 }
 
 .audit-table th {
-    background: rgba(0,0,0,0.05);
+    background: rgba(0,0,0,0.03);
     padding: 1.2rem 1rem;
     text-align: left;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-color);
+    color: var(--admin-text-muted);
+    border-bottom: 1px solid var(--admin-border-color);
 }
 
 .audit-table td {
     padding: 1.2rem 1rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--admin-border-color);
     font-size: 0.9rem;
-    color: var(--text-primary);
+    color: var(--admin-text-primary);
     vertical-align: middle;
 }
 
@@ -89,7 +89,7 @@
 .action-pill.insert { background: rgba(16, 185, 129, 0.15); color: #10b781; }
 .action-pill.update { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
 .action-pill.delete { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-.action-pill.security { background: #ef4444; color: white; }
+.action-pill.security { background: #ef4444; color: #FEFFFF; }
 
 /* Otros elementos */
 .user-info-cell {
@@ -107,18 +107,18 @@
 }
 
 .btn-detail {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border-color);
+    background: var(--admin-bg-main);
+    border: 1px solid var(--admin-border-color);
     padding: 0.5rem;
     border-radius: 8px;
-    color: var(--text-primary);
+    color: var(--admin-text-primary);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-detail:hover {
     background: var(--sena-green);
-    color: white;
+    color: #FEFFFF;
     border-color: var(--sena-green);
 }
 

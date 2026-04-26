@@ -31,6 +31,16 @@ body {
   min-height: 100vh;
 }
 
+/* Mejora de visibilidad para iconos de calendario nativos */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.theme-light input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0);
+}
+
 .home-wrapper {
   display: flex;
   flex-direction: column;
@@ -464,7 +474,7 @@ body {
 }
 
 .theme-light .privacy-text {
-  color: #ffffff;
+  color: #FEFFFF;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   font-weight: 500;
 }
@@ -895,11 +905,12 @@ body {
 
 /* TEMA CLARO */
 .theme-light {
-  --bg-dark: #f5f5f0;
-  --bg-body: #ffffff; /* El fondo tendra que ser blanco */
-  --bg-surface: #f5f5f0; /* Los bloques tendran que ser de color hueso */
-  --text-main: #0f172a; /* Texto principal más fuerte */
-  --text-muted: #1e293b; /* Gris muy oscuro para máxima legibilidad */
+  --bg-dark: #F1F5F9;
+  --bg-body: #F1F5F9; 
+  --bg-surface: #FFFFFF; 
+  --text-main: #0f172a; 
+  --text-muted: #1e293b; 
+  --border-subtle: rgba(0, 0, 0, 0.1);
 
   --glass-bg: rgba(255, 255, 255, 0.15) !important;
   --glass-border: rgba(255, 255, 255, 0.6);
@@ -924,12 +935,12 @@ body {
 }
 
 .theme-light .hero-content h1 {
-  color: #ffffff; /* Forzado a blanco para resaltar sobre el fondo oscuro de la imagen */
+  color: #FEFFFF; /* Forzado a blanco para resaltar sobre el fondo oscuro de la imagen */
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .theme-light .hero-content p {
-  color: #ffffff;
+  color: #FEFFFF;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4); /* Sombra suave para legibilidad sobre la imagen */
 }
 

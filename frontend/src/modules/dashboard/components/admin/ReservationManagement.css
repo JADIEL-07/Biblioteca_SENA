@@ -1,6 +1,6 @@
 .res-mgmt-container {
   padding: 1.5rem;
-  background: var(--admin-bg);
+  background: var(--admin-bg-main);
 }
 
 .res-mgmt-header {
@@ -16,7 +16,7 @@
 }
 
 .metric-card {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-card);
   padding: 1.5rem;
   border-radius: 16px;
   border: 1px solid var(--admin-border-color);
@@ -78,7 +78,7 @@
 }
 
 .indicator-card {
-  background: linear-gradient(135deg, var(--admin-card-bg), rgba(var(--sena-green-rgb), 0.03));
+  background: linear-gradient(135deg, var(--admin-bg-card), rgba(var(--sena-green-rgb), 0.03));
   padding: 1.5rem;
   border-radius: 20px;
   border: 1px solid var(--admin-border-color);
@@ -108,7 +108,7 @@
 
 .ind-progress-bg {
   height: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--admin-bg-main);
   border-radius: 10px;
   margin-bottom: 0.5rem;
   overflow: hidden;
@@ -140,7 +140,7 @@
 }
 
 .chart-box {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-card);
   padding: 1.5rem;
   border-radius: 20px;
   border: 1px solid var(--admin-border-color);
@@ -154,7 +154,7 @@
 
 /* 4. TABLA */
 .res-table-section {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-card);
   border-radius: 20px;
   border: 1px solid var(--admin-border-color);
   overflow: hidden;
@@ -182,10 +182,10 @@
 
 .table-search input {
   padding: 0.6rem 1rem 0.6rem 2.5rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--admin-bg-main);
   border: 1px solid var(--admin-border-color);
   border-radius: 10px;
-  color: white;
+  color: var(--admin-text-primary);
   width: 250px;
 }
 
@@ -235,7 +235,7 @@
 .btn-action-view:hover {
   background: var(--sena-green);
   border-color: var(--sena-green);
-  color: white;
+  color: #FEFFFF;
 }
 
 @media (max-width: 1024px) {

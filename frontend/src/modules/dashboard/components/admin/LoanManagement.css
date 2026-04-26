@@ -1,6 +1,6 @@
 .loan-mgmt-container {
   padding: 1.5rem;
-  background: var(--admin-bg);
+  background: var(--admin-bg-main);
   min-height: calc(100vh - 80px);
 }
 
@@ -21,7 +21,7 @@
   width: 45px;
   height: 45px;
   background: var(--sena-green);
-  color: white;
+  color: #FEFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,7 +43,7 @@
 
 /* Filtros Complejos */
 .loan-filters-complex {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-card);
   padding: 1.5rem;
   border-radius: 12px;
   border: 1px solid var(--admin-border-color);
@@ -98,7 +98,7 @@
   background: rgba(var(--sena-green-rgb), 0.05);
   border: 1px solid var(--admin-border-color);
   border-radius: 8px;
-  color: white;
+  color: var(--admin-text-primary);
   outline: none;
   font-size: 0.9rem;
 }
@@ -128,7 +128,7 @@
 
 /* Tabla */
 .loan-table-wrapper {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-card);
   border-radius: 12px;
   border: 1px solid var(--admin-border-color);
   overflow: hidden;

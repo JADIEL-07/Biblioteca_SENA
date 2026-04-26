@@ -100,12 +100,12 @@ export const AdminHome: React.FC = () => {
               <div className="chart-container" style={{ height: 250, marginTop: '1rem' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={lineData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                    <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--admin-border-color)" vertical={false} />
+                    <XAxis dataKey="name" stroke="var(--admin-text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="var(--admin-text-muted)" fontSize={12} tickLine={false} axisLine={false} />
                     <Tooltip 
-                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
-                      itemStyle={{ color: '#39A900' }}
+                      contentStyle={{ backgroundColor: 'var(--admin-bg-card)', border: '1px solid var(--admin-border-color)', borderRadius: '8px' }}
+                      itemStyle={{ color: 'var(--sena-green)' }}
                     />
                     <Line type="monotone" dataKey="value" stroke="#39A900" strokeWidth={3} dot={{ r: 4, fill: '#39A900' }} activeDot={{ r: 6 }} />
                   </LineChart>
@@ -134,7 +134,7 @@ export const AdminHome: React.FC = () => {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }} />
+                      <Tooltip contentStyle={{ backgroundColor: 'var(--admin-bg-card)', border: 'none', borderRadius: '8px' }} />
                     </PieChart>
                   </ResponsiveContainer>
                   {/* Etiqueta Central */}

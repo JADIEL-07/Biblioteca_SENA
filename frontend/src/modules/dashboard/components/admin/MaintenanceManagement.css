@@ -11,7 +11,7 @@
 
 .btn-new-report {
   background: var(--sena-green);
-  color: white;
+  color: #FEFFFF;
   border: none;
   padding: 0.8rem 1.5rem;
   border-radius: 10px;
@@ -31,7 +31,7 @@
 }
 
 .mini-stat {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-card);
   padding: 1rem 1.5rem;
   border-radius: 12px;
   border: 1px solid var(--admin-border-color);
@@ -49,7 +49,7 @@
 .mini-stat strong { font-size: 1.2rem; color: var(--admin-text-primary); }
 
 .maint-filters {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-card);
   padding: 1rem;
   border-radius: 12px;
   border: 1px solid var(--admin-border-color);
@@ -69,14 +69,14 @@
 .maint-filters .search-box input {
   width: 100%;
   padding: 0.7rem 1rem 0.7rem 2.8rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--admin-bg-main);
   border: 1px solid var(--admin-border-color);
   border-radius: 8px;
-  color: white;
+  color: var(--admin-text-primary);
 }
 
 .maint-table-wrapper {
-  background: var(--admin-card-bg);
+  background: var(--admin-bg-card);
   border-radius: 16px;
   border: 1px solid var(--admin-border-color);
   overflow: hidden;
