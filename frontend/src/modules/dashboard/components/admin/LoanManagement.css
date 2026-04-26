@@ -82,6 +82,9 @@
   position: relative;
   display: flex;
   align-items: center;
+  background: transparent;
+  border: none;
+  transition: all 0.2s;
 }
 
 .input-with-icon svg {
@@ -89,40 +92,56 @@
   left: 0.8rem;
   color: var(--sena-green);
   opacity: 0.8;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .input-with-icon input, 
 .input-with-icon select {
   width: 100%;
-  padding: 0.6rem 0.8rem 0.6rem 2.5rem;
-  background: rgba(var(--sena-green-rgb), 0.05);
-  border: 1px solid var(--admin-border-color);
-  border-radius: 8px;
+  padding: 0.65rem 0.8rem 0.65rem 2.5rem;
+  background: rgba(var(--sena-green-rgb), 0.12);
+  border: 1px solid rgba(var(--sena-green-rgb), 0.3);
+  border-radius: 10px;
   color: var(--admin-text-primary);
   outline: none;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  transition: all 0.2s;
 }
 
 .input-with-icon input:focus, 
 .input-with-icon select:focus {
   border-color: var(--sena-green);
-  background: rgba(var(--sena-green-rgb), 0.08);
+  background: rgba(var(--sena-green-rgb), 0.18);
+  box-shadow: 0 0 0 3px rgba(var(--sena-green-rgb), 0.1);
+}
+
+.filter-item-actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  height: 100%;
 }
 
 .btn-reset {
-  background: transparent;
+  background: rgba(239, 68, 68, 0.05);
   color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 0.75rem 1.2rem;
+  border-radius: 10px;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-reset:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
   border-color: #ef4444;
 }
 

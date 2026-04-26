@@ -56,20 +56,22 @@
   max-width: 400px;
 }
 
-.reports-filters .search-box svg {
-  position: absolute;
-  left: 1rem;
-  color: var(--admin-text-muted);
-}
-
 .reports-filters .search-box input {
   width: 100%;
-  padding: 0.7rem 1rem 0.7rem 2.8rem;
-  background: var(--admin-bg-main);
-  border: 1px solid var(--admin-border-color);
-  border-radius: 10px;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  background: rgba(var(--sena-green-rgb), 0.12);
+  border: 1px solid rgba(var(--sena-green-rgb), 0.3);
+  border-radius: 12px;
   color: var(--admin-text-primary);
   outline: none;
+  transition: all 0.2s;
+}
+
+.reports-filters .search-box svg {
+  position: absolute;
+  left: 14px;
+  color: var(--sena-green);
+  font-size: 1.1rem;
 }
 
 /* TABLA */

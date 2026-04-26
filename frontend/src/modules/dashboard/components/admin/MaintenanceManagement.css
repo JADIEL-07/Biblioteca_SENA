@@ -69,8 +69,8 @@
 .maint-filters .search-box input {
   width: 100%;
   padding: 0.7rem 1rem 0.7rem 2.8rem;
-  background: var(--admin-bg-main);
-  border: 1px solid var(--admin-border-color);
+  background: rgba(var(--sena-green-rgb), 0.06);
+  border: 1px solid rgba(var(--sena-green-rgb), 0.15);
   border-radius: 8px;
   color: var(--admin-text-primary);
 }

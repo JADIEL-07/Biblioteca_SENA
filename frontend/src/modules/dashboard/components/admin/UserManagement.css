@@ -1,5 +1,6 @@
 .users-mgmt-container {
   padding: 1.5rem;
+  animation: fadeIn 0.4s ease-out;
 }
 
 /* 1. MÉTRICAS */
@@ -19,6 +20,7 @@
   align-items: center;
   gap: 1.2rem;
   transition: transform 0.2s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
 .stat-card:hover {
@@ -46,6 +48,7 @@
   color: var(--admin-text-muted);
   text-transform: uppercase;
   font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .stat-info .value {
@@ -57,51 +60,72 @@
 /* 2. FILTROS */
 .users-filters-bar {
   background: var(--admin-bg-card);
-  padding: 1.2rem;
-  border-radius: 12px;
+  padding: 1.25rem;
+  border-radius: 16px;
   border: 1px solid var(--admin-border-color);
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   display: flex;
   gap: 1.5rem;
   align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
 .search-box {
-  flex: 1;
   position: relative;
-  display: flex;
-  align-items: center;
+  flex: 1;
+  max-width: 400px;
+  background: transparent;
+  border: none;
 }
 
 .search-box svg {
   position: absolute;
-  left: 1rem;
-  color: var(--admin-text-muted);
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--sena-green);
+  font-size: 1.1rem;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .search-box input {
   width: 100%;
-  padding: 0.7rem 1rem 0.7rem 2.8rem;
-  background: var(--admin-bg-main);
-  border: 1px solid var(--admin-border-color);
-  border-radius: 10px;
+  padding: 0.8rem 1rem 0.8rem 3.2rem;
+  background: rgba(var(--sena-green-rgb), 0.12);
+  border: 1px solid rgba(var(--sena-green-rgb), 0.3);
+  border-radius: 12px;
   color: var(--admin-text-primary);
   outline: none;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.search-box input:focus {
+  border-color: var(--sena-green);
+  background: rgba(var(--sena-green-rgb), 0.18);
+  box-shadow: 0 0 0 3px rgba(var(--sena-green-rgb), 0.1);
 }
 
 .filter-group {
   display: flex;
-  gap: 0.8rem;
+  gap: 1rem;
 }
 
 .filter-group select {
-  padding: 0.7rem 1rem;
-  background: var(--admin-bg-main);
-  border: 1px solid var(--admin-border-color);
-  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  background: rgba(var(--sena-green-rgb), 0.12);
+  border: 1px solid rgba(var(--sena-green-rgb), 0.3);
+  border-radius: 12px;
   color: var(--admin-text-primary);
   outline: none;
   cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.filter-group select:hover {
+  border-color: var(--admin-text-secondary);
 }
 
 /* 3. TABLA */
@@ -110,6 +134,7 @@
   border-radius: 16px;
   border: 1px solid var(--admin-border-color);
   overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
 
 .users-table {
@@ -120,17 +145,23 @@
 .users-table th {
   padding: 1.2rem 1rem;
   text-align: left;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   color: var(--admin-text-muted);
   background: rgba(255, 255, 255, 0.02);
   border-bottom: 1px solid var(--admin-border-color);
+  letter-spacing: 1px;
 }
 
 .users-table td {
   padding: 1.2rem 1rem;
   border-bottom: 1px solid var(--admin-border-color);
   vertical-align: middle;
+  font-size: 0.95rem;
+}
+
+.users-table tr:hover {
+  background: rgba(57, 169, 0, 0.02);
 }
 
 .user-profile-cell {
@@ -140,22 +171,23 @@
 }
 
 .avatar-mini {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   background: var(--sena-green);
   color: #FEFFFF;
-  border-radius: 50%;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 10px rgba(57, 169, 0, 0.2);
 }
 
 .user-info .name {
   display: block;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--admin-text-primary);
 }
 
@@ -165,7 +197,7 @@
 }
 
 .role-badge {
-  padding: 0.25rem 0.6rem;
+  padding: 0.3rem 0.7rem;
   border-radius: 6px;
   font-size: 0.7rem;
   font-weight: 700;
@@ -176,16 +208,31 @@
 .role-badge.aprendiz { background: rgba(var(--sena-green-rgb), 0.1); color: var(--sena-green); }
 
 .status-pill {
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.65rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 50px;
+  font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
-.status-pill.active { background: rgba(var(--sena-green-rgb), 0.15); color: var(--sena-green); }
+.status-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-pill.active { background: rgba(var(--sena-green-rgb), 0.1); color: var(--sena-green); }
+.status-pill.active::before { background: var(--sena-green); }
+
 .status-pill.inactive { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.status-pill.inactive::before { background: #ef4444; }
+
 .status-pill.blocked { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.status-pill.blocked::before { background: #f59e0b; }
 
 .attempts-badge {
   padding: 0.2rem 0.5rem;
@@ -203,15 +250,15 @@
 
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .btn-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   border: 1px solid var(--admin-border-color);
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
   color: var(--admin-text-muted);
   display: flex;
   align-items: center;
@@ -221,8 +268,9 @@
 }
 
 .btn-icon:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--admin-bg-main);
   color: var(--admin-text-primary);
+  border-color: var(--admin-text-secondary);
   transform: translateY(-2px);
 }
 
@@ -230,8 +278,8 @@
 .user-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,11 +288,13 @@
 
 .user-modal-content {
   background: var(--admin-bg-card);
-  width: 450px;
+  width: 90%;
+  max-width: 480px;
   border-radius: 24px;
   border: 1px solid var(--admin-border-color);
   overflow: hidden;
   animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5);
 }
 
 @keyframes modalIn {
@@ -253,75 +303,83 @@
 }
 
 .modal-header {
-  padding: 1.5rem;
+  padding: 1.5rem 2rem;
   border-bottom: 1px solid var(--admin-border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.modal-header h3 { margin: 0; font-size: 1.1rem; }
+.modal-header h3 { margin: 0; font-size: 1.2rem; font-weight: 700; }
 
 .btn-close {
   background: none;
   border: none;
   color: var(--admin-text-muted);
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   cursor: pointer;
+  transition: color 0.2s;
 }
 
+.btn-close:hover { color: #ef4444; }
+
 .modal-body {
-  padding: 2rem;
+  padding: 2.5rem;
 }
 
 .profile-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .avatar-large {
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   background: var(--sena-green);
   color: #FEFFFF;
-  border-radius: 50%;
-  margin: 0 auto 1rem;
+  border-radius: 20px;
+  margin: 0 auto 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 800;
-  box-shadow: 0 10px 20px rgba(57, 169, 0, 0.3);
+  box-shadow: 0 10px 25px rgba(57, 169, 0, 0.3);
 }
 
 .role-tag {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   background: rgba(var(--sena-green-rgb), 0.1);
   color: var(--sena-green);
-  padding: 0.2rem 0.8rem;
-  border-radius: 20px;
+  padding: 0.3rem 1rem;
+  border-radius: 50px;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .info-item label {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--admin-text-muted);
   text-transform: uppercase;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .info-item span {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  color: var(--admin-text-primary);
 }
 
 .modal-actions-pro {
@@ -331,19 +389,39 @@
 
 .btn-pro {
   flex: 1;
-  padding: 0.8rem;
-  border-radius: 12px;
+  padding: 1rem;
+  border-radius: 14px;
   border: none;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
+  gap: 0.8rem;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 0.95rem;
 }
 
-.btn-pro.edit { background: var(--admin-bg-main); color: var(--admin-text-primary); border: 1px solid var(--admin-border-color); }
-.btn-pro.shield { background: var(--sena-green); color: #FEFFFF; }
+.btn-pro.edit { background: transparent; color: var(--admin-text-primary); border: 1px solid var(--admin-border-color); }
+.btn-pro.shield { background: var(--sena-green); color: #FEFFFF; box-shadow: 0 4px 15px rgba(57, 169, 0, 0.3); }
 
-.btn-pro:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.btn-pro:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .users-filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    flex-direction: column;
+  }
+  
+  .users-table th:nth-child(3),
+  .users-table td:nth-child(3),
+  .users-table th:nth-child(5),
+  .users-table td:nth-child(5) {
+    display: none;
+  }
+}

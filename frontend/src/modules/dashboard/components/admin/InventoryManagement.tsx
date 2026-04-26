@@ -1,262 +1,211 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { 
-  FiSearch, FiFilter, FiPlus, FiDownload, FiEye, FiEdit2, 
-  FiMoreVertical, FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight, 
-  FiX, FiSave, FiCamera, FiRefreshCcw 
+  FiSearch, FiPlus, FiDownload, FiEye, FiEdit2, 
+  FiMoreVertical, FiX, FiSave, FiCamera, FiRefreshCcw,
+  FiTrash2, FiPackage
 } from 'react-icons/fi';
 import './InventoryManagement.css';
 
 interface Item {
-  id: number;
-  name: string;
-  code: string;
-  category_id: number;
-  category_name: string;
-  status_id: number;
-  status_name: string;
-  location_id: number;
-  location_name: string;
-  brand: string | null;
-  model: string | null;
-  serial_number: string | null;
-  image_url: string | null;
-  stock: number;
+  id: number; name: string; code: string;
+  category_id: number; category_name: string;
+  status_id: number; status_name: string;
+  location_id: number; location_name: string;
+  brand: string | null; model: string | null;
+  serial_number: string | null; image_url: string | null;
+  stock: number; description: string;
 }
-
 interface FilterData {
   categories: { id: number, name: string }[];
   statuses: { id: number, name: string }[];
   locations: { id: number, name: string }[];
 }
 
+const emptyForm = {
+  name: '', code: '', category_id: '', location_id: '',
+  status_id: '', brand: '', model: '', serial_number: '',
+  stock: 1, image_url: '', description: ''
+};
+
 export const InventoryManagement: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('ALL');
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [filterLocation, setFilterLocation] = useState('ALL');
   const [filters, setFilters] = useState<FilterData>({ categories: [], statuses: [], locations: [] });
 
-  // Modal & Camera State
+  // Modals
   const [showAddModal, setShowAddModal] = useState(false);
+  const [viewItem, setViewItem] = useState<Item | null>(null);
+  const [editItem, setEditItem] = useState<Item | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
+
+  // Camera
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [newItem, setNewItem] = useState({
-    name: '', code: '', category_id: '', location_id: '', 
-    status_id: '', brand: '', model: '', serial_number: '', 
-    stock: 1, image_url: '', description: ''
-  });
+  const [newItem, setNewItem] = useState({ ...emptyForm });
+  const [editForm, setEditForm] = useState({ ...emptyForm });
+
+  const token = () => localStorage.getItem('token');
 
   const fetchData = async () => {
-    setLoading(true);
+    setLoading(true); setError(null);
     try {
-      const params = new URLSearchParams({
-        search: searchTerm,
-        category_id: filterCategory,
-        status_id: filterStatus,
-        location_id: filterLocation
-      });
-
-      const [itemsRes, filtersRes] = await Promise.all([
-        fetch(`/api/v1/items/?${params.toString()}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }),
-        fetch('/api/v1/items/filters', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
+      const params = new URLSearchParams({ search: searchTerm, category_id: filterCategory, status_id: filterStatus, location_id: filterLocation });
+      const [iRes, fRes] = await Promise.all([
+        fetch(`/api/v1/items/?${params}`, { headers: { Authorization: `Bearer ${token()}` } }),
+        fetch('/api/v1/items/filters',   { headers: { Authorization: `Bearer ${token()}` } })
       ]);
-
-      if (itemsRes.ok) setItems(await itemsRes.json());
-      if (filtersRes.ok) {
-        const fData = await filtersRes.json();
-        setFilters(fData);
-        if (fData.categories.length > 0 && !newItem.category_id) {
-          setNewItem(prev => ({ 
-            ...prev, 
-            category_id: fData.categories[0].id.toString(),
-            status_id: fData.statuses[0].id.toString(),
-            location_id: fData.locations[0].id.toString()
-          }));
-        }
+      if (iRes.ok) { const d = await iRes.json(); setItems(Array.isArray(d) ? d : []); }
+      else { setError(`Error ${iRes.status}: No se pudieron cargar los elementos`); setItems([]); }
+      if (fRes.ok) {
+        const fd = await fRes.json(); setFilters(fd);
+        if (fd.categories.length && !newItem.category_id)
+          setNewItem(p => ({ ...p, category_id: fd.categories[0].id.toString(), status_id: fd.statuses[0].id.toString(), location_id: fd.locations[0].id.toString() }));
       }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError('Error de conexión.'); setItems([]); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [searchTerm, filterCategory, filterStatus, filterLocation]);
+  useEffect(() => { fetchData(); }, [searchTerm, filterCategory, filterStatus, filterLocation]);
 
-  // Camera Functions
+  // Camera
   const startCamera = async () => {
     setShowCamera(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-    } catch (err) {
-      console.error("Error accessing camera:", err);
-      alert("No se pudo acceder a la cámara.");
-      setShowCamera(false);
-    }
+      if (videoRef.current) videoRef.current.srcObject = stream;
+    } catch { alert('No se pudo acceder a la cámara.'); setShowCamera(false); }
   };
-
-  const capturePhoto = () => {
+  const capturePhoto = (target: 'new' | 'edit') => {
     if (videoRef.current && canvasRef.current) {
-      const context = canvasRef.current.getContext('2d');
-      if (context) {
-        canvasRef.current.width = videoRef.current.videoWidth;
-        canvasRef.current.height = videoRef.current.videoHeight;
-        
-        // Aplicar espejo al canvas para que la foto coincida con la vista previa
-        context.translate(canvasRef.current.width, 0);
-        context.scale(-1, 1);
-        
-        context.drawImage(videoRef.current, 0, 0);
-        const photoData = canvasRef.current.toDataURL('image/jpeg', 0.7);
-        setNewItem({ ...newItem, image_url: photoData });
-        stopCamera();
-      }
+      const ctx = canvasRef.current.getContext('2d')!;
+      canvasRef.current.width  = videoRef.current.videoWidth;
+      canvasRef.current.height = videoRef.current.videoHeight;
+      ctx.translate(canvasRef.current.width, 0); ctx.scale(-1, 1);
+      ctx.drawImage(videoRef.current, 0, 0);
+      const photo = canvasRef.current.toDataURL('image/jpeg', 0.7);
+      if (target === 'new') setNewItem(p => ({ ...p, image_url: photo }));
+      else setEditForm(p => ({ ...p, image_url: photo }));
+      stopCamera();
     }
   };
-
   const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
-    }
+    if (videoRef.current?.srcObject) (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
     setShowCamera(false);
   };
 
+  // Create
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newItem.status_id) { alert('Seleccione el Estado Inicial'); return; }
     setLoading(true);
     try {
-      // Validar que se hayan seleccionado las opciones obligatorias
-      if (!newItem.status_id) {
-        alert("Por favor seleccione el Estado Inicial");
-        setLoading(false);
-        return;
-      }
-
-      // Convertir IDs a números para el backend
-      const itemToSave = {
-        ...newItem,
-        category_id: newItem.category_id ? parseInt(newItem.category_id) : undefined,
-        location_id: newItem.location_id ? parseInt(newItem.location_id) : undefined,
-        status_id: parseInt(newItem.status_id),
-        stock: 1 
-      };
-
-      const response = await fetch('/api/v1/items/', {
+      const res = await fetch('/api/v1/items/', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
-        },
-        body: JSON.stringify(itemToSave)
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+        body: JSON.stringify({ ...newItem, category_id: newItem.category_id ? parseInt(newItem.category_id) : undefined, location_id: newItem.location_id ? parseInt(newItem.location_id) : undefined, status_id: parseInt(newItem.status_id), stock: parseInt(String(newItem.stock)) || 1 })
       });
-
-      if (response.ok) {
-        alert("Elemento guardado exitosamente");
-        setShowAddModal(false);
-        setNewItem({
-          name: '', code: '', category_id: filters.categories[0]?.id.toString() || '', 
-          location_id: filters.locations[0]?.id.toString() || '', 
-          status_id: filters.statuses[0]?.id.toString() || '', 
-          brand: '', model: '', serial_number: '', 
-          stock: 1, image_url: '', description: ''
-        });
-        fetchData();
-      } else {
-        const err = await response.json();
-        alert(`Error al guardar: ${err.error || 'Verifique los datos'}`);
-      }
-    } catch (error) {
-      console.error('Error creating item:', error);
-      alert("Error de conexión al servidor");
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) { alert('Elemento guardado exitosamente'); setShowAddModal(false); setNewItem({ ...emptyForm, category_id: filters.categories[0]?.id.toString() || '', status_id: filters.statuses[0]?.id.toString() || '', location_id: filters.locations[0]?.id.toString() || '' }); fetchData(); }
+      else { const err = await res.json(); alert(`Error: ${err.error || 'Verifique los datos'}`); }
+    } catch { alert('Error de conexión al servidor'); }
+    finally { setLoading(false); }
   };
 
-  const getStatusClass = (status: string) => {
-    const s = status.toUpperCase();
-    if (s.includes('DISPONIBLE') || s === 'EXCELENTE' || s === 'BUENO') return 'disponible';
-    if (s.includes('PRESTADO')) return 'prestado';
-    if (s.includes('MANTENIMIENTO') || s === 'REGULAR') return 'mantenimiento';
-    if (s.includes('DAÑADO') || s === 'MALO') return 'dañado';
-    return '';
+  // Edit
+  const openEdit = (item: Item) => {
+    setEditItem(item);
+    setEditForm({ name: item.name, code: item.code, category_id: String(item.category_id), location_id: String(item.location_id), status_id: String(item.status_id), brand: item.brand || '', model: item.model || '', serial_number: item.serial_number || '', stock: item.stock, image_url: item.image_url || '', description: item.description || '' });
+    setMenuOpenId(null);
+  };
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault(); if (!editItem) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/v1/items/${editItem.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+        body: JSON.stringify({ ...editForm, category_id: parseInt(editForm.category_id), location_id: parseInt(editForm.location_id), status_id: parseInt(editForm.status_id), stock: parseInt(String(editForm.stock)) || 1 })
+      });
+      if (res.ok) { alert('Elemento actualizado'); setEditItem(null); fetchData(); }
+      else { const err = await res.json(); alert(`Error: ${err.error}`); }
+    } catch { alert('Error de conexión'); }
+    finally { setLoading(false); }
   };
 
-  const getCategoryClass = (cat: string) => {
-    const c = cat.toLowerCase();
-    if (c.includes('libro')) return 'libro';
-    if (c.includes('equipo')) return 'equipo';
-    if (c.includes('herramienta')) return 'herramienta';
-    return '';
+  // Delete
+  const handleDelete = async (item: Item) => {
+    if (!confirm(`¿Eliminar "${item.name}"? Esta acción no se puede deshacer.`)) return;
+    setMenuOpenId(null);
+    try {
+      const res = await fetch(`/api/v1/items/${item.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token()}` } });
+      if (res.ok) { alert('Elemento eliminado'); fetchData(); }
+      else { const err = await res.json(); alert(`Error: ${err.error}`); }
+    } catch { alert('Error de conexión'); }
   };
 
+  const getStatusClass = (s: string) => { const u = s.toUpperCase(); if (u.includes('DISPONIBLE') || u === 'EXCELENTE' || u === 'BUENO') return 'disponible'; if (u.includes('PRESTADO')) return 'prestado'; if (u.includes('MANTENIMIENTO') || u === 'REGULAR') return 'mantenimiento'; if (u.includes('DAÑADO') || u === 'MALO') return 'dañado'; return ''; };
+  const getCatClass   = (c: string) => { const l = c.toLowerCase(); if (l.includes('libro')) return 'libro'; if (l.includes('equipo')) return 'equipo'; if (l.includes('herramienta')) return 'herramienta'; return ''; };
 
+  const buildQRData = (item: Item) =>
+    `SENA INVENTARIO\nID: ${item.id}\nNombre: ${item.name}\nCódigo: ${item.code}\nCategoría: ${item.category_name}\nEstado: ${item.status_name}\nUbicación: ${item.location_name}\nStock: ${item.stock}\nMarca: ${item.brand || 'N/A'}\nModelo: ${item.model || 'N/A'}\nSerial: ${item.serial_number || 'N/A'}`;
 
   return (
-    <div className="inventory-management">
+    <div className="inventory-management" onClick={() => menuOpenId && setMenuOpenId(null)}>
+      {/* TOOLBAR */}
       <div className="inventory-toolbar">
         <div className="toolbar-left">
-          <button className="btn-refresh-pro" onClick={fetchData} title="Recargar tabla">
-            <FiRefreshCcw />
-          </button>
+          <button className="btn-refresh-pro" onClick={fetchData} title="Recargar"><FiRefreshCcw /></button>
           <div className="search-container-pro">
             <FiSearch className="search-icon" />
-            <input type="text" placeholder="Buscar por nombre, código o categoría..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <input type="text" placeholder="Buscar por nombre, código..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
-          <select className="filter-select-pro" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+          <select className="filter-select-pro" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
             <option value="ALL">Categoría: Todas</option>
             {filters.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select className="filter-select-pro" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+          <select className="filter-select-pro" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
             <option value="ALL">Estado: Todos</option>
             {filters.statuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>
-
         <div className="toolbar-right">
-          <button className="btn-icon-pro"><FiDownload /> Exportar</button>
-          <button className="btn-add-pro" onClick={() => setShowAddModal(true)}>
-            <FiPlus /> Nuevo Elemento
-          </button>
+          <button className="btn-icon-pro"><FiDownload /> <span>Exportar</span></button>
+          <button className="btn-add-pro" onClick={() => setShowAddModal(true)}><FiPlus /> Nuevo Elemento</button>
         </div>
       </div>
 
+      {/* TABLE */}
       <div className="inventory-table-container">
         <table className="inventory-table">
-          <thead>
-            <tr>
-              <th style={{ width: '40px' }}>ID</th>
-              <th>Código</th>
-              <th>Nombre del Elemento</th>
-              <th>Categoría</th>
-              <th>Marca / Modelo</th>
-              <th>Ubicación</th>
-              <th>Stock</th>
-              <th>Estado</th>
-              <th style={{ textAlign: 'right' }}>Acciones</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th className="col-id">ID</th>
+            <th className="col-code">Código</th>
+            <th>Nombre del Elemento</th>
+            <th className="col-cat">Categoría</th>
+            <th className="col-brand">Marca / Modelo</th>
+            <th className="col-loc">Ubicación</th>
+            <th className="col-stock">Stock</th>
+            <th>Estado</th>
+            <th style={{ textAlign: 'right' }}>Acciones</th>
+          </tr></thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={9} style={{ textAlign: 'center', padding: '3rem' }}>Cargando...</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>⏳ Cargando inventario...</td></tr>
+            ) : error ? (
+              <tr><td colSpan={9} style={{ textAlign: 'center', padding: '3rem', color: '#ef4444' }}>⚠️ {error}</td></tr>
+            ) : items.length === 0 ? (
+              <tr><td colSpan={9} style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>📦 No hay elementos. Usa "Nuevo Elemento" para agregar uno.</td></tr>
             ) : items.map(item => (
               <tr key={item.id}>
-                <td>{item.id}</td>
-                <td>
+                <td className="col-id">{item.id}</td>
+                <td className="col-code">
                   <div className="item-profile-cell">
                     <img src={item.image_url || 'https://via.placeholder.com/48'} alt={item.name} className="item-thumb" />
                     <div className="item-main-info">
@@ -265,22 +214,29 @@ export const InventoryManagement: React.FC = () => {
                     </div>
                   </div>
                 </td>
-                <td>{item.name}</td>
-                <td><span className={`cat-badge ${getCategoryClass(item.category_name)}`}>{item.category_name}</span></td>
                 <td>
-                  <div className="item-main-info">
-                    <strong>{item.brand || 'Genérico'}</strong>
-                    <small>{item.model || 'N/A'}</small>
+                  <div className="item-name-cell">
+                    <strong>{item.name}</strong>
+                    <small className="mobile-only">{item.category_name} | {item.code}</small>
                   </div>
                 </td>
-                <td>{item.location_name}</td>
-                <td><strong>{item.stock}</strong></td>
+                <td className="col-cat"><span className={`cat-badge ${getCatClass(item.category_name)}`}>{item.category_name}</span></td>
+                <td className="col-brand"><div className="item-main-info"><strong>{item.brand || 'Genérico'}</strong><small>{item.model || 'N/A'}</small></div></td>
+                <td className="col-loc">{item.location_name}</td>
+                <td className="col-stock"><strong>{item.stock}</strong></td>
                 <td><span className={`status-pill-inv ${getStatusClass(item.status_name)}`}>{item.status_name}</span></td>
                 <td style={{ textAlign: 'right' }}>
                   <div className="actions-cell" style={{ justifyContent: 'flex-end' }}>
-                    <button className="btn-action-inv"><FiEye /></button>
-                    <button className="btn-action-inv"><FiEdit2 /></button>
-                    <button className="btn-action-inv"><FiMoreVertical /></button>
+                    <div className="dropdown-wrapper" onClick={e => e.stopPropagation()}>
+                      <button className="btn-action-inv" title="Más opciones" onClick={() => setMenuOpenId(menuOpenId === item.id ? null : item.id)}><FiMoreVertical /></button>
+                      {menuOpenId === item.id && (
+                        <div className="dropdown-menu">
+                          <button onClick={() => { setViewItem(item); setMenuOpenId(null); }}><FiEye /> Ver / QR</button>
+                          <button onClick={() => openEdit(item)}><FiEdit2 /> Editar</button>
+                          <button className="danger" onClick={() => handleDelete(item)}><FiTrash2 /> Eliminar</button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -289,37 +245,128 @@ export const InventoryManagement: React.FC = () => {
         </table>
       </div>
 
+      {/* MODAL VER / QR */}
+      {viewItem && (
+        <div className="inv-modal-overlay" onClick={() => setViewItem(null)}>
+          <div className="inv-modal inv-modal-view" onClick={e => e.stopPropagation()}>
+            <div className="inv-modal-header">
+              <h3><FiPackage /> Detalle del Elemento</h3>
+              <button className="btn-close" onClick={() => setViewItem(null)}><FiX /></button>
+            </div>
+            <div className="inv-view-body">
+              <div className="inv-view-left">
+                <img src={viewItem.image_url || 'https://via.placeholder.com/160'} alt={viewItem.name} className="inv-view-img" />
+                <div className="qr-container">
+                  <QRCodeSVG value={buildQRData(viewItem)} size={160} bgColor="transparent" fgColor="#39a900" level="M" />
+                  <small>Escanear para ver info</small>
+                </div>
+              </div>
+              <div className="inv-view-right">
+                <h2>{viewItem.name}</h2>
+                <table className="detail-table">
+                  <tbody>
+                    <tr><td>ID</td><td><strong>#{viewItem.id}</strong></td></tr>
+                    <tr><td>Código</td><td><strong>{viewItem.code}</strong></td></tr>
+                    <tr><td>Categoría</td><td><span className={`cat-badge ${getCatClass(viewItem.category_name)}`}>{viewItem.category_name}</span></td></tr>
+                    <tr><td>Estado</td><td><span className={`status-pill-inv ${getStatusClass(viewItem.status_name)}`}>{viewItem.status_name}</span></td></tr>
+                    <tr><td>Ubicación</td><td>{viewItem.location_name}</td></tr>
+                    <tr><td>Stock</td><td><strong>{viewItem.stock}</strong></td></tr>
+                    <tr><td>Marca</td><td>{viewItem.brand || '—'}</td></tr>
+                    <tr><td>Modelo</td><td>{viewItem.model || '—'}</td></tr>
+                    <tr><td>N° Serie / ISBN</td><td>{viewItem.serial_number || '—'}</td></tr>
+                    {viewItem.description && <tr><td>Descripción</td><td>{viewItem.description}</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL EDITAR */}
+      {editItem && (
+        <div className="inv-modal-overlay">
+          <div className="inv-modal" onClick={e => e.stopPropagation()}>
+            <div className="inv-modal-header">
+              <h3><FiEdit2 /> Editar Elemento — {editItem.name}</h3>
+              <button className="btn-close" onClick={() => { stopCamera(); setEditItem(null); }}><FiX /></button>
+            </div>
+            <form onSubmit={handleEdit} className="inv-form">
+              <div className="form-grid">
+                <div className="form-group"><label>Nombre</label><input required type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} /></div>
+                <div className="form-group"><label>Código / Referencia</label><input required type="text" value={editForm.code} onChange={e => setEditForm({ ...editForm, code: e.target.value })} /></div>
+                <div className="form-group"><label>Categoría</label>
+                  <select value={editForm.category_id} onChange={e => setEditForm({ ...editForm, category_id: e.target.value })}>
+                    {filters.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="form-group"><label>Estado</label>
+                  <select value={editForm.status_id} onChange={e => setEditForm({ ...editForm, status_id: e.target.value })}>
+                    {filters.statuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div className="form-group"><label>Ubicación</label>
+                  <select value={editForm.location_id} onChange={e => setEditForm({ ...editForm, location_id: e.target.value })}>
+                    {filters.locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                  </select>
+                </div>
+                <div className="form-group"><label>Stock</label><input type="number" min="0" value={editForm.stock} onChange={e => setEditForm({ ...editForm, stock: parseInt(e.target.value) || 0 })} /></div>
+                <div className="form-group"><label>Marca</label><input type="text" value={editForm.brand} onChange={e => setEditForm({ ...editForm, brand: e.target.value })} /></div>
+                <div className="form-group"><label>Modelo</label><input type="text" value={editForm.model} onChange={e => setEditForm({ ...editForm, model: e.target.value })} /></div>
+                <div className="form-group"><label>N° Serie / ISBN</label><input type="text" value={editForm.serial_number} onChange={e => setEditForm({ ...editForm, serial_number: e.target.value })} /></div>
+                <div className="form-group full-width camera-section">
+                  <label>Imagen del Material</label>
+                  <div className="photo-manager">
+                    {showCamera ? (
+                      <div className="camera-view">
+                        <video ref={videoRef} autoPlay playsInline />
+                        <div className="camera-controls">
+                          <button type="button" onClick={() => capturePhoto('edit')} className="btn-capture"><FiCamera /> Tomar Foto</button>
+                          <button type="button" onClick={stopCamera} className="btn-cancel-cam">Cancelar</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="photo-preview-area">
+                        <img src={editForm.image_url || 'https://via.placeholder.com/150'} alt="Vista previa" />
+                        <div className="photo-actions">
+                          <button type="button" onClick={startCamera} className="btn-action-cam"><FiCamera /> Usar Cámara</button>
+                          <input type="text" placeholder="O pega URL de imagen..." value={editForm.image_url.startsWith('data:') ? 'Imagen capturada' : editForm.image_url} onChange={e => setEditForm({ ...editForm, image_url: e.target.value })} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <canvas ref={canvasRef} style={{ display: 'none' }} />
+                </div>
+              </div>
+              <div className="form-actions">
+                <button type="button" className="btn-cancel" onClick={() => { stopCamera(); setEditItem(null); }}>Cancelar</button>
+                <button type="submit" className="btn-submit"><FiSave /> Guardar Cambios</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVO ELEMENTO */}
       {showAddModal && (
         <div className="inv-modal-overlay">
-          <div className="inv-modal">
+          <div className="inv-modal" onClick={e => e.stopPropagation()}>
             <div className="inv-modal-header">
               <h3><FiPlus /> Registrar Nuevo Elemento</h3>
               <button className="btn-close" onClick={() => { stopCamera(); setShowAddModal(false); }}><FiX /></button>
             </div>
             <form onSubmit={handleCreate} className="inv-form">
               <div className="form-grid">
-                <div className="form-group">
-                  <label>Nombre del Elemento</label>
-                  <input required type="text" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
-                </div>
-                <div className="form-group">
-                  <label>Código / Referencia</label>
-                  <input required type="text" value={newItem.code} onChange={e => setNewItem({...newItem, code: e.target.value})} />
-                </div>
-                
-                {/* Visualizador de Imagen / Cámara */}
+                <div className="form-group"><label>Nombre del Elemento</label><input required type="text" value={newItem.name} onChange={e => setNewItem({ ...newItem, name: e.target.value })} /></div>
+                <div className="form-group"><label>Código / Referencia</label><input required type="text" value={newItem.code} onChange={e => setNewItem({ ...newItem, code: e.target.value })} /></div>
                 <div className="form-group full-width camera-section">
                   <label>Imagen del Material</label>
                   <div className="photo-manager">
                     {showCamera ? (
                       <div className="camera-view">
-                        <video 
-                          ref={videoRef} 
-                          autoPlay 
-                          playsInline 
-                        />
+                        <video ref={videoRef} autoPlay playsInline />
                         <div className="camera-controls">
-                          <button type="button" onClick={capturePhoto} className="btn-capture"><FiCamera /> Tomar Foto</button>
+                          <button type="button" onClick={() => capturePhoto('new')} className="btn-capture"><FiCamera /> Tomar Foto</button>
                           <button type="button" onClick={stopCamera} className="btn-cancel-cam">Cancelar</button>
                         </div>
                       </div>
@@ -328,36 +375,30 @@ export const InventoryManagement: React.FC = () => {
                         <img src={newItem.image_url || 'https://via.placeholder.com/150'} alt="Vista previa" />
                         <div className="photo-actions">
                           <button type="button" onClick={startCamera} className="btn-action-cam"><FiCamera /> Usar Cámara</button>
-                          <input 
-                            type="text" 
-                            placeholder="O pega URL de imagen..." 
-                            value={newItem.image_url.startsWith('data:') ? 'Imagen capturada' : newItem.image_url} 
-                            onChange={e => setNewItem({...newItem, image_url: e.target.value})}
-                          />
+                          <input type="text" placeholder="O pega URL de imagen..." value={newItem.image_url.startsWith('data:') ? 'Imagen capturada' : newItem.image_url} onChange={e => setNewItem({ ...newItem, image_url: e.target.value })} />
                         </div>
                       </div>
                     )}
                   </div>
                   <canvas ref={canvasRef} style={{ display: 'none' }} />
                 </div>
-
-
-                <div className="form-group">
-                  <label>Marca</label>
-                  <input type="text" value={newItem.brand} onChange={e => setNewItem({...newItem, brand: e.target.value})} />
-                </div>
-                <div className="form-group">
-                  <label>Modelo</label>
-                  <input type="text" value={newItem.model} onChange={e => setNewItem({...newItem, model: e.target.value})} />
-                </div>
-                <div className="form-group">
-                  <label>Número de Serie / ISBN</label>
-                  <input type="text" value={newItem.serial_number} onChange={e => setNewItem({...newItem, serial_number: e.target.value})} />
-                </div>
-                <div className="form-group">
-                  <label>Estado Inicial</label>
-                  <select value={newItem.status_id} onChange={e => setNewItem({...newItem, status_id: e.target.value})}>
+                <div className="form-group"><label>Marca</label><input type="text" value={newItem.brand} onChange={e => setNewItem({ ...newItem, brand: e.target.value })} /></div>
+                <div className="form-group"><label>Modelo</label><input type="text" value={newItem.model} onChange={e => setNewItem({ ...newItem, model: e.target.value })} /></div>
+                <div className="form-group"><label>Número de Serie / ISBN</label><input type="text" value={newItem.serial_number} onChange={e => setNewItem({ ...newItem, serial_number: e.target.value })} /></div>
+                <div className="form-group"><label>Stock Inicial</label><input type="number" min="1" value={newItem.stock} onChange={e => setNewItem({ ...newItem, stock: parseInt(e.target.value) || 1 })} /></div>
+                <div className="form-group"><label>Estado Inicial</label>
+                  <select value={newItem.status_id} onChange={e => setNewItem({ ...newItem, status_id: e.target.value })}>
                     {filters.statuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div className="form-group"><label>Categoría</label>
+                  <select value={newItem.category_id} onChange={e => setNewItem({ ...newItem, category_id: e.target.value })}>
+                    {filters.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="form-group"><label>Ubicación</label>
+                  <select value={newItem.location_id} onChange={e => setNewItem({ ...newItem, location_id: e.target.value })}>
+                    {filters.locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                   </select>
                 </div>
               </div>

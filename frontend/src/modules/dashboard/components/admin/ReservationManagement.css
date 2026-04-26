@@ -182,8 +182,8 @@
 
 .table-search input {
   padding: 0.6rem 1rem 0.6rem 2.5rem;
-  background: var(--admin-bg-main);
-  border: 1px solid var(--admin-border-color);
+  background: rgba(var(--sena-green-rgb), 0.06);
+  border: 1px solid rgba(var(--sena-green-rgb), 0.15);
   border-radius: 10px;
   color: var(--admin-text-primary);
   width: 250px;

@@ -4,7 +4,9 @@
 
 .dashboard-layout.admin-specific.theme-dark {
   --admin-bg-main: #0b1120;
+  --admin-bg-main-rgb: 11, 17, 32;
   --admin-bg-card: #151e32;
+  --admin-bg-card-rgb: 21, 30, 50;
   --admin-bg-sidebar: #0f172a;
   --admin-border-color: #2a374f;
   --admin-text-primary: #f8fafc;
@@ -18,7 +20,9 @@
 
 .dashboard-layout.admin-specific.theme-light {
   --admin-bg-main: #F1F5F9;
+  --admin-bg-main-rgb: 241, 245, 249;
   --admin-bg-card: #FFFFFF;
+  --admin-bg-card-rgb: 255, 255, 255;
   --admin-bg-sidebar: #FFFFFF;
   --admin-border-color: #e2e8f0;
   --admin-text-primary: #0f172a;
