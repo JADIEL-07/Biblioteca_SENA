@@ -15,6 +15,8 @@ interface Loan {
   id: number;
   user_id: string;
   user_name: string;
+  user_email: string;
+  user_phone: string;
   admin_name: string;
   loan_date: string;
   due_date: string;
@@ -71,8 +73,14 @@ export const LoanManagement: React.FC = () => {
     // Filtro por texto (Usuario o ID)
     const matchesSearch = 
       loan.user_name.toLowerCase().includes(s) ||
-      loan.user_id.includes(searchTerm) ||
-      loan.id.toString().includes(searchTerm);
+      (loan.user_email?.toLowerCase() || '').includes(s) ||
+      (loan.user_phone?.toLowerCase() || '').includes(s) ||
+      loan.user_id.toLowerCase().includes(s) ||
+      loan.id.toString().includes(searchTerm) ||
+      loan.items.some(item => 
+        item.name.toLowerCase().includes(s) || 
+        (item.nit?.toLowerCase() || '').includes(s)
+      );
     
     // Filtro por Categoría
     const matchesCategory = filterCategory === 'ALL' || 

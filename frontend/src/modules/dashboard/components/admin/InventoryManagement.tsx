@@ -137,16 +137,35 @@ export const InventoryManagement: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
+      // Validar que se hayan seleccionado las opciones obligatorias
+      if (!newItem.status_id) {
+        alert("Por favor seleccione el Estado Inicial");
+        setLoading(false);
+        return;
+      }
+
+      // Convertir IDs a números para el backend
+      const itemToSave = {
+        ...newItem,
+        category_id: newItem.category_id ? parseInt(newItem.category_id) : undefined,
+        location_id: newItem.location_id ? parseInt(newItem.location_id) : undefined,
+        status_id: parseInt(newItem.status_id),
+        stock: 1 
+      };
+
       const response = await fetch('/api/v1/items/', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}` 
         },
-        body: JSON.stringify(newItem)
+        body: JSON.stringify(itemToSave)
       });
+
       if (response.ok) {
+        alert("Elemento guardado exitosamente");
         setShowAddModal(false);
         setNewItem({
           name: '', code: '', category_id: filters.categories[0]?.id.toString() || '', 
@@ -156,18 +175,24 @@ export const InventoryManagement: React.FC = () => {
           stock: 1, image_url: '', description: ''
         });
         fetchData();
+      } else {
+        const err = await response.json();
+        alert(`Error al guardar: ${err.error || 'Verifique los datos'}`);
       }
     } catch (error) {
       console.error('Error creating item:', error);
+      alert("Error de conexión al servidor");
+    } finally {
+      setLoading(false);
     }
   };
 
   const getStatusClass = (status: string) => {
     const s = status.toUpperCase();
-    if (s.includes('DISPONIBLE')) return 'disponible';
+    if (s.includes('DISPONIBLE') || s === 'EXCELENTE' || s === 'BUENO') return 'disponible';
     if (s.includes('PRESTADO')) return 'prestado';
-    if (s.includes('MANTENIMIENTO')) return 'mantenimiento';
-    if (s.includes('DAÑADO')) return 'dañado';
+    if (s.includes('MANTENIMIENTO') || s === 'REGULAR') return 'mantenimiento';
+    if (s.includes('DAÑADO') || s === 'MALO') return 'dañado';
     return '';
   };
 
@@ -179,10 +204,15 @@ export const InventoryManagement: React.FC = () => {
     return '';
   };
 
+
+
   return (
     <div className="inventory-management">
       <div className="inventory-toolbar">
         <div className="toolbar-left">
+          <button className="btn-refresh-pro" onClick={fetchData} title="Recargar tabla">
+            <FiRefreshCcw />
+          </button>
           <div className="search-container-pro">
             <FiSearch className="search-icon" />
             <input type="text" placeholder="Buscar por nombre, código o categoría..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
@@ -311,18 +341,7 @@ export const InventoryManagement: React.FC = () => {
                   <canvas ref={canvasRef} style={{ display: 'none' }} />
                 </div>
 
-                <div className="form-group">
-                  <label>Categoría</label>
-                  <select value={newItem.category_id} onChange={e => setNewItem({...newItem, category_id: e.target.value})}>
-                    {filters.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Ubicación</label>
-                  <select value={newItem.location_id} onChange={e => setNewItem({...newItem, location_id: e.target.value})}>
-                    {filters.locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                  </select>
-                </div>
+
                 <div className="form-group">
                   <label>Marca</label>
                   <input type="text" value={newItem.brand} onChange={e => setNewItem({...newItem, brand: e.target.value})} />
@@ -330,6 +349,16 @@ export const InventoryManagement: React.FC = () => {
                 <div className="form-group">
                   <label>Modelo</label>
                   <input type="text" value={newItem.model} onChange={e => setNewItem({...newItem, model: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>Número de Serie / ISBN</label>
+                  <input type="text" value={newItem.serial_number} onChange={e => setNewItem({...newItem, serial_number: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>Estado Inicial</label>
+                  <select value={newItem.status_id} onChange={e => setNewItem({...newItem, status_id: e.target.value})}>
+                    {filters.statuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
                 </div>
               </div>
               <div className="form-actions">

@@ -23,6 +23,27 @@
     flex: 1;
 }
 
+.btn-refresh-pro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-refresh-pro:hover {
+  background: var(--bg-hover);
+  color: var(--primary-color);
+  transform: rotate(180deg);
+  border-color: var(--primary-color);
+}
+
 .search-container-pro {
     position: relative;
     flex: 2;
@@ -456,4 +477,14 @@
 
 .btn-action-cam:hover {
     background: #475569;
+}
+/* Ocultar flechas (spinners) de inputs numéricos */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
 }

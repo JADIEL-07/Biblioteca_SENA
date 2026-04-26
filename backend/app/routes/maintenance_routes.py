@@ -2,9 +2,9 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..extensions import db
 from ..models.maintenance import Maintenance
-from ..models.item import Item, Status
+from ..models.item import Item, Status, Category
 from ..models.user import User
-from sqlalchemy import func
+from sqlalchemy import func, or_, String
 from datetime import datetime
 
 maintenance_bp = Blueprint('maintenance', __name__)
@@ -22,8 +22,14 @@ def get_maintenances():
     if search:
         search_filter = f"%{search}%"
         query = query.filter(
-            db.or_(
-                func.concat(Maintenance.id, ' ', Item.name, ' ', User.name, ' ', Maintenance.status).ilike(search_filter)
+            or_(
+                Maintenance.id.cast(String).ilike(search_filter),
+                Item.name.ilike(search_filter),
+                Item.code.ilike(search_filter),
+                User.name.ilike(search_filter),
+                User.email.ilike(search_filter),
+                Maintenance.status.ilike(search_filter),
+                Maintenance.maintenance_type.ilike(search_filter)
             )
         )
         
@@ -44,10 +50,13 @@ def get_maintenances():
         result.append({
             "id": m.id,
             "item_name": item.name if item else "Eliminado",
+            "item_code": item.code if item else "N/A",
             "item_category": item.category.name if item and item.category else "N/A",
             "item_id": m.item_id,
             "reported_by_name": reporter.name if reporter else "N/A",
+            "reported_by_email": reporter.email if reporter else "",
             "technician_name": tech.name if tech else "Pendiente",
+            "technician_email": tech.email if tech else "",
             "severity": m.severity,
             "status": m.status,
             "report_date": m.report_date.isoformat(),

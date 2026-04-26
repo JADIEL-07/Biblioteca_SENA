@@ -17,6 +17,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
   role: string;
   is_active: boolean;
   is_blocked: boolean;
@@ -81,7 +82,12 @@ export const UserManagement: React.FC = () => {
 
   const filteredUsers = users.filter(u => {
     const s = searchTerm.toLowerCase();
-    const matchesSearch = u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s) || u.id.includes(searchTerm);
+    const matchesSearch = 
+      u.name.toLowerCase().includes(s) || 
+      u.email.toLowerCase().includes(s) || 
+      (u.phone?.toLowerCase() || '').includes(s) ||
+      u.role.toLowerCase().includes(s) ||
+      u.id.includes(searchTerm);
     const matchesRole = filterRole === 'ALL' || u.role === filterRole;
     const matchesStatus = 
       filterStatus === 'ALL' || 

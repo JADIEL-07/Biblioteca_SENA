@@ -26,6 +26,8 @@ interface ResIndicator {
 interface Reservation {
   id: number;
   user_name: string;
+  user_email: string;
+  user_phone: string;
   user_role: string;
   item_name: string;
   item_category?: string;
@@ -100,7 +102,12 @@ export const ReservationManagement: React.FC = () => {
     const s = searchTerm.toLowerCase();
     const resDate = new Date(res.reservation_date);
     
-    const matchesSearch = res.user_name.toLowerCase().includes(s) || res.item_name.toLowerCase().includes(s) || res.id.toString().includes(searchTerm);
+    const matchesSearch = 
+      res.user_name.toLowerCase().includes(s) || 
+      (res.user_email?.toLowerCase() || '').includes(s) ||
+      (res.user_phone?.toLowerCase() || '').includes(s) ||
+      res.item_name.toLowerCase().includes(s) || 
+      res.id.toString().includes(searchTerm);
     
     const matchesCategory = filterCategory === 'ALL' || res.item_category === filterCategory;
     

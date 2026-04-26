@@ -11,7 +11,10 @@ interface Maintenance {
   item_category?: string;
   item_id: number;
   reported_by_name: string;
+  reported_by_email: string;
   technician_name: string;
+  technician_email: string;
+  item_code: string;
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   report_date: string;
@@ -70,7 +73,13 @@ export const MaintenanceManagement: React.FC = () => {
     const s = searchTerm.toLowerCase();
     const maintDate = new Date(r.report_date);
     
-    const matchesSearch = r.item_name.toLowerCase().includes(s) || r.id.toString().includes(searchTerm);
+    const matchesSearch = 
+      r.item_name.toLowerCase().includes(s) || 
+      (r.item_code?.toLowerCase() || '').includes(s) ||
+      r.reported_by_name.toLowerCase().includes(s) ||
+      (r.reported_by_email?.toLowerCase() || '').includes(s) ||
+      (r.technician_name?.toLowerCase() || '').includes(s) ||
+      r.id.toString().includes(searchTerm);
     const matchesSev = filterSeverity === 'ALL' || r.severity === filterSeverity;
     const matchesCategory = filterCategory === 'ALL' || r.item_category === filterCategory;
     

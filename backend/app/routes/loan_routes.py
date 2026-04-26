@@ -5,7 +5,7 @@ from ..models.loan import Loan, LoanDetail
 from ..models.item import Item
 from ..models.user import User
 from datetime import datetime, timedelta
-from sqlalchemy import func
+from sqlalchemy import func, or_, String
 
 loan_bp = Blueprint('loans', __name__)
 
@@ -22,8 +22,15 @@ def get_loans():
     if search:
         search_filter = f"%{search}%"
         query = query.filter(
-            db.or_(
-                func.concat(Loan.id, ' ', User.name, ' ', Item.name).ilike(search_filter)
+            or_(
+                Loan.id.cast(String).ilike(search_filter),
+                User.name.ilike(search_filter),
+                User.email.ilike(search_filter),
+                User.phone.ilike(search_filter),
+                User.id.ilike(search_filter),
+                Item.name.ilike(search_filter),
+                Item.code.ilike(search_filter),
+                Loan.status.ilike(search_filter)
             )
         )
         
@@ -54,6 +61,8 @@ def get_loans():
             "id": loan.id,
             "user_id": loan.user_id,
             "user_name": user.name if user else "Usuario eliminado",
+            "user_email": user.email if user else "",
+            "user_phone": user.phone if user else "",
             "admin_name": admin.name if admin else "Sistema",
             "loan_date": loan.loan_date.isoformat(),
             "due_date": loan.due_date.isoformat(),
@@ -90,7 +99,7 @@ def create_loan():
     
     for item_id in item_ids:
         item = Item.query.get(item_id)
-        if item and item.status_obj and item.status_obj.name == 'AVAILABLE':
+        if item and item.status_obj and item.status_obj.name in ['AVAILABLE', 'EXCELENTE', 'BUENO', 'REGULAR']:
             detail = LoanDetail(
                 loan_id=loan.id,
                 item_id=item_id,

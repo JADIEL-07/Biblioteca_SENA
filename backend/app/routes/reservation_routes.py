@@ -5,7 +5,7 @@ from ..models.reservation import Reservation
 from ..models.user import User
 from ..models.item import Item
 from datetime import datetime, timedelta
-from sqlalchemy import func, text
+from sqlalchemy import func, text, or_, String
 
 reservation_bp = Blueprint('reservations', __name__)
 
@@ -22,8 +22,15 @@ def get_reservations():
     if search:
         search_filter = f"%{search}%"
         query = query.filter(
-            db.or_(
-                func.concat(Reservation.id, ' ', User.name, ' ', Item.name, ' ', Reservation.status).ilike(search_filter)
+            or_(
+                Reservation.id.cast(String).ilike(search_filter),
+                User.name.ilike(search_filter),
+                User.email.ilike(search_filter),
+                User.phone.ilike(search_filter),
+                User.id.ilike(search_filter),
+                Item.name.ilike(search_filter),
+                Item.code.ilike(search_filter),
+                Reservation.status.ilike(search_filter)
             )
         )
 
@@ -45,6 +52,8 @@ def get_reservations():
             "id": res.id,
             "user_id": res.user_id,
             "user_name": user.name if user else "Desconocido",
+            "user_email": user.email if user else "",
+            "user_phone": user.phone if user else "",
             "user_role": user.role.name if user and user.role else "N/A",
             "item_id": res.item_id,
             "item_name": item.name if item else "Eliminado",

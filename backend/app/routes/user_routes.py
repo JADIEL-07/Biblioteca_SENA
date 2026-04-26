@@ -5,7 +5,7 @@ from ..models.user import User, Role
 from ..models.loan import Loan
 from ..models.reservation import Reservation
 from ..models.audit_log import AuditLog
-from sqlalchemy import func
+from sqlalchemy import func, or_, String
 import bcrypt
 
 user_bp = Blueprint('users_mgmt', __name__)
@@ -18,8 +18,14 @@ def get_users():
     
     if search:
         search_filter = f"%{search}%"
-        query = query.filter(
-            func.concat(User.id, ' ', User.name, ' ', User.email).ilike(search_filter)
+        query = query.outerjoin(Role, User.role_id == Role.id).filter(
+            or_(
+                User.id.ilike(search_filter),
+                User.name.ilike(search_filter),
+                User.email.ilike(search_filter),
+                User.phone.ilike(search_filter),
+                Role.name.ilike(search_filter)
+            )
         )
         
     users = query.all()
@@ -29,6 +35,7 @@ def get_users():
             "id": user.id,
             "name": user.name,
             "email": user.email,
+            "phone": user.phone,
             "role": user.role.name if user.role else "N/A",
             "is_active": user.is_active,
             "is_blocked": user.is_blocked,
