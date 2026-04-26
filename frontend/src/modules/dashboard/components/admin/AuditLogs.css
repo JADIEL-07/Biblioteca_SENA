@@ -1,0 +1,199 @@
+/* AuditLogs.css - Diseño de Tabla Premium Consistente */
+.audit-management {
+    padding: 2rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.audit-header {
+    margin-bottom: 2.5rem;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-icon-box {
+    width: 48px;
+    height: 48px;
+    background: var(--sena-green);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    box-shadow: 0 4px 15px rgba(57, 169, 0, 0.3);
+}
+
+.header-title h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.header-title p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Tabla Estilo Premium */
+.audit-table-wrapper {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.audit-table th {
+    background: rgba(0,0,0,0.05);
+    padding: 1.2rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.audit-table td {
+    padding: 1.2rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+.audit-table tr:hover {
+    background: rgba(57, 169, 0, 0.03);
+}
+
+/* Etiquetas de Acción */
+.action-pill {
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.action-pill.login { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.action-pill.insert { background: rgba(16, 185, 129, 0.15); color: #10b781; }
+.action-pill.update { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.action-pill.delete { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.action-pill.security { background: #ef4444; color: white; }
+
+/* Otros elementos */
+.user-info-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-info-cell .u-name { font-weight: 700; }
+.user-info-cell .u-email { font-size: 0.75rem; color: var(--text-secondary); }
+
+.ip-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.btn-detail {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: 8px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-detail:hover {
+    background: var(--sena-green);
+    color: white;
+    border-color: var(--sena-green);
+}
+
+/* Modal Detalle (JSON) */
+.audit-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.audit-modal {
+    background: var(--bg-secondary);
+    width: 90%;
+    max-width: 800px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.json-viewer {
+    background: #111;
+    color: #00ff00;
+    padding: 1.5rem;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #333;
+}
+
+.id-badge {
+    background: rgba(57, 169, 0, 0.15);
+    color: var(--sena-green);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.date-cell strong {
+    color: var(--text-primary);
+}
+
+.date-cell small {
+    color: var(--text-secondary);
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

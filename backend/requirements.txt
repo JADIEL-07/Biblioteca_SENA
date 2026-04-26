@@ -1,0 +1,28 @@
+# ── Core ─────────────────────────────────────────
+flask==3.0.3
+Werkzeug==3.0.3
+python-dotenv==1.0.1
+
+# ── Base de Datos ─────────────────────────────────
+flask-sqlalchemy==3.1.1
+SQLAlchemy==2.0.31
+flask-migrate==4.0.7
+psycopg2-binary==2.9.9
+
+# ── Serialización ─────────────────────────────────
+marshmallow>=3.0.0,<4.0.0
+flask-marshmallow==1.2.1
+marshmallow-sqlalchemy==1.0.0
+
+# ── Autenticación y Seguridad ─────────────────────
+flask-jwt-extended
+flask-login==0.6.3
+bcrypt==4.1.3
+flask-cors==4.0.1
+flask-limiter==4.1.1
+
+# ── Correo ────────────────────────────────────────
+flask-mail
+
+# ── Producción (WSGI server) ──────────────────────
+gunicorn==25.3.0

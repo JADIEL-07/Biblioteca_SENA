@@ -1,0 +1,431 @@
+.login-wrapper {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-main);
+  position: relative;
+  padding: 80px 1rem; /* Aumentado de 40px a 80px para bajarlo un poco */
+  justify-content: center;
+  align-items: flex-start;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.background-image-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.background-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bg-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.5); 
+  backdrop-filter: blur(2px);
+}
+
+.login-form-centered {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.clean-form {
+  width: 100%;
+  max-width: 380px;
+  background: var(--glass-bg, rgba(15, 23, 42, 0.85));
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.15));
+  padding: 2.8rem;
+  border-radius: 32px;
+  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
+  animation: scaleFadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible; /* Permitir que sombras internas respiren */
+  display: flex;
+  flex-direction: column;
+}
+
+.theme-light .clean-form {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(57, 169, 0, 0.2);
+  box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.1);
+}
+
+
+.clean-form > *:not(.particles-container) {
+  position: relative;
+  z-index: 10;
+}
+
+.sena-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.sena-logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  filter: invert(47%) sepia(85%) saturate(1450%) hue-rotate(69deg) brightness(97%) contrast(105%);
+}
+
+.login-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--sena-green);
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+.form-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.form-header p {
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.9rem;
+}
+
+.theme-light .form-header p {
+  color: #475569;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 1.5rem; /* Espacio extra para el mensaje de error absoluto */
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Wrapper que contiene el input y su icono, aislado del error */
+.input-field-wrapper {
+  position: relative; /* Clave para posicionar iconos dentro */
+  display: flex;
+  align-items: center;
+  height: 52px;
+  background: var(--bg-dark, #0f172a) !important;
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.theme-light .input-field-wrapper {
+  background: #ffffff !important;
+  border: 1px solid rgba(57, 169, 0, 0.3);
+}
+
+.input-field-wrapper:hover {
+  background: #1e293b;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.input-field-wrapper:focus-within {
+  border-color: var(--sena-green);
+  box-shadow: 0 8px 20px rgba(57, 169, 0, 0.15);
+  background: var(--bg-dark, #0f172a) !important;
+}
+
+.input-group:hover, .input-group:focus-within {
+  transform: translateY(-2px);
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main, #e2e8f0);
+  text-align: left;
+}
+
+/* Ícono como hijo flex — nunca se mueve */
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sena-green);
+  font-size: 1.2rem;
+  pointer-events: none;
+}
+
+.clean-input {
+  width: 100%;
+  height: 100%;
+  padding-left: 46px; /* Espacio para que el texto no pise el icono izquierdo */
+  padding-right: 1rem;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: var(--text-main, #ffffff);
+  font-size: 1rem;
+  font-family: inherit;
+  caret-color: var(--sena-green);
+}
+
+.password-input {
+  padding-right: 46px; /* Espacio para el ojo derecho */
+}
+
+.password-input {
+  padding-right: 44px; /* Espacio para el ojo absoluto */
+}
+
+.clean-input::placeholder {
+  color: #64748b;
+}
+
+.password-input {
+  padding-right: 0;
+}
+
+/* Botón mostrar/ocultar como hijo flex */
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: var(--sena-green);
+}
+
+.theme-light .password-toggle:hover {
+  color: var(--sena-green);
+}
+
+.theme-light .input-field-wrapper {
+  background: #ffffff !important;
+  border: 1px solid rgba(57, 169, 0, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.theme-light .input-icon {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.theme-light .clean-input {
+  color: #0f172a;
+}
+
+.theme-light .input-label {
+  color: #1e293b;
+}
+
+.password-toggle:hover {
+  color: var(--sena-green);
+}
+
+
+.has-error .input-field-wrapper {
+  border-radius: 8px;
+  outline: 1.5px solid #ef4444;
+}
+
+.has-error .input-field-wrapper .clean-input {
+  border-color: #ef4444;
+  background: var(--bg-dark);
+}
+
+.has-error .clean-input:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.has-error .input-icon {
+  color: #ef4444;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #ef4444;
+  font-size: 0.8rem;
+  position: absolute;
+  bottom: -1.4rem; /* Posicionamiento absoluto para no mover el input */
+  left: 0;
+  font-weight: 500;
+  animation: slideFadeIn 0.3s ease-out;
+}
+
+/* Reset total para el autocompletado del navegador */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px var(--bg-dark) inset !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+    transition: none !important; /* Sin transiciones para evitar saltos de color */
+}
+
+.theme-light input:-webkit-autofill,
+.theme-light input:-webkit-autofill:hover, 
+.theme-light input:-webkit-autofill:focus, 
+.theme-light input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    -webkit-text-fill-color: #0f172a !important;
+    transition: none !important;
+}
+
+.forgot-password {
+  display: inline-block;
+  color: var(--sena-green);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 1.8rem;
+  text-decoration: none;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--sena-green);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.submit-btn:hover {
+  background-color: var(--sena-green-hover);
+  transform: scale(1.04);
+  box-shadow: 0 8px 15px rgba(57, 169, 0, 0.3);
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  margin-bottom: 2.2rem;
+  width: 100%;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  color: var(--text-main);
+  text-decoration: underline;
+  transform: scale(1.05);
+}
+
+.auth-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.switch-mode-btn {
+  background: none;
+  border: none;
+  color: var(--sena-green);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 0.2rem;
+  font-size: inherit;
+  transition: all 0.2s ease;
+}
+
+.switch-mode-btn:hover {
+  text-decoration: underline;
+  color: var(--sena-green-hover);
+}
+
+@keyframes scaleFadeIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Mensajes de Alerta (Servidor) */
+.alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.alert-success {
+  background: rgba(57, 169, 0, 0.1);
+  border: 1px solid rgba(57, 169, 0, 0.3);
+  color: #bef264;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 640px) {
+  .clean-form {
+    padding: 2.5rem 1.5rem;
+  }
+}

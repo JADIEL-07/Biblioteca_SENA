@@ -1,0 +1,226 @@
+.loan-mgmt-container {
+  padding: 1.5rem;
+  background: var(--admin-bg);
+  min-height: calc(100vh - 80px);
+}
+
+.loan-mgmt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-icon-box {
+  width: 45px;
+  height: 45px;
+  background: var(--sena-green);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 1.3rem;
+}
+
+.header-title h1 {
+  font-size: 1.4rem;
+  margin: 0;
+  color: var(--admin-text-primary);
+}
+
+.header-title p {
+  margin: 0;
+  color: var(--admin-text-muted);
+  font-size: 0.85rem;
+}
+
+/* Filtros Complejos */
+.loan-filters-complex {
+  background: var(--admin-card-bg);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border-color);
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filter-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-end;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.filter-item.search {
+  flex: 2;
+}
+
+.filter-item label {
+  font-size: 0.75rem;
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-icon svg {
+  position: absolute;
+  left: 0.8rem;
+  color: var(--sena-green);
+  opacity: 0.8;
+}
+
+.input-with-icon input, 
+.input-with-icon select {
+  width: 100%;
+  padding: 0.6rem 0.8rem 0.6rem 2.5rem;
+  background: rgba(var(--sena-green-rgb), 0.05);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 8px;
+  color: white;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.input-with-icon input:focus, 
+.input-with-icon select:focus {
+  border-color: var(--sena-green);
+  background: rgba(var(--sena-green-rgb), 0.08);
+}
+
+.btn-reset {
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-reset:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
+/* Tabla */
+.loan-table-wrapper {
+  background: var(--admin-card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--admin-border-color);
+  overflow: hidden;
+}
+
+.loan-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.loan-table th {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--admin-text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--admin-border-color);
+}
+
+.loan-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--admin-border-color);
+  vertical-align: middle;
+}
+
+.id-badge {
+  background: var(--admin-border-color);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.user-cell, .item-cell-content {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cell-icon {
+  color: var(--sena-green);
+  font-size: 1rem;
+}
+
+.cell-text-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-text {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.sub-text {
+  font-size: 0.7rem;
+  color: var(--admin-text-muted);
+}
+
+.date-text {
+  font-size: 0.8rem;
+  color: var(--admin-text-muted);
+  line-height: 1.3;
+}
+
+.status-pill {
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.status-pill.active { background: rgba(var(--sena-green-rgb), 0.1); color: var(--sena-green); }
+.status-pill.returned { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.status-pill.overdue { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.fine-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--admin-text-muted);
+}
+
+.fine-badge.has-fine {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+.td-center {
+  text-align: center;
+  padding: 3rem !important;
+}
