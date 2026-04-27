@@ -41,7 +41,8 @@ def get_users():
             "is_blocked": user.is_blocked,
             "last_login": user.last_login.isoformat() if user.last_login else None,
             "failed_attempts": user.failed_attempts,
-            "created_at": user.created_at.isoformat()
+            "created_at": user.created_at.isoformat(),
+            "profile_image": user.profile_image
         })
     return jsonify(result), 200
 
@@ -190,3 +191,27 @@ def create_user():
 def get_roles():
     roles = Role.query.all()
     return jsonify([r.name for r in roles]), 200
+
+@user_bp.route('/profile-image', methods=['PATCH'])
+@jwt_required()
+def update_profile_image():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+        
+    data = request.get_json()
+    image_data = data.get('profile_image')
+    
+    # Esto reemplaza la imagen anterior en la BD
+    user.profile_image = image_data
+    
+    log = AuditLog(user_id=user_id, action="PROFILE_IMAGE_UPDATED", entity="User")
+    db.session.add(log)
+    db.session.commit()
+    
+    return jsonify({
+        "success": True, 
+        "message": "Foto de perfil actualizada",
+        "profile_image": user.profile_image
+    }), 200

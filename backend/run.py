@@ -24,6 +24,7 @@ from app.models.loan import Loan, LoanDetail
 from app.models.reservation import Reservation
 from app.models.maintenance import Maintenance
 from app.models.movement import Movement, Notification
+from app.models.item_output import ItemOutput
 
 app = create_app()
 

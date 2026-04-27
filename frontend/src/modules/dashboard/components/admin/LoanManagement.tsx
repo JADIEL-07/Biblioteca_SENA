@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiClock, FiUser, FiPackage, FiFilter, FiSearch, FiCalendar } from 'react-icons/fi';
+import { CustomSelect } from './CustomSelect';
 import './LoanManagement.css';
 
 interface LoanItem {
@@ -125,14 +126,13 @@ export const LoanManagement: React.FC = () => {
           </div>
 
           <div className="filter-item">
-            <label>Categoría del Elemento</label>
-            <div className="input-with-icon">
-              <FiPackage />
-              <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-                <option value="ALL">Todas las categorías</option>
-                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-              </select>
-            </div>
+            <CustomSelect 
+              label="Categoría del Elemento"
+              options={[{ id: 'ALL', name: 'Todas las categorías' }, ...categories.map(cat => ({ id: cat, name: cat }))]}
+              value={filterCategory}
+              onChange={setFilterCategory}
+              icon={<FiPackage />}
+            />
           </div>
         </div>
 

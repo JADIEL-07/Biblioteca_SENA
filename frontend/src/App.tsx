@@ -96,11 +96,18 @@ function App() {
       ? { nombre: 'Invitado SENA', rol: { nombre: 'Invitado' }, id: 0 }
       : loggedUser;
 
+    const handleUserUpdate = (updatedUser: any) => {
+      const newUser = { ...loggedUser, ...updatedUser };
+      setLoggedUser(newUser);
+      localStorage.setItem('user', JSON.stringify(newUser));
+    };
+
     if ((loggedUser.role?.name || loggedUser.rol?.nombre) === 'ADMIN') {
       return (
         <AdminDashboard 
           user={dashboardUser}
           onLogout={handleLogout}
+          onUserUpdate={handleUserUpdate}
         />
       );
     }

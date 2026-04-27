@@ -48,7 +48,7 @@ class AuthService:
     def login(identifier, password):
         """Authenticates a user with email or document number."""
         user = User.query.filter(
-            User.id == identifier,
+            or_(User.id == identifier, User.email == identifier),
             User.is_deleted == False
         ).first()
         
@@ -96,7 +96,8 @@ class AuthService:
             "user": {
                 "id": user.id,
                 "name": user.name,
-                "role": { "name": user.role.name } if user.role else { "name": "APRENDIZ" }
+                "role": { "name": user.role.name } if user.role else { "name": "APRENDIZ" },
+                "profile_image": user.profile_image
             }
         }, 200
 

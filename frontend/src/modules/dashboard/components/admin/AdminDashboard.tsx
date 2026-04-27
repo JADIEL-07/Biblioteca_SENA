@@ -10,6 +10,8 @@ import { ReservationManagement } from './ReservationManagement';
 import { MaintenanceManagement } from './MaintenanceManagement';
 import { SystemReports } from './SystemReports';
 import { InventoryManagement } from './InventoryManagement';
+import { OutputManagement } from './OutputManagement';
+import { ProfileOverlay } from './ProfileOverlay';
 import './AdminDashboard.css';
 import '../UserDashboard.css'; // Importamos los estilos base del dashboard de usuario para coherencia
 
@@ -19,15 +21,18 @@ interface UserData {
   nombre?: string;
   role?: { name: string };
   rol?: { nombre: string };
+  profile_image?: string;
 }
 
 interface AdminDashboardProps {
   user: UserData;
   onLogout: () => void;
+  onUserUpdate: (userData: any) => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }) => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onUserUpdate }) => {
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>(
     (localStorage.getItem('dashboard-theme') as 'dark' | 'light') ?? 'dark'
@@ -41,6 +46,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
     window.addEventListener('storage', syncTheme);
     return () => window.removeEventListener('storage', syncTheme);
   }, []);
+
+  const handleNavigate = (section: string) => {
+    if (section === 'profile') {
+      setShowProfileModal(true);
+    } else {
+      setActiveSection(section);
+    }
+  };
 
   const initials = (user.name || user.nombre || '??')
     .split(' ')
@@ -73,7 +86,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
           </div>
 
           <div className="topnav-user">
-            <div className="avatar-circle" style={{ background: 'var(--sena-green)' }}>{initials}</div>
+            <div className="avatar-circle" style={{ background: 'var(--sena-green)', overflow: 'hidden' }}>
+              {user.profile_image ? (
+                <img src={user.profile_image} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                initials
+              )}
+            </div>
           </div>
         </div>
       </nav>
@@ -82,7 +101,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
       <div className="dashboard-body">
         <AdminSidebar 
           activeSection={activeSection} 
-          onNavigate={setActiveSection} 
+          onNavigate={handleNavigate} 
           user={user}
           onLogout={onLogout} 
           isCollapsed={isSidebarCollapsed}
@@ -95,12 +114,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
             <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               {activeSection === 'dashboard' && 'Panel de Control General'}
               {activeSection === 'inventory' && 'Gestión de Inventario'}
+              {activeSection === 'inventory-table' && 'Tabla de Inventario'}
+              {activeSection === 'inventory-locations' && 'Gestión de Ubicaciones'}
+              {activeSection === 'inventory-categories' && 'Gestión de Categorías'}
               {activeSection === 'loans' && 'Control de Préstamos'}
               {activeSection === 'users' && 'Gestión de Usuarios'}
               {activeSection === 'reports' && 'Reportes Estadísticos'}
               {activeSection === 'audit' && 'Auditoría del Sistema'}
               {activeSection === 'reservations' && 'Control de Reservas'}
               {activeSection === 'maintenance' && 'Gestión de Mantenimiento'}
+              {activeSection === 'exits' && 'Control de Salidas Controladas'}
               {activeSection === 'config' && 'Configuración del Sistema'}
             </h1>
           </div>
@@ -115,7 +138,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
             {activeSection === 'maintenance' && <MaintenanceManagement />}
             {activeSection === 'reports' && <SystemReports />}
             {activeSection === 'inventory' && <InventoryManagement />}
-            {activeSection !== 'dashboard' && activeSection !== 'config' && activeSection !== 'users' && activeSection !== 'audit' && activeSection !== 'loans' && activeSection !== 'reservations' && activeSection !== 'maintenance' && activeSection !== 'reports' && activeSection !== 'inventory' && (
+            {activeSection === 'inventory-table' && <InventoryManagement />}
+            {activeSection === 'inventory-locations' && <InventoryManagement activeTab="locations" />}
+            {activeSection === 'inventory-categories' && <InventoryManagement activeTab="categories" />}
+            {activeSection === 'exits' && <OutputManagement />}
+            {activeSection !== 'dashboard' && activeSection !== 'config' && activeSection !== 'users' && activeSection !== 'audit' && activeSection !== 'loans' && activeSection !== 'reservations' && activeSection !== 'maintenance' && activeSection !== 'reports' && activeSection !== 'inventory' && !activeSection.startsWith('inventory-') && activeSection !== 'exits' && (
               <div className="placeholder-view">
                 <h2>Sección en construcción</h2>
                 <p>El módulo de {activeSection} estará disponible pronto.</p>
@@ -124,6 +151,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
           </div>
         </main>
       </div>
+      {showProfileModal && (
+        <ProfileOverlay 
+          user={user} 
+          onClose={() => setShowProfileModal(false)} 
+          onSave={(photo) => onUserUpdate({ profile_image: photo })}
+        />
+      )}
     </div>
   );
 };

@@ -51,6 +51,7 @@ def create_app():
     from .routes.reservation_routes import reservation_bp
     from .routes.maintenance_routes import maintenance_bp
     from .routes.report_routes import report_bp
+    from .routes.output_routes import output_bp
 
     app.register_blueprint(auth_bp,      url_prefix='/api/v1/auth')
     app.register_blueprint(items_bp,     url_prefix='/api/v1/items')
@@ -61,6 +62,7 @@ def create_app():
     app.register_blueprint(reservation_bp, url_prefix='/api/v1/reservations')
     app.register_blueprint(maintenance_bp, url_prefix='/api/v1/maintenance')
     app.register_blueprint(report_bp,      url_prefix='/api/v1/reports_mgmt')
+    app.register_blueprint(output_bp,      url_prefix='/api/v1/outputs')
 
     # ── Security Headers ──────────────────────────────────────────────────────
     @app.after_request

@@ -8,9 +8,10 @@ class Config:
     SECRET_KEY                     = os.environ.get('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI        = os.environ.get('DATABASE_URL', 'sqlite:///biblioteca.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    MAX_CONTENT_LENGTH             = 16 * 1024 * 1024  # Límite de 16MB para fotos
 
     JWT_SECRET_KEY                 = os.environ.get('JWT_SECRET_KEY')
-    JWT_ACCESS_TOKEN_EXPIRES       = 3600  # 1 hora
+    JWT_ACCESS_TOKEN_EXPIRES       = 86400  # 24 horas
 
     MAIL_SERVER                    = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT                      = int(os.environ.get('MAIL_PORT', 587))

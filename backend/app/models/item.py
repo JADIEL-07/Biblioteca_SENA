@@ -52,4 +52,5 @@ class Item(Base):
     movements = db.relationship('Movement', backref='item', lazy=True)
     maintenance_records = db.relationship('Maintenance', backref='item', lazy=True)
     reservations = db.relationship('Reservation', backref='item', lazy=True)
+    outputs = db.relationship('ItemOutput', backref='item', lazy=True)
     # loan_details remains for historical data

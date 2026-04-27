@@ -157,22 +157,45 @@ def do_manual_log(connection, target, action):
     entity = target.__tablename__
     entity_id = getattr(target, 'id', None)
     
+    # Helper para limpiar datos extensos (Base64)
+    def clean_val(v):
+        if v is None: return None
+        if isinstance(v, str) and (len(v) > 500 or v.startswith('data:image')):
+            return "[DATO_EXTENSO_OMITIDO]"
+        return str(v)
+
     details = None
     if action == 'UPDATE':
         changes = {}
+        ignored_fields = ['last_login', 'updated_at']
+        
         for column in target.__table__.columns:
+            if column.name in ignored_fields:
+                continue
+                
             state = db.inspect(target)
             attr = state.attrs.get(column.name)
             if attr.history.has_changes():
                 old_val = attr.history.deleted[0] if attr.history.deleted else None
                 new_val = attr.history.added[0] if attr.history.added else None
+                
                 if 'password' in column.name.lower():
                     changes[column.name] = "[MODIFICADO]"
                 else:
-                    changes[column.name] = {"from": str(old_val), "to": str(new_val)}
-        if changes: details = json.dumps(changes, ensure_ascii=False)
+                    changes[column.name] = {"from": clean_val(old_val), "to": clean_val(new_val)}
+        
+        if not changes:
+            return
+            
+        details = json.dumps(changes, ensure_ascii=False)
     elif action == 'INSERT':
-        data = {c.name: ("[PROTEGIDO]" if 'password' in c.name.lower() else str(getattr(target, c.name))) for c in target.__table__.columns}
+        data = {}
+        for c in target.__table__.columns:
+            val = getattr(target, c.name)
+            if 'password' in c.name.lower():
+                data[c.name] = "[PROTEGIDO]"
+            else:
+                data[c.name] = clean_val(val)
         details = json.dumps(data, ensure_ascii=False)
 
     # Intentar obtener el nombre representativo del objeto (name, nombre, etc)

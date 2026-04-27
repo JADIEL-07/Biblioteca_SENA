@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FiShield, FiRefreshCw, FiSearch, FiCalendar, FiUser, 
-  FiEye, FiFilter, FiActivity, FiGlobe 
+  FiEye, FiFilter, FiActivity, FiGlobe, FiPlus
 } from 'react-icons/fi';
 import './AuditLogs.css';
 
@@ -247,7 +247,7 @@ export const AuditLogs: React.FC = () => {
                     <div className="ip-badge"><FiGlobe /> {log.ip}</div>
                   </td>
                   <td style={{ textAlign: 'center' }}>
-                    <button className="btn-detail" onClick={() => setSelectedLog(log)}>
+                    <button className="btn-detail" onClick={() => setSelectedLog(log)} title="Ver Detalle">
                       <FiEye />
                     </button>
                   </td>
@@ -258,25 +258,181 @@ export const AuditLogs: React.FC = () => {
         </table>
       </div>
 
-      {/* MODAL DETALLE JSON */}
+      {/* MODAL DETALLE VISUAL (Human Readable) */}
       {selectedLog && (
         <div className="audit-modal-overlay" onClick={() => setSelectedLog(null)}>
-          <div className="audit-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Detalle de Transacción #{selectedLog.id}</h3>
-              <button className="btn-close" onClick={() => setSelectedLog(null)}>&times;</button>
-            </div>
-            <div className="modal-body">
-              <div style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                <strong>User Agent:</strong> {selectedLog.user_agent}
+          <div className="audit-modal-pro" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-pro">
+              <div className="header-status">
+                <span className={`status-icon-box ${getActionClass(selectedLog.action)}`}>
+                  {selectedLog.action.includes('INSERT') && <FiPlus />}
+                  {selectedLog.action.includes('UPDATE') && <FiRefreshCw />}
+                  {selectedLog.action.includes('DELETE') && <FiActivity />}
+                  {selectedLog.action.includes('LOGIN') && <FiUser />}
+                </span>
+                <div className="header-text">
+                  <h3>Detalle de {selectedLog.action}</h3>
+                  <p>ID Transacción: #{selectedLog.id} • {new Date(selectedLog.created_at).toLocaleString()}</p>
+                </div>
               </div>
-              <div className="json-viewer">
-                {selectedLog.details ? (
-                  <pre>{JSON.stringify(JSON.parse(selectedLog.details), null, 2)}</pre>
-                ) : (
-                  '// Sin cambios de datos registrados.'
+              <button className="btn-close-pro" onClick={() => setSelectedLog(null)}>&times;</button>
+            </div>
+
+            <div className="modal-body-pro">
+              {/* Resumen del Actor (Ahora arriba) */}
+              <div className="audit-summary-card">
+                <div className="summary-item">
+                  <FiUser className="item-icon" />
+                  <div>
+                    <label>Realizado por</label>
+                    <span>{selectedLog.user || 'Sistema'}</span>
+                  </div>
+                </div>
+                <div className="summary-item">
+                  <FiGlobe className="item-icon" />
+                  <div>
+                    <label>Dirección IP</label>
+                    <span>{selectedLog.ip}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detalle de los cambios */}
+              <div className="audit-changes-container">
+                <h4>Resumen Narrativo de la Operación</h4>
+
+                {/* NARRATIVA NATURAL ESPECÍFICA (Ahora integrada en el detalle) */}
+                <div className="audit-narrative-box">
+                  <FiActivity className="narrative-icon" />
+                  <p>{(() => {
+                    const action = selectedLog.action.toUpperCase();
+                    const entityMap: Record<string, string> = {
+                      'items': 'un artículo del inventario',
+                      'users': 'un perfil de usuario',
+                      'loans': 'un registro de préstamo',
+                      'reservations': 'una reserva de material',
+                      'maintenance': 'un reporte de mantenimiento'
+                    };
+                    const entity = entityMap[selectedLog.entity] || `un registro en ${selectedLog.entity}`;
+                    const name = selectedLog.entity_name || `ID #${selectedLog.entity_id}`;
+
+                    if (action.includes('INSERT')) {
+                      return `El administrador ${selectedLog.user} ha registrado un elemento nuevo: "${name}" con el Identificador ID: ${selectedLog.entity_id}.`;
+                    }
+                    if (action.includes('UPDATE')) {
+                      return `Se realizó una actualización de datos en ${entity} ("${name}"). El administrador revisó y modificó atributos específicos para mantener la información al día.`;
+                    }
+                    if (action.includes('DELETE')) {
+                      return `Se ha procedido con la eliminación definitiva de ${entity} ("${name}"). Esta acción es irreversible y el recurso ya no forma parte del inventario activo.`;
+                    }
+                    if (action === 'LOGIN_SUCCESS' || action === 'LOGIN') {
+                      return `El usuario ${selectedLog.user} ha iniciado sesión en la plataforma de manera exitosa desde un dispositivo identificado.`;
+                    }
+                    if (action === 'LOGIN_FAILED') {
+                      return `ALERTA DE SEGURIDAD: Se registró un intento de acceso fallido a la cuenta de "${selectedLog.user}". El sistema ha denegado el ingreso para proteger la integridad del perfil.`;
+                    }
+                    if (action === 'LOGOUT') {
+                      return `El usuario ${selectedLog.user} ha finalizado su sesión de manera segura, cerrando el acceso activo al panel administrativo.`;
+                    }
+                    if (action.includes('SECURITY')) {
+                      return `ACCIÓN DE PROTECCIÓN: Se ha ejecutado un protocolo de seguridad sobre ${entity} ("${name}"). Esto ocurre generalmente por bloqueos preventivos tras múltiples errores.`;
+                    }
+                    return `Se registró la acción "${selectedLog.action}" sobre el recurso "${name}" en el módulo de ${selectedLog.entity}.`;
+                  })()}</p>
+                </div>
+
+                {/* EXPLICACIÓN DETALLADA DE CAMBIOS (Resumen Narrativo Inteligente) */}
+                {selectedLog.details && !['LOGIN_SUCCESS', 'LOGIN_FAILED', 'LOGOUT', 'LOGIN'].includes(selectedLog.action.toUpperCase()) && (
+                  <div className="smart-changes-narrative">
+                    {(() => {
+                      // 1. Diccionario de traducciones
+                      const fieldMap: Record<string, string> = {
+                        'last_login': 'Último Acceso al Sistema',
+                        'failed_attempts': 'Intentos de Inicio Fallidos',
+                        'is_active': 'Estado de Activación',
+                        'is_blocked': 'Estado de Bloqueo de Seguridad',
+                        'role': 'Rol del Usuario',
+                        'name': 'Nombre Completo',
+                        'email': 'Correo Electrónico',
+                        'phone': 'Teléfono',
+                        'formation_ficha': 'Ficha de Formación'
+                      };
+
+                      // 2. Formateador ultra-seguro
+                      const safeFormat = (val: any): string => {
+                        if (val === null || val === undefined || val === '—' || val === 'None') return 'Sin registrar';
+                        if (typeof val === 'boolean') return val ? 'Activado' : 'Desactivado';
+                        if (typeof val === 'string' && val.match(/^\d{4}-\d{2}-\d{2}/)) {
+                          try { 
+                            const d = new Date(val);
+                            return d.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                          } catch { return val; }
+                        }
+                        if (val && typeof val === 'object' && val.from !== undefined) {
+                          return `Cambió de [${safeFormat(val.from)}] a [${safeFormat(val.to)}]`;
+                        }
+                        return String(val);
+                      };
+
+                      try {
+                        const rawData = JSON.parse(selectedLog.details);
+                        const items: React.ReactNode[] = [];
+                        
+                        // A. SIEMPRE MOSTRAR IDENTIDAD AL INICIO
+                        items.push(
+                          <div className="smart-narrative-item identity" key="id-header">
+                            • <strong>Identificador del Registro (ID):</strong> <span className="new-v">#{selectedLog.entity_id || 'Nuevo'}</span>
+                          </div>
+                        );
+                        if (selectedLog.entity_name) {
+                          items.push(
+                            <div className="smart-narrative-item identity" key="name-header">
+                              • <strong>Nombre del Recurso:</strong> <span className="new-v">"{selectedLog.entity_name}"</span>
+                            </div>
+                          );
+                        }
+
+                        // B. PROCESAR CAMBIOS (Diferenciando UPDATE de INSERT)
+                        const isInsert = selectedLog.action.toUpperCase().includes('INSERT');
+
+                        if (rawData.old || rawData.new) {
+                          // Caso Estándar: Objeto con old/new (UPDATE)
+                          const keys = Array.from(new Set([...Object.keys(rawData.old || {}), ...Object.keys(rawData.new || {})]))
+                            .filter(k => !['updated_at', 'password', 'id', 'created_at'].includes(k));
+                          
+                          keys.forEach(k => {
+                            const label = fieldMap[k] || k.replace(/_/g, ' ').toUpperCase();
+                            items.push(
+                              <div className="smart-narrative-item" key={k}>
+                                • El campo <strong>{label}</strong> se actualizó de <span className="old-v">"{safeFormat(rawData.old?.[k])}"</span> a <span className="new-v">"{safeFormat(rawData.new?.[k])}"</span>.
+                              </div>
+                            );
+                          });
+                        } else if (typeof rawData === 'object' && rawData !== null) {
+                          // Caso INSERT o Detalles Planos
+                          Object.entries(rawData).forEach(([k, v]) => {
+                            if (['updated_at', 'password', 'id', 'created_at'].includes(k)) return;
+                            const label = fieldMap[k] || k.replace(/_/g, ' ').toUpperCase();
+                            items.push(
+                              <div className="smart-narrative-item" key={k}>
+                                • Se registró el valor inicial para <strong>{label}</strong>: <span className="new-v">"{safeFormat(v)}"</span>.
+                              </div>
+                            );
+                          });
+                        }
+
+                        return items;
+                      } catch (err) {
+                        return <div className="error-parse">El detalle contiene información en formato técnico básico: {selectedLog.details}</div>;
+                      }
+                    })()}
+                  </div>
                 )}
               </div>
+            </div>
+            
+            <div className="modal-footer-pro">
+              <button className="btn-close-modal" onClick={() => setSelectedLog(null)}>Cerrar Detalle</button>
             </div>
           </div>
         </div>

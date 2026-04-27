@@ -7,6 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, AreaChart, Area, PieChart, Pie, Cell 
 } from 'recharts';
+import { CustomSelect } from './CustomSelect';
 import './ReservationManagement.css';
 
 interface ResMetric {
@@ -184,14 +185,13 @@ export const ReservationManagement: React.FC = () => {
           </div>
 
           <div className="filter-item">
-            <label>CATEGORÍA DEL ELEMENTO</label>
-            <div className="input-with-icon">
-              <FiPackage />
-              <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-                <option value="ALL">Todas las categorias</option>
-                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-              </select>
-            </div>
+            <CustomSelect 
+              label="CATEGORÍA DEL ELEMENTO"
+              options={[{ id: 'ALL', name: 'Todas las categorías' }, ...categories.map(cat => ({ id: cat, name: cat }))]}
+              value={filterCategory}
+              onChange={setFilterCategory}
+              icon={<FiPackage />}
+            />
           </div>
         </div>
 

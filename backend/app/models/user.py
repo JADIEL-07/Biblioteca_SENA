@@ -21,6 +21,7 @@ class User(Base):
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(20), nullable=True)
     password = db.Column(db.String(255), nullable=False)
+    profile_image = db.Column(db.Text, nullable=True) # Almacena Base64 o URL
     
     # FKs
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)

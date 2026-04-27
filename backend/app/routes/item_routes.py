@@ -159,6 +159,18 @@ def update_item(id):
         item.status_id   = int(data['status_id'])
     if 'location_id' in data and data['location_id']:
         item.location_id = int(data['location_id'])
+    
+    # Nuevos campos faltantes
+    if 'acquisition_date' in data and data['acquisition_date']:
+        from datetime import datetime
+        try:
+            item.acquisition_date = datetime.strptime(data['acquisition_date'], '%Y-%m-%d')
+        except: pass
+    if 'value' in data:
+        try: item.value = float(data['value'])
+        except: item.value = 0
+    if 'nit' in data:
+        item.nit = data['nit']
 
     try:
         db.session.commit()
@@ -186,3 +198,95 @@ def delete_item(id):
         db.session.rollback()
         print(f"[ERROR] delete_item: {e}")
         return jsonify({"error": "No se puede eliminar este elemento (puede tener préstamos o reservas asociadas)"}), 400
+# --- CATEGORIES CRUD ---
+@items_bp.route('/categories', methods=['POST'])
+@jwt_required()
+def add_category():
+    data = request.json
+    print(f"[DEBUG] add_category data: {data}")
+    if not data or not data.get('name'):
+        return jsonify({"error": "Nombre de categoría requerido"}), 400
+    try:
+        new_cat = Category(name=data['name'])
+        db.session.add(new_cat)
+        db.session.commit()
+        return jsonify({"id": new_cat.id, "name": new_cat.name}), 201
+    except Exception as e:
+        db.session.rollback()
+        print(f"[DEBUG ERROR] add_category: {str(e)}")
+        return jsonify({"error": f"Error al crear categoría: {str(e)}"}), 400
+
+@items_bp.route('/categories/<int:id>', methods=['PUT'])
+@jwt_required()
+def update_category(id):
+    cat = Category.query.get_or_404(id)
+    data = request.json
+    if not data or not data.get('name'):
+        return jsonify({"error": "Nombre de categoría requerido"}), 400
+    try:
+        cat.name = data['name']
+        db.session.commit()
+        return jsonify({"id": cat.id, "name": cat.name}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"[DEBUG ERROR] update_category: {str(e)}")
+        return jsonify({"error": f"Error al actualizar categoría: {str(e)}"}), 400
+
+@items_bp.route('/categories/<int:id>', methods=['DELETE'])
+@jwt_required()
+def delete_category(id):
+    cat = Category.query.get_or_404(id)
+    try:
+        db.session.delete(cat)
+        db.session.commit()
+        return jsonify({"message": "Categoría eliminada"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "No se puede eliminar: tiene elementos asociados"}), 400
+
+# --- LOCATIONS CRUD ---
+@items_bp.route('/locations', methods=['POST'])
+@jwt_required()
+def add_location():
+    data = request.json
+    print(f"[DEBUG] add_location data: {data}")
+    if not data or not data.get('name'):
+        return jsonify({"error": "Nombre de ubicación requerido"}), 400
+    try:
+        new_loc = Location(name=data['name'], type=data.get('type', 'internal'))
+        db.session.add(new_loc)
+        db.session.commit()
+        return jsonify({"id": new_loc.id, "name": new_loc.name}), 201
+    except Exception as e:
+        db.session.rollback()
+        print(f"[DEBUG ERROR] add_location: {str(e)}")
+        return jsonify({"error": f"Error al crear ubicación: {str(e)}"}), 400
+
+@items_bp.route('/locations/<int:id>', methods=['PUT'])
+@jwt_required()
+def update_location(id):
+    loc = Location.query.get_or_404(id)
+    data = request.json
+    if not data or not data.get('name'):
+        return jsonify({"error": "Nombre de ubicación requerido"}), 400
+    try:
+        loc.name = data['name']
+        if 'type' in data: loc.type = data['type']
+        db.session.commit()
+        return jsonify({"id": loc.id, "name": loc.name}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"[DEBUG ERROR] update_location: {str(e)}")
+        return jsonify({"error": f"Error al actualizar ubicación: {str(e)}"}), 400
+
+@items_bp.route('/locations/<int:id>', methods=['DELETE'])
+@jwt_required()
+def delete_location(id):
+    loc = Location.query.get_or_404(id)
+    try:
+        db.session.delete(loc)
+        db.session.commit()
+        return jsonify({"message": "Ubicación eliminada"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "No se puede eliminar: tiene elementos asociados"}), 400

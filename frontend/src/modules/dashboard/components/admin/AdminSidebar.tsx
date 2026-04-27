@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   FiHome, FiBox, FiBook, FiCalendar, FiTool, 
   FiArrowRightCircle, FiBarChart2, FiUsers, 
-  FiSettings, FiShield, FiHelpCircle, FiChevronDown, FiLogOut, FiMenu, FiEdit3, FiPackage, FiActivity
+  FiSettings, FiShield, FiHelpCircle, FiChevronDown, FiLogOut, FiMenu, FiEdit3, FiPackage, FiActivity,
+  FiList, FiMapPin, FiLayers
 } from 'react-icons/fi';
 
 interface UserData {
@@ -11,6 +12,7 @@ interface UserData {
   nombre?: string;
   role?: { name: string };
   rol?: { nombre: string };
+  profile_image?: string;
 }
 
 interface AdminSidebarProps {
@@ -40,7 +42,17 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
   const mainItems = [
     { id: 'dashboard', label: 'Inicio', icon: <FiHome /> },
-    { id: 'inventory', label: 'Inventario', icon: <FiBox /> },
+    { 
+      id: 'inventory', 
+      label: 'Inventario', 
+      icon: <FiBox />,
+      hasDropdown: true,
+      subItems: [
+        { id: 'inventory-table', label: 'Tabla de inventario', icon: <FiList /> },
+        { id: 'inventory-locations', label: 'Ubicación', icon: <FiMapPin /> },
+        { id: 'inventory-categories', label: 'Categorías', icon: <FiLayers /> },
+      ]
+    },
     { id: 'loans', label: 'Préstamos', icon: <FiBook /> },
     { id: 'reservations', label: 'Reservas', icon: <FiCalendar /> },
     { id: 'maintenance', label: 'Mantenimiento', icon: <FiTool /> },
@@ -155,9 +167,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               justifyContent: 'center',
               fontWeight: 'bold',
               fontSize: isCollapsed ? '0.8rem' : '0.9rem',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              overflow: 'hidden'
             }}>
-              {(user.name || user.nombre || 'AD').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
+              {user.profile_image ? (
+                <img src={user.profile_image} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                (user.name || user.nombre || 'AD').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+              )}
             </div>
             
             {/* Lápiz flotante */}

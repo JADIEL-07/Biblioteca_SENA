@@ -92,11 +92,13 @@
 
 .topnav-logo-img {
   height: 35px;
-  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1));
+  /* Filtro de precisión para convertir negro en Verde SENA (#39A900) */
+  filter: invert(41%) sepia(94%) saturate(1915%) hue-rotate(84deg) brightness(98%) contrast(106%);
+  transition: filter 0.3s ease;
 }
 
 .theme-dark .topnav-logo-img {
-  filter: brightness(0) invert(1);
+  filter: invert(41%) sepia(94%) saturate(1915%) hue-rotate(84deg) brightness(98%) contrast(106%);
 }
 
 .topnav-logo span {

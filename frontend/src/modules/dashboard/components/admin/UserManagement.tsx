@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { 
   FiUsers, FiUserCheck, FiUserX, FiLock, FiSearch, FiFilter, 
   FiEdit2, FiShield, FiPower, FiUnlock, FiEye, FiMoreVertical, FiPlus,
-  FiCamera, FiX 
+  FiCamera, FiX, FiDownload, FiMaximize 
 } from 'react-icons/fi';
+import { QRCodeCanvas } from 'qrcode.react';
+import { CustomSelect } from './CustomSelect';
 import './UserManagement.css';
 
 interface UserStats {
@@ -25,6 +27,7 @@ interface User {
   last_login: string | null;
   failed_attempts: number;
   created_at: string;
+  profile_image?: string;
 }
 
 export const UserManagement: React.FC = () => {
@@ -39,6 +42,10 @@ export const UserManagement: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [roles, setRoles] = useState<string[]>([]);
+  const [showRolePanel, setShowRolePanel] = useState(false);
+  const [newRole, setNewRole] = useState('');
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [userForQR, setUserForQR] = useState<User | null>(null);
   
   // Camera support
   const [showCamera, setShowCamera] = useState(false);
@@ -54,21 +61,31 @@ export const UserManagement: React.FC = () => {
     role: 'APRENDIZ',
     password: '',
     formation_ficha: '',
-    image_url: '' // Added image_url
+    image_url: ''
   });
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [uData, sData] = await Promise.all([
+      const token = localStorage.getItem('token');
+      const [uRes, sRes] = await Promise.all([
         fetch(`/api/v1/users_mgmt/?search=${searchTerm}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }).then(r => r.json()),
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
         fetch('/api/v1/users_mgmt/stats', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        }).then(r => r.json())
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
       ]);
-      setUsers(uData);
+
+      if (uRes.status === 401 || sRes.status === 401) {
+        alert("Tu sesión ha caducado. Por favor, cierra sesión e ingresa nuevamente.");
+        return;
+      }
+
+      const uData = await uRes.json();
+      const sData = await sRes.json();
+
+      setUsers(Array.isArray(uData) ? uData : []);
       setStats(sData);
     } catch (error) {
       console.error('Error:', error);
@@ -103,7 +120,7 @@ export const UserManagement: React.FC = () => {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await response.json();
-      setRoles(data);
+      setRoles(Array.isArray(data) ? data : []);
     } catch (error) { console.error(error); }
   };
 
@@ -164,12 +181,41 @@ export const UserManagement: React.FC = () => {
         setShowCreateModal(false);
         setNewUser({
           id: '', document_type: 'CC', name: '', email: '', 
-          phone: '', role: 'APRENDIZ', password: '', formation_ficha: ''
+          phone: '', role: 'APRENDIZ', password: '', formation_ficha: '', image_url: ''
         });
         fetchData();
         alert('Usuario creado exitosamente');
       } else {
         alert(result.error || 'Error al crear usuario');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error de conexión');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChangeRole = async () => {
+    if (!selectedUser || !newRole) return;
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/v1/users_mgmt/${selectedUser.id}/change-role`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+        },
+        body: JSON.stringify({ role: newRole })
+      });
+      
+      if (response.ok) {
+        alert('Rol actualizado correctamente');
+        setShowRolePanel(false);
+        setShowDetail(false);
+        fetchData();
+      } else {
+        alert('Error al cambiar el rol');
       }
     } catch (error) {
       console.error(error);
@@ -242,20 +288,24 @@ export const UserManagement: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="filter-group">
-          <FiFilter />
-          <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
-            <option value="ALL">Todos los Roles</option>
-            <option value="ADMIN">Administradores</option>
-            <option value="APRENDIZ">Aprendices</option>
-            <option value="OPERADOR">Operadores</option>
-          </select>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-            <option value="ALL">Todos los Estados</option>
-            <option value="ACTIVE">Activos</option>
-            <option value="INACTIVE">Inactivos</option>
-            <option value="BLOCKED">Bloqueados</option>
-          </select>
+        <div className="filter-group-pro">
+          <CustomSelect 
+            options={[{ id: 'ALL', name: 'Todos los Roles' }, ...(roles || []).map(r => ({ id: r, name: r }))]}
+            value={filterRole}
+            onChange={setFilterRole}
+            icon={<FiShield />}
+          />
+          <CustomSelect 
+            options={[
+              { id: 'ALL', name: 'Todos los Estados' },
+              { id: 'ACTIVE', name: 'Activos' },
+              { id: 'INACTIVE', name: 'Inactivos' },
+              { id: 'BLOCKED', name: 'Bloqueados' }
+            ]}
+            value={filterStatus}
+            onChange={setFilterStatus}
+            icon={<FiFilter />}
+          />
         </div>
         <button className="btn-add-user" onClick={() => setShowCreateModal(true)}>
           <FiPlus /> Nuevo Usuario
@@ -271,7 +321,7 @@ export const UserManagement: React.FC = () => {
               <th>Rol</th>
               <th>Estado</th>
               <th>Último Acceso</th>
-              <th>Intentos</th>
+              <th>Intentos Fallidos</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -282,7 +332,13 @@ export const UserManagement: React.FC = () => {
               <tr key={user.id}>
                 <td>
                   <div className="user-profile-cell">
-                    <div className="avatar-mini">{user.name ? user.name[0].toUpperCase() : '?'}</div>
+                    <div className="avatar-mini" style={{ overflow: 'hidden' }}>
+                      {user.profile_image ? (
+                        <img src={user.profile_image} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        user.name ? user.name[0].toUpperCase() : '?'
+                      )}
+                    </div>
                     <div className="user-info">
                       <span className="name">{user.name}</span>
                       <span className="email">{user.email} <small>(#{user.id})</small></span>
@@ -322,6 +378,9 @@ export const UserManagement: React.FC = () => {
                     <button className="btn-icon" onClick={() => { setSelectedUser(user); setShowDetail(true); }} title="Ver Detalle">
                       <FiEye />
                     </button>
+                    <button className="btn-icon" onClick={() => { setUserForQR(user); setShowQRModal(true); }} title="Generar QR">
+                      <FiMaximize />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -340,7 +399,13 @@ export const UserManagement: React.FC = () => {
             </div>
             <div className="modal-body">
               <div className="profile-header">
-                <div className="avatar-large">{selectedUser.name ? selectedUser.name[0].toUpperCase() : '?'}</div>
+                <div className="avatar-large" style={{ overflow: 'hidden' }}>
+                  {selectedUser.profile_image ? (
+                    <img src={selectedUser.profile_image} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    selectedUser.name ? selectedUser.name[0].toUpperCase() : '?'
+                  )}
+                </div>
                 <h4>{selectedUser.name || 'Sin Nombre'}</h4>
                 <span className="role-tag">{selectedUser.role}</span>
               </div>
@@ -351,15 +416,79 @@ export const UserManagement: React.FC = () => {
                 <div className="info-item"><label>Registro</label><span>{new Date(selectedUser.created_at).toLocaleDateString()}</span></div>
               </div>
               <div className="modal-actions-pro">
-                <button className="btn-pro edit"><FiEdit2 /> Editar Datos</button>
-                <button className="btn-pro shield"><FiShield /> Cambiar Rol</button>
+                {!showRolePanel ? (
+                  <button className="btn-pro shield" style={{ width: '100%' }} onClick={() => { setShowRolePanel(true); setNewRole(selectedUser.role); }}>
+                    <FiShield /> Gestionar Rol del Usuario
+                  </button>
+                ) : (
+                  <div className="role-change-panel" style={{ width: '100%', animation: 'fadeIn 0.3s ease' }}>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)', marginBottom: '0.5rem', display: 'block' }}>Seleccionar Nuevo Rol:</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <CustomSelect 
+                        options={(roles || []).map(r => ({ id: r, name: r }))}
+                        value={newRole}
+                        onChange={setNewRole}
+                      />
+                      <button className="btn-pro shield" style={{ padding: '0 1.5rem' }} onClick={handleChangeRole} disabled={isSubmitting}>
+                        {isSubmitting ? '...' : 'Guardar'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* 5. MODAL CREACIÓN */}
+      {/* 4.5 MODAL QR (Premium) */}
+      {showQRModal && userForQR && (
+        <div className="user-modal-overlay" onClick={() => setShowQRModal(false)}>
+          <div className="user-modal-content qr-modal-pro" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Identificación Digital QR</h3>
+              <button className="btn-close" onClick={() => setShowQRModal(false)}>&times;</button>
+            </div>
+            <div className="modal-body qr-body">
+              <div className="qr-container-pro">
+                <div className="qr-bg-decoration"></div>
+                <QRCodeCanvas 
+                  value={JSON.stringify({
+                    id: userForQR.id,
+                    name: userForQR.name,
+                    role: userForQR.role,
+                    email: userForQR.email,
+                    sys: "BIBLIOTECA_SENA"
+                  })}
+                  size={200}
+                  level="H"
+                  includeMargin={true}
+                  imageSettings={{
+                    src: "https://upload.wikimedia.org/wikipedia/commons/f/f6/Logo_SENA.svg",
+                    x: undefined,
+                    y: undefined,
+                    height: 40,
+                    width: 40,
+                    excavate: true,
+                  }}
+                />
+              </div>
+              
+              <div className="qr-user-info">
+                <h4>{userForQR.name}</h4>
+                <span className="qr-badge">{userForQR.role}</span>
+                <p className="qr-id-text">Documento: <strong>{userForQR.id}</strong></p>
+              </div>
+
+              <div className="qr-actions-pro">
+                <button className="btn-pro shield" onClick={() => window.print()}>
+                  <FiDownload /> Imprimir Carnet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {showCreateModal && (
         <div className="user-modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="user-modal-content" onClick={e => e.stopPropagation()}>
@@ -371,16 +500,17 @@ export const UserManagement: React.FC = () => {
               <form className="user-form" onSubmit={handleCreateUser}>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Tipo Documento</label>
-                    <select 
+                    <CustomSelect 
+                      label="Tipo Documento"
+                      options={[
+                        { id: 'CC', name: 'Cédula de Ciudadanía' },
+                        { id: 'TI', name: 'Tarjeta de Identidad' },
+                        { id: 'CE', name: 'Cédula de Extranjería' },
+                        { id: 'PEP', name: 'PEP' }
+                      ]}
                       value={newUser.document_type}
-                      onChange={e => setNewUser({...newUser, document_type: e.target.value})}
-                    >
-                      <option value="CC">Cédula de Ciudadanía</option>
-                      <option value="TI">Tarjeta de Identidad</option>
-                      <option value="CE">Cédula de Extranjería</option>
-                      <option value="PEP">PEP</option>
-                    </select>
+                      onChange={val => setNewUser({...newUser, document_type: val})}
+                    />
                   </div>
                   <div className="form-group">
                     <label>N° Documento</label>
@@ -422,13 +552,12 @@ export const UserManagement: React.FC = () => {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Rol de Sistema</label>
-                    <select 
+                    <CustomSelect 
+                      label="Rol de Sistema"
+                      options={(roles || []).map(r => ({ id: r, name: r }))}
                       value={newUser.role}
-                      onChange={e => setNewUser({...newUser, role: e.target.value})}
-                    >
-                      {roles.map(r => <option key={r} value={r}>{r}</option>)}
-                    </select>
+                      onChange={val => setNewUser({...newUser, role: val})}
+                    />
                   </div>
                   <div className="form-group">
                     <label>Contraseña (Opcional)</label>

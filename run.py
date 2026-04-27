@@ -23,7 +23,7 @@ def run_servers():
     )
 
     # 2. Iniciar Frontend
-    print("🎨 Iniciando Frontend (Vite)...")
+    print("Iniciando Frontend (Vite)...")
     frontend_proc = subprocess.Popen(
         ['npm', 'run', 'dev'],
         cwd=frontend_dir,
@@ -31,12 +31,12 @@ def run_servers():
     )
 
     print("\n" + "="*50)
-    print("🚀 SISTEMA INTEGRAL BIBLIOTECA - DASHBOARD ACTIVO")
+    print("SISTEMA INTEGRAL BIBLIOTECA - DASHBOARD ACTIVO")
     print("="*50)
-    print(f"👉 DASHBOARD ACTUALIZADO (Usa este): http://192.168.1.31:5173")
-    print(f"👉 ACCESO LOCAL (Esta PC):         http://localhost:5173")
+    print(f"DASHBOARD ACTUALIZADO: http://localhost:5173")
+    print(f"ACCESO LOCAL:         http://localhost:5173")
     print("-"*50)
-    print("⚠️ NOTA: El puerto 5000 es SOLO para la API interna.")
+    print("NOTA: El puerto 5000 es SOLO para la API interna.")
     print("No lo uses para ver el dashboard, ya que estará desactualizado.")
     print("="*50 + "\n")
     print("\n[Presiona Ctrl+C para detener ambos servidores]\n")
@@ -46,13 +46,13 @@ def run_servers():
             time.sleep(1)
             # Verificar si algún proceso murió
             if backend_proc.poll() is not None:
-                print("❌ El proceso del Backend se detuvo.")
+                print("Error: El proceso del Backend se detuvo.")
                 break
             if frontend_proc.poll() is not None:
-                print("❌ El proceso del Frontend se detuvo.")
+                print("Error: El proceso del Frontend se detuvo.")
                 break
     except KeyboardInterrupt:
-        print("\n🛑 Deteniendo servidores...")
+        print("\nDeteniendo servidores...")
         # Matar procesos hijos en Windows
         if sys.platform == "win32":
             subprocess.run(['taskkill', '/F', '/T', '/PID', str(backend_proc.pid)], capture_output=True)
@@ -60,7 +60,7 @@ def run_servers():
         else:
             backend_proc.terminate()
             frontend_proc.terminate()
-        print("✨ Sistema cerrado correctamente.")
+        print("Sistema cerrado correctamente.")
 
 if __name__ == "__main__":
     run_servers()
