@@ -11,16 +11,21 @@ from .email_service import EmailService
 
 class AuthService:
     @staticmethod
-    def register_user(name, email, password, document_number, document_type, phone=None, role_id=7, formation_ficha=None):
+    def register_user(name, email, password, document_number, document_type, phone=None, role_id=None, formation_ficha=None):
         """Registers a new user with document as ID."""
         if User.query.filter(or_(User.email == email, User.id == document_number)).first():
-            return {"error": "Email or Document Number already registered"}, 400
+            return {"error": "El email o número de documento ya está registrado"}, 400
             
         if len(password) < 8:
-            return {"error": "Password must be at least 8 characters"}, 400
+            return {"error": "La contraseña debe tener al menos 8 caracteres"}, 400
             
         hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
+        # Asignar rol APRENDIZ por defecto si no se provee uno
+        if not role_id:
+            role = Role.query.filter_by(name='APRENDIZ').first()
+            role_id = role.id if role else 3 # 3 suele ser Aprendiz según el seed
+
         # Ensure formation_ficha is None if empty string
         final_ficha = formation_ficha if formation_ficha and formation_ficha.strip() != "" else None
         
@@ -37,18 +42,21 @@ class AuthService:
         db.session.add(new_user)
         db.session.commit()
         
-        return {"success": True, "message": "User registered successfully"}, 201
+        return {"success": True, "message": "Usuario registrado exitosamente"}, 201
 
     @staticmethod
     def login(identifier, password):
-        """Authenticates a user with brute force protection."""
+        """Authenticates a user with email or document number."""
         user = User.query.filter(
             User.id == identifier,
             User.is_deleted == False
         ).first()
         
-        if not user or not user.is_active:
-            return {"error": "Invalid credentials"}, 401
+        if not user:
+            return {"error": "Credenciales inválidas"}, 401
+
+        if not user.is_active:
+            return {"error": "Esta cuenta está inactiva. Contacte al administrador."}, 401
 
         # Check brute force block
         if user.is_blocked:

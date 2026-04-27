@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FiMail, FiLock, FiUser, FiEye, FiEyeOff, FiAlertCircle, FiPhone } from 'react-icons/fi';
+import { FiMail, FiLock, FiUser, FiEye, FiEyeOff, FiAlertCircle, FiPhone, FiCreditCard } from 'react-icons/fi';
 import './LoginForm.css';
 import { FloatingParticles } from '../../../components/ui/FloatingParticles';
 const senaBg = '/assets/images/sena-library-bg.png';
@@ -18,38 +18,36 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [documentType, setDocumentType] = useState('CC');
+  const [documentNumber, setDocumentNumber] = useState('');
   
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [errors, setErrors] = useState({ nombre: '', email: '', phone: '', password: '' });
+  const [errors, setErrors] = useState({ nombre: '', email: '', phone: '', password: '', documentNumber: '' });
 
   const isRegister = mode === 'register';
 
   const validateFields = () => {
-    let currentErrors = { nombre: '', email: '', phone: '', password: '' };
+    let currentErrors = { nombre: '', email: '', phone: '', password: '', documentNumber: '' };
     let hasError = false;
 
-    // Validación de Nombre (solo en registro)
     if (isRegister) {
       if (!nombre.trim()) {
         currentErrors.nombre = 'Este campo es requerido';
         hasError = true;
       }
-
       if (!email.trim()) {
         currentErrors.email = 'Este campo es requerido';
         hasError = true;
       }
-
-      if (!phone.trim()) {
-        currentErrors.phone = 'Este campo es requerido';
+      if (!documentNumber.trim()) {
+        currentErrors.documentNumber = 'El número de documento es requerido';
         hasError = true;
       }
     } else {
-      // Login: validar por nombre
       if (!nombre.trim()) {
-        currentErrors.nombre = 'El nombre de usuario es requerido';
+        currentErrors.nombre = 'El número de documento es requerido';
         hasError = true;
       }
     }
@@ -85,7 +83,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
     try {
       const endpoint = isRegister ? '/api/v1/auth/register' : '/api/v1/auth/login';
       const payload = isRegister 
-        ? { nombre, correo: email, password, telefono: phone }
+        ? { 
+            name: nombre, 
+            email: email, 
+            password, 
+            phone, 
+            document_type: documentType, 
+            document_number: documentNumber 
+          }
         : { nombre, password };
 
       const response = await fetch(endpoint, {
@@ -115,6 +120,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
       }
     } catch (err: any) {
       setServerError(err.message);
+      // Desaparecer mensaje después de 3 segundos
+      setTimeout(() => setServerError(''), 3000);
     } finally {
       setLoading(false);
     }
@@ -129,7 +136,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
       
       <FloatingParticles />
       <div className="login-form-centered">
-        <div className="clean-form">
+        <div className={`clean-form ${isRegister ? 'register-mode' : ''}`}>
           <div className="sena-logo">
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/8/83/Sena_Colombia_logo.svg" 
@@ -148,17 +155,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
           
           <form onSubmit={handleSubmit} noValidate>
             
-            {/* Campo Nombre: visible en AMBOS modos */}
+            {/* Campo Identificador: Nombre en Registro, Documento en Login */}
             <div className={`input-group ${errors.nombre ? 'has-error' : ''}`}>
               <label className="input-label">
-                {isRegister ? 'Nombres Completos' : 'Nombre de Usuario'}
+                {isRegister ? 'Nombre Completo' : 'Número de Documento'}
               </label>
               <div className="input-field-wrapper">
                 <FiUser className="input-icon" />
                 <input
                   type="text"
                   className="clean-input"
-                  placeholder={isRegister ? 'Ej. Juan Pérez' : 'Ingresa tu usuario'}
+                  placeholder={isRegister ? 'Ej. Juan Pérez' : 'Ingresa tu documento'}
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   disabled={loading}
@@ -166,6 +173,39 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
               </div>
               {errors.nombre && <span className="error-message"><FiAlertCircle/> {errors.nombre}</span>}
             </div>
+
+            {/* Campos de Documento solo en Registro */}
+            {isRegister && (
+              <div className="form-row-register">
+                <div className="input-group">
+                  <label className="input-label">Tipo</label>
+                  <select 
+                    className="clean-select"
+                    value={documentType}
+                    onChange={(e) => setDocumentType(e.target.value)}
+                  >
+                    <option value="CC">CC</option>
+                    <option value="TI">TI</option>
+                    <option value="CE">CE</option>
+                    <option value="PEP">PEP</option>
+                  </select>
+                </div>
+                <div className={`input-group ${errors.documentNumber ? 'has-error' : ''}`} style={{ flex: 2 }}>
+                  <label className="input-label">Número de Documento</label>
+                  <div className="input-field-wrapper">
+                    <FiCreditCard className="input-icon" />
+                    <input
+                      type="text"
+                      className="clean-input"
+                      placeholder="Ej. 1098..."
+                      value={documentNumber}
+                      onChange={(e) => setDocumentNumber(e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Correo solo en Registro */}
             {isRegister && (

@@ -72,7 +72,7 @@ def toggle_user_active(id):
     user.is_active = not user.is_active
     
     action = "USER_DEACTIVATED" if not user.is_active else "USER_REACTIVATED"
-    log = AuditLog(user_id=get_jwt_identity(), action=action, entity_id=id, entity_name="User")
+    log = AuditLog(user_id=get_jwt_identity(), action=action, entity_id=None, entity="User")
     db.session.add(log)
     db.session.commit()
     
@@ -85,7 +85,7 @@ def unblock_user(id):
     user.is_blocked = False
     user.failed_attempts = 0
     
-    log = AuditLog(user_id=get_jwt_identity(), action="USER_UNBLOCKED", entity_id=id, entity_name="User")
+    log = AuditLog(user_id=get_jwt_identity(), action="USER_UNBLOCKED", entity_id=None, entity="User")
     db.session.add(log)
     db.session.commit()
     
@@ -103,7 +103,7 @@ def change_user_role(id):
         return jsonify({"error": "Rol no válido"}), 400
         
     user.role_id = role.id
-    log = AuditLog(user_id=get_jwt_identity(), action="ROLE_CHANGED", entity_id=id, entity_name="User", details=f"New role: {new_role_name}")
+    log = AuditLog(user_id=get_jwt_identity(), action="ROLE_CHANGED", entity_id=None, entity="User", details=f"New role: {new_role_name}")
     db.session.add(log)
     db.session.commit()
     
@@ -138,3 +138,55 @@ def get_user_detail(id):
             "ip": l.ip
         } for l in logs]
     }), 200
+@user_bp.route('/', methods=['POST'])
+@jwt_required()
+def create_user():
+    data = request.get_json()
+    
+    # Validar si el usuario ya existe
+    if User.query.get(data.get('id')):
+        return jsonify({"error": "El documento ya está registrado"}), 400
+    
+    if User.query.filter_by(email=data.get('email')).first():
+        return jsonify({"error": "El email ya está registrado"}), 400
+
+    role = Role.query.filter_by(name=data.get('role')).first()
+    if not role:
+        return jsonify({"error": "Rol no válido"}), 400
+
+    # Hash password
+    password = data.get('password', data.get('id')) # Default password is ID if not provided
+    hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    new_user = User(
+        id=data.get('id'),
+        document_type=data.get('document_type', 'CC'),
+        name=data.get('name'),
+        email=data.get('email'),
+        phone=data.get('phone'),
+        password=hashed_pw,
+        role_id=role.id,
+        formation_ficha=data.get('formation_ficha'),
+        created_by=get_jwt_identity()
+    )
+
+    db.session.add(new_user)
+    
+    # Audit Log
+    log = AuditLog(
+        user_id=get_jwt_identity(),
+        action="USER_CREATED",
+        entity_id=None,
+        entity="User",
+        details=f"Created user {new_user.name} with role {role.name}"
+    )
+    db.session.add(log)
+    db.session.commit()
+
+    return jsonify({"success": True, "message": "Usuario creado exitosamente"}), 201
+
+@user_bp.route('/roles', methods=['GET'])
+@jwt_required()
+def get_roles():
+    roles = Role.query.all()
+    return jsonify([r.name for r in roles]), 200

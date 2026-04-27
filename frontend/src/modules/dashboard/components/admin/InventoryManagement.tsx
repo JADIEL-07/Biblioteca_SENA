@@ -25,7 +25,8 @@ interface FilterData {
 const emptyForm = {
   name: '', code: '', category_id: '', location_id: '',
   status_id: '', brand: '', model: '', serial_number: '',
-  stock: 1, image_url: '', description: ''
+  stock: 1, image_url: '', description: '',
+  acquisition_date: '', value: '', nit: ''
 };
 
 export const InventoryManagement: React.FC = () => {
@@ -110,7 +111,14 @@ export const InventoryManagement: React.FC = () => {
       const res = await fetch('/api/v1/items/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ ...newItem, category_id: newItem.category_id ? parseInt(newItem.category_id) : undefined, location_id: newItem.location_id ? parseInt(newItem.location_id) : undefined, status_id: parseInt(newItem.status_id), stock: parseInt(String(newItem.stock)) || 1 })
+        body: JSON.stringify({ 
+          ...newItem, 
+          category_id: newItem.category_id ? parseInt(newItem.category_id) : undefined, 
+          location_id: newItem.location_id ? parseInt(newItem.location_id) : undefined, 
+          status_id: parseInt(newItem.status_id), 
+          stock: parseInt(String(newItem.stock)) || 0,
+          value: newItem.value ? parseFloat(newItem.value) : 0
+        })
       });
       if (res.ok) { alert('Elemento guardado exitosamente'); setShowAddModal(false); setNewItem({ ...emptyForm, category_id: filters.categories[0]?.id.toString() || '', status_id: filters.statuses[0]?.id.toString() || '', location_id: filters.locations[0]?.id.toString() || '' }); fetchData(); }
       else { const err = await res.json(); alert(`Error: ${err.error || 'Verifique los datos'}`); }
@@ -121,7 +129,22 @@ export const InventoryManagement: React.FC = () => {
   // Edit
   const openEdit = (item: Item) => {
     setEditItem(item);
-    setEditForm({ name: item.name, code: item.code, category_id: String(item.category_id), location_id: String(item.location_id), status_id: String(item.status_id), brand: item.brand || '', model: item.model || '', serial_number: item.serial_number || '', stock: item.stock, image_url: item.image_url || '', description: item.description || '' });
+    setEditForm({ 
+      name: item.name, 
+      code: item.code, 
+      category_id: String(item.category_id), 
+      location_id: String(item.location_id), 
+      status_id: String(item.status_id), 
+      brand: item.brand || '', 
+      model: item.model || '', 
+      serial_number: item.serial_number || '', 
+      stock: item.stock, 
+      image_url: item.image_url || '', 
+      description: item.description || '',
+      acquisition_date: item.acquisition_date ? new Date(item.acquisition_date).toISOString().split('T')[0] : '',
+      value: item.value ? String(item.value) : '',
+      nit: item.nit || ''
+    });
     setMenuOpenId(null);
   };
   const handleEdit = async (e: React.FormEvent) => {
@@ -131,7 +154,7 @@ export const InventoryManagement: React.FC = () => {
       const res = await fetch(`/api/v1/items/${editItem.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ ...editForm, category_id: parseInt(editForm.category_id), location_id: parseInt(editForm.location_id), status_id: parseInt(editForm.status_id), stock: parseInt(String(editForm.stock)) || 1 })
+        body: JSON.stringify({ ...editForm, category_id: parseInt(editForm.category_id), location_id: parseInt(editForm.location_id), status_id: parseInt(editForm.status_id), stock: parseInt(String(editForm.stock)) || 0 })
       });
       if (res.ok) { alert('Elemento actualizado'); setEditItem(null); fetchData(); }
       else { const err = await res.json(); alert(`Error: ${err.error}`); }
@@ -200,9 +223,7 @@ export const InventoryManagement: React.FC = () => {
               <tr><td colSpan={9} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>⏳ Cargando inventario...</td></tr>
             ) : error ? (
               <tr><td colSpan={9} style={{ textAlign: 'center', padding: '3rem', color: '#ef4444' }}>⚠️ {error}</td></tr>
-            ) : items.length === 0 ? (
-              <tr><td colSpan={9} style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>📦 No hay elementos. Usa "Nuevo Elemento" para agregar uno.</td></tr>
-            ) : items.map(item => (
+            ) : items.length === 0 ? null : items.map(item => (
               <tr key={item.id}>
                 <td className="col-id">{item.id}</td>
                 <td className="col-code">
@@ -310,10 +331,14 @@ export const InventoryManagement: React.FC = () => {
                     {filters.locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                   </select>
                 </div>
-                <div className="form-group"><label>Stock</label><input type="number" min="0" value={editForm.stock} onChange={e => setEditForm({ ...editForm, stock: parseInt(e.target.value) || 0 })} /></div>
+                <div className="form-group"><label>Stock</label><input type="number" min="0" value={editForm.stock} onChange={e => setEditForm({ ...editForm, stock: e.target.value })} /></div>
                 <div className="form-group"><label>Marca</label><input type="text" value={editForm.brand} onChange={e => setEditForm({ ...editForm, brand: e.target.value })} /></div>
                 <div className="form-group"><label>Modelo</label><input type="text" value={editForm.model} onChange={e => setEditForm({ ...editForm, model: e.target.value })} /></div>
                 <div className="form-group"><label>N° Serie / ISBN</label><input type="text" value={editForm.serial_number} onChange={e => setEditForm({ ...editForm, serial_number: e.target.value })} /></div>
+                <div className="form-group"><label>Fecha Adquisición</label><input type="date" value={editForm.acquisition_date} onChange={e => setEditForm({ ...editForm, acquisition_date: e.target.value })} /></div>
+                <div className="form-group"><label>Valor Unitario</label><input type="number" step="0.01" value={editForm.value} onChange={e => setEditForm({ ...editForm, value: e.target.value })} /></div>
+                <div className="form-group"><label>NIT / Proveedor</label><input type="text" value={editForm.nit} onChange={e => setEditForm({ ...editForm, nit: e.target.value })} /></div>
+                <div className="form-group full-width"><label>Descripción / Observaciones</label><textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} placeholder="Detalles adicionales del elemento..." rows={3} /></div>
                 <div className="form-group full-width camera-section">
                   <label>Imagen del Material</label>
                   <div className="photo-manager">
@@ -385,7 +410,7 @@ export const InventoryManagement: React.FC = () => {
                 <div className="form-group"><label>Marca</label><input type="text" value={newItem.brand} onChange={e => setNewItem({ ...newItem, brand: e.target.value })} /></div>
                 <div className="form-group"><label>Modelo</label><input type="text" value={newItem.model} onChange={e => setNewItem({ ...newItem, model: e.target.value })} /></div>
                 <div className="form-group"><label>Número de Serie / ISBN</label><input type="text" value={newItem.serial_number} onChange={e => setNewItem({ ...newItem, serial_number: e.target.value })} /></div>
-                <div className="form-group"><label>Stock Inicial</label><input type="number" min="1" value={newItem.stock} onChange={e => setNewItem({ ...newItem, stock: parseInt(e.target.value) || 1 })} /></div>
+                <div className="form-group"><label>Stock Inicial</label><input type="number" min="0" value={newItem.stock} onChange={e => setNewItem({ ...newItem, stock: e.target.value })} /></div>
                 <div className="form-group"><label>Estado Inicial</label>
                   <select value={newItem.status_id} onChange={e => setNewItem({ ...newItem, status_id: e.target.value })}>
                     {filters.statuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -401,6 +426,10 @@ export const InventoryManagement: React.FC = () => {
                     {filters.locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                   </select>
                 </div>
+                <div className="form-group"><label>Fecha Adquisición</label><input type="date" value={newItem.acquisition_date} onChange={e => setNewItem({ ...newItem, acquisition_date: e.target.value })} /></div>
+                <div className="form-group"><label>Valor Unitario</label><input type="number" step="0.01" value={newItem.value} onChange={e => setNewItem({ ...newItem, value: e.target.value })} /></div>
+                <div className="form-group"><label>NIT / Proveedor</label><input type="text" value={newItem.nit} onChange={e => setNewItem({ ...newItem, nit: e.target.value })} /></div>
+                <div className="form-group full-width"><label>Descripción / Observaciones</label><textarea value={newItem.description} onChange={e => setNewItem({ ...newItem, description: e.target.value })} placeholder="Detalles adicionales del elemento..." rows={3} /></div>
               </div>
               <div className="form-actions">
                 <button type="button" className="btn-cancel" onClick={() => { stopCamera(); setShowAddModal(false); }}>Cancelar</button>

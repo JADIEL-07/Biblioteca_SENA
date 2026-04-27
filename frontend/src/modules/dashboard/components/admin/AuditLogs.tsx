@@ -30,6 +30,7 @@ export const AuditLogs: React.FC = () => {
   const [endDate, setEndDate] = useState('');
   const [actionType, setActionType] = useState('ALL');
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -212,7 +213,7 @@ export const AuditLogs: React.FC = () => {
                     <div className="user-info-cell">
                       <span className="u-name">{log.user || 'SISTEMA'}</span>
                       <span className="u-role">{log.user_role || 'SISTEMA'}</span>
-                      <span className="u-email">{log.user_email || 'automated-task'}</span>
+                      <span className="u-id-label">ID: {log.user_id || '—'}</span>
                     </div>
                   </td>
                   <td>
@@ -222,8 +223,24 @@ export const AuditLogs: React.FC = () => {
                   </td>
                   <td className="col-entity">
                     <div className="entity-info-cell">
-                      <strong>{log.entity_name || log.entity}</strong>
-                      <small>{log.entity.toUpperCase()} (ID: {log.entity_id})</small>
+                      {(!log.entity || log.entity === '—') ? (
+                        <span className="entity-main-name">Null</span>
+                      ) : (
+                        <>
+                          <span className="entity-main-name">{log.entity_name || log.entity}</span>
+                          <div className="entity-sub-info">
+                            <span className="entity-type-badge">{
+                              log.entity === 'items' ? 'Inventario' :
+                              log.entity === 'users' ? 'Usuario' :
+                              log.entity === 'loans' ? 'Préstamo' :
+                              log.entity === 'reservations' ? 'Reserva' :
+                              log.entity === 'maintenance' ? 'Mantenimiento' :
+                              log.entity.toUpperCase()
+                            }</span>
+                            <span className="entity-id-tag">ID: {log.entity_id || 'Null'}</span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </td>
                   <td className="col-ip">

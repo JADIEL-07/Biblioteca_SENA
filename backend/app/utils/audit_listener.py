@@ -175,6 +175,11 @@ def do_manual_log(connection, target, action):
         data = {c.name: ("[PROTEGIDO]" if 'password' in c.name.lower() else str(getattr(target, c.name))) for c in target.__table__.columns}
         details = json.dumps(data, ensure_ascii=False)
 
+    # Intentar obtener el nombre representativo del objeto (name, nombre, etc)
+    entity_name = getattr(target, 'name', getattr(target, 'nombre', None))
+    if not entity_name and entity == 'loans':
+        entity_name = f"Préstamo de {getattr(target.user, 'name', 'Usuario')}" if getattr(target, 'user', None) else "Préstamo"
+
     from datetime import datetime
     connection.execute(
         AuditLog.__table__.insert(),
@@ -183,6 +188,7 @@ def do_manual_log(connection, target, action):
             "action": action,
             "entity": entity,
             "entity_id": str(entity_id) if entity_id else None,
+            "entity_name": str(entity_name) if entity_name else None,
             "ip": get_remote_address(),
             "user_agent": get_user_agent(),
             "details": details,

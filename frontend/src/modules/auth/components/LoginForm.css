@@ -1,3 +1,14 @@
+:root {
+  --bg-dark: #0f172a;
+  --glass-bg: rgba(15, 23, 42, 0.85);
+  --glass-border: rgba(57, 169, 0, 0.2);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --sena-green: #39A900;
+  --sena-green-rgb: 57, 169, 0;
+  --sena-green-hover: #2e8800;
+}
+
 .login-wrapper {
   display: flex;
   min-height: 100vh;
@@ -49,11 +60,11 @@
 
 .clean-form {
   width: 100%;
-  max-width: 380px;
+  max-width: 440px;
   background: var(--glass-bg, rgba(15, 23, 42, 0.85));
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.15));
+  border: 1px solid rgba(57, 169, 0, 0.2);
   padding: 2.8rem;
   border-radius: 32px;
   box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
@@ -61,6 +72,11 @@
   overflow: visible; /* Permitir que sombras internas respiren */
   display: flex;
   flex-direction: column;
+  transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clean-form.register-mode {
+  max-width: 520px;
 }
 
 .theme-light .clean-form {
@@ -125,12 +141,13 @@
   display: flex;
   align-items: center;
   height: 52px;
-  background: var(--bg-dark, #0f172a) !important;
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
+  background: var(--bg-dark) !important;
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
   overflow: hidden;
+  background-clip: padding-box; /* Previene fugas de color en esquinas */
 }
 
 .theme-light .input-field-wrapper {
@@ -139,7 +156,8 @@
 }
 
 .input-field-wrapper:hover {
-  background: #1e293b;
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(57, 169, 0, 0.4);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -185,10 +203,18 @@
   background: transparent !important;
   border: none !important;
   outline: none !important;
-  color: var(--text-main, #ffffff);
+  box-shadow: none !important;
+  color: var(--text-main);
   font-size: 1rem;
   font-family: inherit;
   caret-color: var(--sena-green);
+  -webkit-appearance: none;
+}
+
+.clean-input:focus, 
+.clean-input:active {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .password-input {
@@ -297,7 +323,9 @@ input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 1000px var(--bg-dark) inset !important;
     -webkit-text-fill-color: var(--text-main) !important;
-    transition: none !important; /* Sin transiciones para evitar saltos de color */
+    caret-color: var(--sena-green) !important;
+    border: none !important;
+    transition: background-color 5000s ease-in-out 0s;
 }
 
 .theme-light input:-webkit-autofill,
@@ -337,8 +365,13 @@ input:-webkit-autofill:active {
 
 .submit-btn:hover {
   background-color: var(--sena-green-hover);
-  transform: scale(1.04);
-  box-shadow: 0 8px 15px rgba(57, 169, 0, 0.3);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 25px rgba(57, 169, 0, 0.4);
+  filter: brightness(1.1);
+}
+
+.submit-btn:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .back-btn {
@@ -424,8 +457,50 @@ input:-webkit-autofill:active {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* REGISTRATION FORM EXTENSIONS */
+.form-row-register {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.clean-select {
+  width: 100%;
+  height: 52px;
+  background: var(--bg-dark, #0f172a) !important;
+  border: 1px solid rgba(57, 169, 0, 0.2);
+  border-radius: 12px;
+  color: var(--text-main, #ffffff);
+  padding: 0 1rem;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.clean-select:hover {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border-color: rgba(57, 169, 0, 0.4);
+}
+
+.clean-select:focus {
+  border-color: var(--sena-green);
+  box-shadow: 0 0 0 3px rgba(57, 169, 0, 0.15);
+}
+
+.theme-light .clean-select {
+  background: #ffffff !important;
+  border: 1px solid rgba(57, 169, 0, 0.3);
+  color: #0f172a;
+}
+
 @media (max-width: 640px) {
   .clean-form {
     padding: 2.5rem 1.5rem;
+  }
+  .form-row-register {
+    flex-direction: column;
+    gap: 0;
   }
 }

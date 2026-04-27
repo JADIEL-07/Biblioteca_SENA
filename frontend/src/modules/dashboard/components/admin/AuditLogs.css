@@ -227,7 +227,50 @@
 .user-info-cell { display: flex; flex-direction: column; gap: 0.2rem; }
 .user-info-cell .u-name { font-weight: 700; font-size: 0.95rem; }
 .user-info-cell .u-role { font-size: 0.7rem; color: var(--sena-green); font-weight: 800; text-transform: uppercase; }
-.user-info-cell .u-email { font-size: 0.75rem; color: var(--admin-text-muted); }
+.user-info-cell .u-id-label { 
+  font-size: 0.75rem; 
+  color: var(--admin-text-muted); 
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(255,255,255,0.05);
+  padding: 1px 4px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.entity-info-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.entity-main-name {
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  font-size: 0.95rem;
+}
+
+.entity-sub-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.entity-type-badge {
+  background: rgba(var(--sena-green-rgb), 0.1);
+  color: var(--sena-green);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  border: 1px solid rgba(var(--sena-green-rgb), 0.2);
+}
+
+.entity-id-tag {
+  font-size: 0.7rem;
+  color: var(--admin-text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
 
 .date-cell { display: flex; flex-direction: column; }
 .date-cell strong { font-size: 0.9rem; }

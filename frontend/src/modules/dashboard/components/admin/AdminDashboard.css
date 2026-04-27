@@ -15,6 +15,8 @@
   --admin-item-hover: rgba(255, 255, 255, 0.05);
   --admin-toggle-bg: #1e293b;
   --admin-toggle-text: #ffffff;
+  --admin-profile-edit-bg: #1e293b;
+  --admin-profile-edit-text: #ffffff;
   --admin-bg: var(--admin-bg-main);
 }
 
@@ -31,6 +33,8 @@
   --admin-item-hover: #F1F5F9;
   --admin-toggle-bg: #F1F5F9;
   --admin-toggle-text: #0f172a;
+  --admin-profile-edit-bg: #dcfce7;
+  --admin-profile-edit-text: #166534;
   --admin-bg: var(--admin-bg-main);
 }
 

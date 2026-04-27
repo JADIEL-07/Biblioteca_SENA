@@ -348,10 +348,13 @@
     background: var(--admin-bg-card);
     width: 90%;
     max-width: 750px;
+    max-height: 90vh; /* Altura máxima para evitar que se salga de la pantalla */
     border-radius: 24px;
     border: 1px solid var(--admin-border-color);
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
     animation: modalScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -389,7 +392,26 @@
 
 .btn-close:hover { color: #ef4444; }
 
-.inv-form { padding: 2.5rem; }
+.inv-form { 
+    padding: 2.5rem; 
+    overflow-y: auto; 
+    flex: 1;
+}
+
+/* Scrollbar personalizada para el formulario */
+.inv-form::-webkit-scrollbar {
+    width: 6px;
+}
+.inv-form::-webkit-scrollbar-track {
+    background: transparent;
+}
+.inv-form::-webkit-scrollbar-thumb {
+    background: rgba(var(--sena-green-rgb), 0.2);
+    border-radius: 10px;
+}
+.inv-form::-webkit-scrollbar-thumb:hover {
+    background: var(--sena-green);
+}
 
 .form-grid {
     display: grid;
@@ -426,6 +448,16 @@
 .form-group input:focus, .form-group select:focus {
     border-color: var(--sena-green);
     background: rgba(var(--sena-green-rgb), 0.05);
+}
+
+/* Ocultar flechas (spinners) en inputs numéricos */
+.form-group input[type="number"]::-webkit-inner-spin-button,
+.form-group input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.form-group input[type="number"] {
+    -moz-appearance: textfield; /* Para Firefox */
 }
 
 .form-actions {
@@ -487,6 +519,82 @@
     object-fit: cover;
     border-radius: 12px;
     border: 3px solid var(--admin-border-color);
+}
+
+.camera-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    z-index: 10;
+}
+
+.btn-capture {
+    background: var(--sena-green);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(57, 169, 0, 0.4);
+    transition: all 0.2s;
+}
+
+.btn-capture:hover {
+    transform: scale(1.05);
+    background: var(--sena-green-hover);
+}
+
+.btn-cancel-cam {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel-cam:hover {
+    background: #ef4444;
+}
+
+.photo-actions {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.photo-actions input {
+    width: 100%;
+}
+
+.btn-action-cam {
+    background: rgba(var(--sena-green-rgb), 0.1);
+    color: var(--sena-green);
+    border: 1px solid var(--sena-green);
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-action-cam:hover {
+    background: var(--sena-green);
+    color: white;
 }
 
 /* QR Modal */

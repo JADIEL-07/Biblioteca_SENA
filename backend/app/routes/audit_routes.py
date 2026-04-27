@@ -79,9 +79,10 @@ def get_audit_logs():
             except Exception:
                 user_obj = None
 
-        # Resolver nombre de la entidad afectada
-        entity_name = ""
-        if log.entity_id:
+        # Resolver nombre de la entidad afectada (Priorizar el nombre guardado en el log)
+        entity_name = log.entity_name
+        
+        if not entity_name and log.entity_id:
             try:
                 e_id_str = str(log.entity_id)
                 if log.entity == 'users':
