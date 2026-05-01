@@ -38,6 +38,68 @@
   --admin-bg: var(--admin-bg-main);
 }
 
+/* Inputs y selects nativos con soporte de tema */
+.dashboard-layout.admin-specific input,
+.dashboard-layout.admin-specific select,
+.dashboard-layout.admin-specific textarea {
+  color-scheme: inherit;
+}
+
+.dashboard-layout.admin-specific.theme-dark input,
+.dashboard-layout.admin-specific.theme-dark select,
+.dashboard-layout.admin-specific.theme-dark textarea {
+  color-scheme: dark;
+}
+
+.dashboard-layout.admin-specific.theme-dark select option {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+.dashboard-layout.admin-specific.theme-light input,
+.dashboard-layout.admin-specific.theme-light select,
+.dashboard-layout.admin-specific.theme-light textarea {
+  color-scheme: light;
+}
+
+.dashboard-layout.admin-specific.theme-light select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+/* Placeholder en ambos temas */
+.dashboard-layout.admin-specific.theme-dark input::placeholder,
+.dashboard-layout.admin-specific.theme-dark textarea::placeholder {
+  color: #64748b;
+}
+
+.dashboard-layout.admin-specific.theme-light input::placeholder,
+.dashboard-layout.admin-specific.theme-light textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* Tabla horizontal siempre — wrapper con scroll */
+.dashboard-layout.admin-specific .loan-table-wrapper,
+.dashboard-layout.admin-specific .users-table-wrapper,
+.dashboard-layout.admin-specific .inventory-table-container,
+.dashboard-layout.admin-specific .audit-table-wrapper,
+.dashboard-layout.admin-specific .output-table-wrapper,
+.dashboard-layout.admin-specific .maintenance-table-wrapper,
+.dashboard-layout.admin-specific .reservation-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dashboard-layout.admin-specific .loan-table,
+.dashboard-layout.admin-specific .users-table,
+.dashboard-layout.admin-specific .inventory-table,
+.dashboard-layout.admin-specific .audit-table,
+.dashboard-layout.admin-specific .output-table,
+.dashboard-layout.admin-specific .maintenance-table,
+.dashboard-layout.admin-specific .reservation-table {
+  min-width: 700px;
+}
+
 .dashboard-layout.admin-specific {
   display: flex;
   height: 100vh;

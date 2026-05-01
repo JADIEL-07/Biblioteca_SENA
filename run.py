@@ -1,66 +1,79 @@
-import subprocess
 import os
 import sys
-import signal
-import time
+import subprocess
 
-def run_servers():
-    root_dir = os.path.dirname(os.path.abspath(__file__))
-    backend_dir = os.path.join(root_dir, 'backend')
-    frontend_dir = os.path.join(root_dir, 'frontend')
+from app import create_app, db
+from app.models.user import User, Role, FormationProgram
+from app.models.item import Item, Category, Location, Status, Supplier
+from app.models.loan import Loan, LoanDetail
+from app.models.reservation import Reservation
+from app.models.maintenance import Maintenance
+from app.models.movement import Movement, Notification
+from app.models.item_output import ItemOutput
 
-    print("Iniciando Sistema Integral Biblioteca SENA...")
+app = create_app()
 
-    # 1. Iniciar Backend
-    print("Iniciando Backend (Flask)...")
-    # NOTA: Antes ejecutaba 'python -m app.main'. Tras la migración de estructura,
-    # el entrypoint oficial es 'backend/run.py'. La forma anterior sigue funcionando
-    # porque app/main.py se conserva (deprecated), pero usamos run.py por convención.
-    backend_proc = subprocess.Popen(
-        ['python', 'run.py'],
-        cwd=backend_dir,
-        shell=True
-    )
+@app.cli.command("init-db")
+def init_db():
+    """Inicializa la base de datos y crea los roles básicos."""
+    db.create_all()
+    seed_basic_roles()
+    print("Base de datos inicializada correctamente.")
 
-    # 2. Iniciar Frontend
+def seed_basic_roles():
+    if not Role.query.first():
+        roles = [
+            'ADMIN',
+            'BIBLIOTECARIO',
+            'ALMACENISTA',
+            'SOPORTE_TECNICO',
+            'EMPRESA',
+            'APRENDIZ',
+            'USUARIO'
+        ]
+        for r_name in roles:
+            db.session.add(Role(name=r_name))
+        db.session.commit()
+        print("Roles básicos creados.")
+
+    if not FormationProgram.query.first():
+        db.session.add(FormationProgram(id='2672153', name='ADSO'))
+        db.session.commit()
+        print("Programa de formación por defecto creado.")
+
+if __name__ == "__main__":
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static')
+
     print("Iniciando Frontend (Vite)...")
     frontend_proc = subprocess.Popen(
         ['npm', 'run', 'dev'],
-        cwd=frontend_dir,
+        cwd=static_dir,
         shell=True
     )
 
-    print("\n" + "="*50)
-    print("SISTEMA INTEGRAL BIBLIOTECA - DASHBOARD ACTIVO")
-    print("="*50)
-    print(f"DASHBOARD ACTUALIZADO: http://localhost:5173")
-    print(f"ACCESO LOCAL:         http://localhost:5173")
-    print("-"*50)
-    print("NOTA: El puerto 5000 es SOLO para la API interna.")
-    print("No lo uses para ver el dashboard, ya que estará desactualizado.")
-    print("="*50 + "\n")
-    print("\n[Presiona Ctrl+C para detener ambos servidores]\n")
+    print("\n" + "=" * 50)
+    print("  SISTEMA INTEGRAL BIBLIOTECA SENA")
+    print("=" * 50)
+    print(f"  Frontend:  http://localhost:5173")
+    print(f"  API:       http://localhost:5000/api/v1")
+    print("-" * 50)
+    print("  Presiona Ctrl+C para detener todo")
+    print("=" * 50 + "\n")
 
     try:
-        while True:
-            time.sleep(1)
-            # Verificar si algún proceso murió
-            if backend_proc.poll() is not None:
-                print("Error: El proceso del Backend se detuvo.")
-                break
-            if frontend_proc.poll() is not None:
-                print("Error: El proceso del Frontend se detuvo.")
-                break
-    except KeyboardInterrupt:
-        print("\nDeteniendo servidores...")
-        # Matar procesos hijos en Windows
+        with app.app_context():
+            db.create_all()
+            seed_basic_roles()
+
+        is_dev = os.environ.get('FLASK_ENV', 'development') == 'development'
+        app.run(host="0.0.0.0", port=5000, debug=is_dev)
+    finally:
+        print("\nDeteniendo Frontend...")
         if sys.platform == "win32":
-            subprocess.run(['taskkill', '/F', '/T', '/PID', str(backend_proc.pid)], capture_output=True)
-            subprocess.run(['taskkill', '/F', '/T', '/PID', str(frontend_proc.pid)], capture_output=True)
+            subprocess.run(
+                ['taskkill', '/F', '/T', '/PID', str(frontend_proc.pid)],
+                capture_output=True
+            )
         else:
-            backend_proc.terminate()
             frontend_proc.terminate()
         print("Sistema cerrado correctamente.")
-
-if __name__ == "__main__":
-    run_servers()

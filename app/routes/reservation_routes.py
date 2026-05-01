@@ -85,7 +85,7 @@ def get_reservation_stats():
     # Usuarios top
     top_users_query = db.session.query(
         User.name, func.count(Reservation.id).label('count')
-    ).join(Reservation).group_by(User.id).order_by(text('count DESC')).limit(5).all()
+    ).join(Reservation, User.id == Reservation.user_id).group_by(User.id).order_by(text('count DESC')).limit(5).all()
     
     top_users = [{"name": u[0], "count": u[1]} for u in top_users_query]
     

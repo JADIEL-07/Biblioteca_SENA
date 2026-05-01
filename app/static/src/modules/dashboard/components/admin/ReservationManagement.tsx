@@ -69,9 +69,9 @@ export const ReservationManagement: React.FC = () => {
         }).then(r => r.json())
       ]);
 
-      setReservations(resData);
-      setMetrics(statsData.metrics);
-      setIndicators(statsData.indicators);
+      setReservations(Array.isArray(resData) ? resData : []);
+      if (statsData.metrics) setMetrics(statsData.metrics);
+      if (statsData.indicators) setIndicators(statsData.indicators);
     } catch (error) {
       console.error('Error fetching reservations:', error);
     } finally {

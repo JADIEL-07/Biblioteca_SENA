@@ -1,4 +1,4 @@
-from .config import get_config
+from config import get_config
 from .extensions import db, ma, migrate, jwt, mail, limiter
 
 from flask import Flask, request, jsonify
@@ -8,8 +8,8 @@ def create_app():
     config = get_config()
     app = Flask(
         __name__,
-        template_folder='../../frontend/dist',
-        static_folder='../../frontend/dist',
+        template_folder='static/dist',
+        static_folder='static/dist',
         static_url_path=''
     )
     app.config.from_object(config)
@@ -84,6 +84,18 @@ def create_app():
     @app.errorhandler(429)
     def handle_rate_limit(e):
         return jsonify({"message": "Too many requests"}), 429
+
+    @app.errorhandler(500)
+    def handle_500(e):
+        return jsonify({"error": "Internal server error", "detail": str(e)}), 500
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        import traceback
+        print("EXCEPCION NO CAPTURADA:", traceback.format_exc())
+        if request.path.startswith('/api/'):
+            return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Unexpected error"}), 500
 
     @app.route('/')
     def index():
