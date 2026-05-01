@@ -1,4 +1,4 @@
-from .config import get_config
+from config import get_config
 from .extensions import db, ma, migrate, jwt, mail, limiter
 
 from flask import Flask, request, jsonify
@@ -8,8 +8,8 @@ def create_app():
     config = get_config()
     app = Flask(
         __name__,
-        template_folder='../../frontend/dist',
-        static_folder='../../frontend/dist',
+        template_folder='static/dist',
+        static_folder='static/dist',
         static_url_path=''
     )
     app.config.from_object(config)

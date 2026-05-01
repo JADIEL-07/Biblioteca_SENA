@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\\\Users\\\\JADIEL\\\\Desktop\\\\Proyecto_FINAL\\\\.claude\\\\worktrees\\\\gallant-murdock-e92267\")",
+      "Bash(gh pr *)",
+      "PowerShell(gh pr list --head claude/gallant-murdock-e92267 2>&1)",
+      "Bash(python -c ' *)",
+      "Bash(git mv *)"
+    ]
+  }
+}
