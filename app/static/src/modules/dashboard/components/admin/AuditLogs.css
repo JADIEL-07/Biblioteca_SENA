@@ -177,7 +177,8 @@
     background: var(--admin-bg-card);
     border-radius: 16px;
     border: 1px solid var(--admin-border-color);
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
@@ -278,22 +279,23 @@
 
 .ip-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--admin-text-muted); }
 
-/* Responsividad */
+/* Responsividad — compact sin ocultar columnas */
 @media (max-width: 1024px) {
-    .col-ip, .col-id { display: none; }
+    .audit-filters .filter-row { flex-wrap: wrap; gap: 1rem; }
+    .filter-item { min-width: 140px; }
 }
 
 @media (max-width: 768px) {
-    .col-entity, .col-date small { display: none; }
-    .audit-filters .filter-row { flex-direction: column; align-items: stretch; }
-    .filter-item { min-width: 100%; }
+    .audit-management { padding: 1rem; }
     .header-title h1 { font-size: 1.4rem; }
-    .audit-table td, .audit-table th { padding: 0.8rem 0.5rem; font-size: 0.8rem; }
+    .audit-filters { padding: 1rem; }
+    .audit-table td, .audit-table th { padding: 0.75rem 0.6rem; font-size: 0.82rem; }
 }
 
-@media (max-width: 480px) {
-    .btn-refresh-audit span { display: none; }
-    .btn-refresh-audit { width: 50px; padding: 0; min-width: 50px; }
+@media (max-width: 540px) {
+    .audit-management { padding: 0.75rem; }
+    .audit-table td, .audit-table th { padding: 0.6rem 0.5rem; font-size: 0.78rem; }
+    .btn-refresh-audit span { font-size: 0.8rem; }
 }
 
 .btn-detail {

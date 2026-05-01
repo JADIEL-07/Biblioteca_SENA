@@ -85,6 +85,18 @@ def create_app():
     def handle_rate_limit(e):
         return jsonify({"message": "Too many requests"}), 429
 
+    @app.errorhandler(500)
+    def handle_500(e):
+        return jsonify({"error": "Internal server error", "detail": str(e)}), 500
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        import traceback
+        print("EXCEPCION NO CAPTURADA:", traceback.format_exc())
+        if request.path.startswith('/api/'):
+            return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Unexpected error"}), 500
+
     @app.route('/')
     def index():
         return app.send_static_file('index.html')
