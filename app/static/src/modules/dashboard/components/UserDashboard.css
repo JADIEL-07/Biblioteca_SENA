@@ -79,8 +79,27 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Eliminamos el botón toggle del topnav */
-.sidebar-toggle-btn {
+/* Botón toggle del sidebar en topnav — oculto en desktop */
+.topnav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.topnav-hamburger:hover,
+.topnav-hamburger.open {
+  background: var(--bg-card-light);
+}
+
+.sidebar-backdrop {
   display: none;
 }
 
@@ -888,19 +907,105 @@
 }
 
 @media (max-width: 768px) {
+  /* Topnav */
+  .dashboard-topnav {
+    padding: 0 1rem;
+    gap: 0.75rem;
+  }
+
+  .topnav-hamburger {
+    display: flex;
+  }
+
+  .topnav-logo span {
+    font-size: 0.8rem;
+    max-width: 160px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .topnav-links.hidden-mobile {
+    display: none;
+  }
+
+  /* Sidebar deslizante */
   .dashboard-sidebar {
     position: fixed;
-    left: -100%;
+    left: -280px;
+    top: 70px;
     height: calc(100vh - 70px);
-    z-index: 40;
-    transition: left 0.3s;
+    width: 240px !important;
+    z-index: 50;
+    transition: left 0.3s ease;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
   }
 
   .dashboard-sidebar.open {
     left: 0;
   }
 
-  .topnav-links.hidden-mobile {
+  /* Backdrop oscuro */
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: 70px;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 45;
+    backdrop-filter: blur(2px);
+    animation: fadeBackdrop 0.2s ease;
+  }
+
+  /* Main content ocupa todo el ancho */
+  .dashboard-main-content {
+    padding: 1rem;
+    max-height: calc(100vh - 70px);
+  }
+
+  /* Summary grid */
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Hero banner */
+  .hero-banner-img {
     display: none;
   }
+
+  .hero-banner-text {
+    padding: 1.5rem;
+  }
+
+  .hero-banner-text h1 {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .topnav-logo span {
+    display: none;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+
+  .summary-card {
+    padding: 0.9rem;
+  }
+
+  .summary-value {
+    font-size: 1.2rem;
+  }
+
+  .featured-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes fadeBackdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

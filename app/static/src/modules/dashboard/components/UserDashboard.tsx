@@ -32,6 +32,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>(initialSection);
   const [theme, setTheme] = useState<'dark' | 'light'>(
     (localStorage.getItem('dashboard-theme') as 'dark' | 'light') ?? 'dark'
@@ -83,6 +84,15 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
     <div className={`dashboard-layout theme-${theme}`}>
       {/* TOP NAVIGATION */}
       <nav className="dashboard-topnav">
+        {/* Hamburger — solo en móvil */}
+        <button
+          className={`topnav-hamburger ${mobileSidebarOpen ? 'open' : ''}`}
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          aria-label="Abrir menú"
+        >
+          {mobileSidebarOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+        </button>
+
         <div className="topnav-logo">
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/8/83/Sena_Colombia_logo.svg"
@@ -122,15 +132,21 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
 
       {/* BODY (SIDEBAR + MAIN CONTENT) */}
       <div className="dashboard-body">
-        <DashboardSidebar 
-          activeSection={activeSection} 
-          onNavigate={setActiveSection} 
+        {/* Backdrop para cerrar sidebar en móvil */}
+        {mobileSidebarOpen && (
+          <div className="sidebar-backdrop" onClick={() => setMobileSidebarOpen(false)} />
+        )}
+
+        <DashboardSidebar
+          activeSection={activeSection}
+          onNavigate={(section) => { setActiveSection(section); setMobileSidebarOpen(false); }}
           isGuest={isGuest}
           isPendingUser={isPendingUser}
           user={user}
           onLogout={onLogout}
           isCollapsed={isSidebarCollapsed}
           onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          isOpen={mobileSidebarOpen}
         />
         
         <main className="dashboard-main-content">

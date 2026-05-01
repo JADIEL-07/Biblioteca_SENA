@@ -45,6 +45,8 @@ function App() {
   const [dashboardSection, setDashboardSection] = useState('home');
   const [menuOpenLanding, setMenuOpenLanding] = useState(false);
   const menuRefLanding = useRef<HTMLDivElement>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileNavRef = useRef<HTMLDivElement>(null);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(
     (localStorage.getItem('dashboard-theme') as 'dark' | 'light') ?? 'dark'
@@ -73,10 +75,18 @@ function App() {
       if (menuRefLanding.current && !menuRefLanding.current.contains(e.target as Node)) {
         setMenuOpenLanding(false);
       }
+      if (mobileNavRef.current && !mobileNavRef.current.contains(e.target as Node)) {
+        setMobileNavOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // Cerrar menú móvil cuando cambia la vista
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [authMode]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -133,21 +143,31 @@ function App() {
     <div className={`home-wrapper ${theme === 'light' ? 'theme-light' : 'theme-dark'}`}>
 
       {/* Navegación Superior Persistente */}
-      <nav className={`main-nav ${authMode === 'login' || authMode === 'register' ? 'no-glass' : ''}`}>
+      <nav className={`main-nav ${authMode === 'login' || authMode === 'register' ? 'no-glass' : ''}`} ref={mobileNavRef}>
         <div className="nav-logo">
           <div className="mini-logo-box">
             <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Sena_Colombia_logo.svg" alt="SENA Logo" />
           </div>
           <span>BIBLIOTECA & ALMACÉN SENA</span>
         </div>
-        <div className="nav-links">
-          <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode(null); setIsDashboardActive(false); }}>
+
+        {/* Botón hamburger — solo visible en móvil */}
+        <button
+          className={`nav-hamburger ${mobileNavOpen ? 'open' : ''}`}
+          onClick={() => setMobileNavOpen(!mobileNavOpen)}
+          aria-label="Abrir menú"
+        >
+          {mobileNavOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+        </button>
+
+        <div className={`nav-links ${mobileNavOpen ? 'mobile-open' : ''}`}>
+          <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode(null); setIsDashboardActive(false); setMobileNavOpen(false); }}>
             <FiHome className="nav-icon" /> INICIO
           </a>
-          <a href="#contact">
+          <a href="#contact" onClick={() => setMobileNavOpen(false)}>
             <FiMail className="nav-icon" /> CONTACTO
           </a>
-          <a href="#help">
+          <a href="#help" onClick={() => setMobileNavOpen(false)}>
             <FiHelpCircle className="nav-icon" /> AYUDA
           </a>
 
@@ -194,10 +214,10 @@ function App() {
             </div>
           ) : (
             <>
-              <a href="#" className="nav-link-login" onClick={(e) => { e.preventDefault(); setAuthMode('login'); }}>
+              <a href="#" className="nav-link-login" onClick={(e) => { e.preventDefault(); setAuthMode('login'); setMobileNavOpen(false); }}>
                 <FiUser className="nav-icon" /> INICIAR SESIÓN
               </a>
-              <a href="#" className="btn-create-account" onClick={(e) => { e.preventDefault(); setAuthMode('register'); }}>
+              <a href="#" className="btn-create-account" onClick={(e) => { e.preventDefault(); setAuthMode('register'); setMobileNavOpen(false); }}>
                 <FiUserPlus className="nav-icon" /> CREAR CUENTA
               </a>
             </>
