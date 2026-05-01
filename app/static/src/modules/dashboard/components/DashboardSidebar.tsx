@@ -21,19 +21,17 @@ interface SidebarProps {
   onLogout: () => void;
   isCollapsed?: boolean;
   onToggle?: () => void;
-  isOpen?: boolean;
 }
 
-export const DashboardSidebar: React.FC<SidebarProps> = ({
-  activeSection,
-  onNavigate,
+export const DashboardSidebar: React.FC<SidebarProps> = ({ 
+  activeSection, 
+  onNavigate, 
   isGuest,
   isPendingUser,
   user,
   onLogout,
   isCollapsed = false,
-  onToggle,
-  isOpen = false,
+  onToggle
 }) => {
   const menuItems = [
     { id: 'home', label: 'Inicio', icon: <FiHome /> },
@@ -69,7 +67,7 @@ export const DashboardSidebar: React.FC<SidebarProps> = ({
   const roleDisplay = isGuest ? 'Invitado' : (currentRoleName === 'ADMIN' ? 'Administrador' : (currentRoleName === 'APRENDIZ' ? 'Aprendiz' : 'Usuario'));
 
   return (
-    <aside className={`dashboard-sidebar ${isCollapsed ? 'collapsed' : ''} ${isOpen ? 'open' : ''}`}>
+    <aside className={`dashboard-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-toggle-container">
         <button 
           className="sidebar-toggle-box" 
