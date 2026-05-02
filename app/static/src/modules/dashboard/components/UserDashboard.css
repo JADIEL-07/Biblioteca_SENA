@@ -869,10 +869,47 @@
   font-size: 1.2rem;
 }
 
-/* ── RESPONSIVE ── */
-/* Media queries */
-@media (max-width: 1200px) {}
+/* ── MOBILE TOGGLE (oculto en desktop) ── */
+.topnav-mobile-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: all 0.2s ease;
+}
 
+.topnav-mobile-toggle:hover {
+  background: var(--sena-green-light);
+  color: var(--sena-green);
+  border-color: var(--sena-green);
+}
+
+/* Backdrop para sidebar móvil */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 39;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   .summary-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -888,19 +925,150 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-sidebar {
-    position: fixed;
-    left: -100%;
-    height: calc(100vh - 70px);
-    z-index: 40;
-    transition: left 0.3s;
+  .dashboard-topnav {
+    padding: 0 1rem;
   }
 
-  .dashboard-sidebar.open {
-    left: 0;
+  .topnav-mobile-toggle {
+    display: flex;
+  }
+
+  .topnav-logo span {
+    font-size: 0.8rem;
+    max-width: 180px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .topnav-right {
+    gap: 0.75rem;
   }
 
   .topnav-links.hidden-mobile {
     display: none;
+  }
+
+  /* Sidebar como drawer */
+  .dashboard-sidebar,
+  .admin-sidebar {
+    position: fixed;
+    top: 70px;
+    left: -110%;
+    height: calc(100vh - 70px);
+    width: 260px !important;
+    max-width: 80vw;
+    z-index: 40;
+    transition: left 0.3s ease;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+  }
+
+  .dashboard-sidebar.mobile-open,
+  .admin-sidebar.mobile-open {
+    left: 0;
+  }
+
+  /* En móvil, ignorar collapse y mostrar siempre labels */
+  .dashboard-sidebar.collapsed,
+  .admin-sidebar.collapsed {
+    width: 260px !important;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+  }
+
+  /* Quitar el botón colapsar del sidebar en móvil */
+  .sidebar-toggle-container,
+  .admin-sidebar-header {
+    display: none;
+  }
+
+  /* Main content sin offset del sidebar */
+  .dashboard-body {
+    flex-direction: column;
+  }
+
+  .dashboard-main-content {
+    width: 100%;
+    padding: 1rem !important;
+  }
+
+  /* Section header tighter */
+  .section-header h1 {
+    font-size: 1.2rem !important;
+  }
+
+  /* Search bar full width */
+  .search-bar,
+  .search-bar-container,
+  .dashboard-search {
+    width: 100% !important;
+    flex: 1 !important;
+  }
+
+  .search-bar input,
+  .search-input {
+    width: 100% !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  /* Hero banner compact */
+  .welcome-hero-banner {
+    padding: 1.5rem 1.25rem !important;
+    margin-top: 1rem !important;
+    min-height: auto !important;
+    flex-direction: column;
+    align-items: flex-start !important;
+    text-align: left;
+  }
+
+  .welcome-hero-banner h1,
+  .welcome-hero-banner h2 {
+    font-size: 1.4rem !important;
+    line-height: 1.2;
+  }
+
+  .welcome-hero-banner p {
+    font-size: 0.9rem !important;
+  }
+
+  .hero-banner-text {
+    width: 100%;
+  }
+
+  /* Tablas con scroll horizontal */
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 540px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .topnav-logo span {
+    display: none;
+  }
+
+  .topnav-logo-img {
+    height: 30px;
+  }
+
+  .welcome-hero-banner h1,
+  .welcome-hero-banner h2 {
+    font-size: 1.2rem !important;
+  }
+
+  .section-header h1 {
+    font-size: 1.05rem !important;
   }
 }

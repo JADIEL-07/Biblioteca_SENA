@@ -22,15 +22,17 @@ interface AdminSidebarProps {
   onLogout: () => void;
   isCollapsed?: boolean;
   onToggle?: () => void;
+  isMobileOpen?: boolean;
 }
 
-export const AdminSidebar: React.FC<AdminSidebarProps> = ({ 
-  activeSection, 
-  onNavigate, 
+export const AdminSidebar: React.FC<AdminSidebarProps> = ({
+  activeSection,
+  onNavigate,
   user,
   onLogout,
   isCollapsed = false,
-  onToggle
+  onToggle,
+  isMobileOpen = false
 }) => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
@@ -76,7 +78,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   };
 
   return (
-    <aside className={`admin-sidebar ${isCollapsed ? 'collapsed' : ''}`} style={{ maxHeight: '100vh' }}>
+    <aside className={`admin-sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`} style={{ maxHeight: '100vh' }}>
       <div className="admin-sidebar-header">
         <div style={{ display: 'flex', justifyContent: isCollapsed ? 'center' : 'flex-start', padding: isCollapsed ? '0.5rem 0' : '0.5rem 1rem 0.5rem 1rem' }}>
           <button 

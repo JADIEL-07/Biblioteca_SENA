@@ -14,6 +14,11 @@ frontend/dist/
 frontend/.eslintcache
 frontend/*.tsbuildinfo
 frontend/.env*
+app/static/node_modules/
+app/static/dist/
+app/static/.eslintcache
+app/static/*.tsbuildinfo
+app/static/.env*
 
 # ── BACKEND (Python / Flask) ──────────────────────
 **/__pycache__/

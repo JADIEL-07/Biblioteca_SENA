@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiHome, FiMail, FiHelpCircle } from 'react-icons/fi';
+import { FiHome, FiMail, FiHelpCircle, FiMenu, FiX } from 'react-icons/fi';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHome } from './AdminHome';
 import { UserConfig } from '../UserConfig';
@@ -34,6 +34,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
   const [activeSection, setActiveSection] = useState('dashboard');
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>(
     (localStorage.getItem('dashboard-theme') as 'dark' | 'light') ?? 'dark'
   );
@@ -52,6 +53,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
       setShowProfileModal(true);
     } else {
       setActiveSection(section);
+      setIsMobileSidebarOpen(false);
     }
   };
 
@@ -66,6 +68,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
     <div className={`dashboard-layout theme-${theme} admin-specific`}>
       {/* TOP NAVIGATION (Mismo diseño que el aprendiz) */}
       <nav className="dashboard-topnav">
+        <button
+          className="topnav-mobile-toggle"
+          onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+          aria-label={isMobileSidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-expanded={isMobileSidebarOpen}
+        >
+          {isMobileSidebarOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+        </button>
+
         <div className="topnav-logo">
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/8/83/Sena_Colombia_logo.svg"
@@ -99,13 +110,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
 
       {/* BODY (SIDEBAR + MAIN CONTENT) */}
       <div className="dashboard-body">
-        <AdminSidebar 
-          activeSection={activeSection} 
-          onNavigate={handleNavigate} 
+        {isMobileSidebarOpen && (
+          <div
+            className="sidebar-backdrop"
+            onClick={() => setIsMobileSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+        <AdminSidebar
+          activeSection={activeSection}
+          onNavigate={handleNavigate}
           user={user}
-          onLogout={onLogout} 
+          onLogout={onLogout}
           isCollapsed={isSidebarCollapsed}
           onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          isMobileOpen={isMobileSidebarOpen}
         />
         
         <main className="dashboard-main-content">
