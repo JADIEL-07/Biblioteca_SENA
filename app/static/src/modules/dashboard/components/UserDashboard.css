@@ -916,7 +916,12 @@
   }
 
   .hero-banner-img {
-    display: none;
+    width: 28%;
+  }
+
+  .hero-banner-img img {
+    height: 110%;
+    right: 0.5rem;
   }
 
   .hero-banner-text p {
@@ -1016,28 +1021,60 @@
     min-width: 0 !important;
   }
 
-  /* Hero banner compact */
-  .welcome-hero-banner {
-    padding: 1.5rem 1.25rem !important;
+  /* Hero banner compact (mantiene fila para conservar al chico SENA) */
+  .welcome-hero-banner,
+  .hero-banner-card {
+    padding: 1.25rem 0.85rem !important;
     margin-top: 1rem !important;
-    min-height: auto !important;
-    flex-direction: column;
-    align-items: flex-start !important;
-    text-align: left;
+    min-height: 170px !important;
+    align-items: center !important;
+    gap: 0.5rem;
+    overflow: hidden !important;
   }
 
   .welcome-hero-banner h1,
-  .welcome-hero-banner h2 {
-    font-size: 1.4rem !important;
+  .welcome-hero-banner h2,
+  .hero-banner-text h1,
+  .hero-banner-text h2 {
+    font-size: 1.25rem !important;
     line-height: 1.2;
   }
 
-  .welcome-hero-banner p {
-    font-size: 0.9rem !important;
+  .welcome-hero-banner p,
+  .hero-banner-text p {
+    font-size: 0.85rem !important;
+    max-width: 100% !important;
   }
 
   .hero-banner-text {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .hero-banner-text h1 {
+    font-size: 1.35rem !important;
+  }
+
+  .hero-banner-img {
+    width: 35% !important;
+    flex-shrink: 0;
+    align-self: stretch;
+    position: relative;
+  }
+
+  .hero-banner-img img {
+    height: 110% !important;
+    width: auto !important;
+    max-width: 100% !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+  }
+
+  .hero-explore-btn {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.85rem !important;
   }
 
   /* Tablas con scroll horizontal */
@@ -1063,9 +1100,35 @@
     height: 30px;
   }
 
+  .welcome-hero-banner,
+  .hero-banner-card {
+    min-height: 150px !important;
+    padding: 1rem 0.7rem !important;
+  }
+
   .welcome-hero-banner h1,
-  .welcome-hero-banner h2 {
-    font-size: 1.2rem !important;
+  .welcome-hero-banner h2,
+  .hero-banner-text h1,
+  .hero-banner-text h2 {
+    font-size: 1.1rem !important;
+  }
+
+  .welcome-hero-banner p,
+  .hero-banner-text p {
+    font-size: 0.78rem !important;
+  }
+
+  .hero-banner-img {
+    width: 38% !important;
+  }
+
+  .hero-banner-img img {
+    height: 100% !important;
+  }
+
+  .hero-explore-btn {
+    padding: 0.45rem 0.85rem !important;
+    font-size: 0.8rem !important;
   }
 
   .section-header h1 {

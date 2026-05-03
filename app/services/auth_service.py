@@ -128,6 +128,25 @@ class AuthService:
         return {"success": True, "message": "Password updated successfully"}, 200
 
     @staticmethod
+    def change_password(user_id, old_password, new_password):
+        """Cambia la contraseña del usuario autenticado tras validar la actual."""
+        user = User.query.filter_by(id=user_id, is_deleted=False).first()
+        if not user:
+            return {"error": "Usuario no encontrado"}, 404
+        if not bcrypt.checkpw(old_password.encode('utf-8'), user.password.encode('utf-8')):
+            AuthService._log_audit(user.id, "CHANGE_PASSWORD_FAILED", ip=request.remote_addr)
+            return {"error": "La contraseña actual es incorrecta"}, 401
+        if len(new_password) < 8:
+            return {"error": "La nueva contraseña debe tener al menos 8 caracteres"}, 400
+        if bcrypt.checkpw(new_password.encode('utf-8'), user.password.encode('utf-8')):
+            return {"error": "La nueva contraseña no puede ser igual a la actual"}, 400
+        user.password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        TokenService.revoke_all_user_tokens(user.id)
+        db.session.commit()
+        AuthService._log_audit(user.id, "CHANGE_PASSWORD_SUCCESS", ip=request.remote_addr)
+        return {"success": True, "message": "Contraseña actualizada correctamente"}, 200
+
+    @staticmethod
     def _log_audit(user_id, action, ip=None):
         """Professional audit logging."""
         log = AuditLog(

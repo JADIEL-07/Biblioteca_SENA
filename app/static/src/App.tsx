@@ -131,6 +131,7 @@ function App() {
         }}
         onLogin={() => setAuthMode('login')}
         onRegister={() => setAuthMode('register')}
+        onUserUpdate={isGuestMode ? undefined : handleUserUpdate}
         initialSection={dashboardSection}
       />
     );

@@ -76,3 +76,15 @@ def reset_password():
         return jsonify({"error": "Token and new password required"}), 400
     result, status = AuthService.reset_password(token, new_password)
     return jsonify(result), status
+
+@auth_bp.route('/change-password', methods=['POST'])
+@jwt_required()
+def change_password():
+    data = request.get_json()
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+    if not old_password or not new_password:
+        return jsonify({"error": "Contraseña actual y nueva son requeridas"}), 400
+    user_id = get_jwt_identity()
+    result, status = AuthService.change_password(user_id, old_password, new_password)
+    return jsonify(result), status

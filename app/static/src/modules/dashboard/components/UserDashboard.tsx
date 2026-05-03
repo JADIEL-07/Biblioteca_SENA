@@ -6,6 +6,7 @@ import './UserDashboard.css';
 import { DashboardSidebar } from './DashboardSidebar';
 import { DashboardHome } from './DashboardHome';
 import { UserConfig } from './UserConfig';
+import { ProfileOverlay } from './admin/ProfileOverlay';
 
 interface UserData {
   id: number;
@@ -24,15 +25,17 @@ interface UserDashboardProps {
   onGoToHome: () => void;
   onLogin?: () => void;
   onRegister?: () => void;
+  onUserUpdate?: (userData: any) => void;
   initialSection?: string;
 }
 
-export const UserDashboard: React.FC<UserDashboardProps> = ({ 
-  user, onLogout, onGoToHome, onLogin, onRegister, initialSection = 'home' 
+export const UserDashboard: React.FC<UserDashboardProps> = ({
+  user, onLogout, onGoToHome, onLogin, onRegister, onUserUpdate, initialSection = 'home'
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [activeSection, setActiveSection] = useState<string>(initialSection);
   const [theme, setTheme] = useState<'dark' | 'light'>(
     (localStorage.getItem('dashboard-theme') as 'dark' | 'light') ?? 'dark'
@@ -141,7 +144,14 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
         )}
         <DashboardSidebar
           activeSection={activeSection}
-          onNavigate={(s) => { setActiveSection(s); setIsMobileSidebarOpen(false); }}
+          onNavigate={(s) => {
+            if (s === 'profile') {
+              setShowProfileModal(true);
+              return;
+            }
+            setActiveSection(s);
+            setIsMobileSidebarOpen(false);
+          }}
           isGuest={isGuest}
           isPendingUser={isPendingUser}
           user={user}
@@ -171,6 +181,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
           )}
         </main>
       </div>
+      {showProfileModal && !isGuest && (
+        <ProfileOverlay
+          user={user as any}
+          onClose={() => setShowProfileModal(false)}
+          onSave={(photo) => onUserUpdate?.({ profile_image: photo })}
+        />
+      )}
     </div>
   );
 };
