@@ -1,0 +1,272 @@
+.res-mgmt-container {
+  padding: 1.5rem;
+  background: var(--admin-bg-main);
+}
+
+.res-mgmt-header {
+  margin-bottom: 2rem;
+}
+
+/* 1. MÉTRICAS PRINCIPALES */
+.res-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: var(--admin-bg-card);
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid var(--admin-border-color);
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.metric-card:hover {
+  transform: translateY(-5px);
+}
+
+.metric-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.metric-icon.total { background: rgba(var(--sena-green-rgb), 0.1); color: var(--sena-green); }
+.metric-icon.active { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.metric-icon.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.metric-icon.expired { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.metric-info h3 {
+  font-size: 0.8rem;
+  color: var(--admin-text-muted);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.metric-info .value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--admin-text-primary);
+}
+
+.metric-trend {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.metric-trend.up { color: var(--sena-green); }
+
+/* 2. INDICADORES INTELIGENTES */
+.res-indicators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.indicator-card {
+  background: linear-gradient(135deg, var(--admin-bg-card), rgba(var(--sena-green-rgb), 0.03));
+  padding: 1.5rem;
+  border-radius: 20px;
+  border: 1px solid var(--admin-border-color);
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.ind-icon {
+  font-size: 2.5rem;
+  color: var(--sena-green);
+  opacity: 0.5;
+}
+
+.ind-content {
+  flex: 1;
+}
+
+.ind-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.ind-progress-bg {
+  height: 8px;
+  background: var(--admin-bg-main);
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.ind-progress-bar {
+  height: 100%;
+  background: var(--sena-green);
+  box-shadow: 0 0 10px rgba(var(--sena-green-rgb), 0.5);
+}
+
+.ind-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.ind-value-large {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--sena-green);
+}
+
+/* 3. GRÁFICAS */
+.res-charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.chart-box {
+  background: var(--admin-bg-card);
+  padding: 1.5rem;
+  border-radius: 20px;
+  border: 1px solid var(--admin-border-color);
+}
+
+.chart-box h3 {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: var(--admin-text-primary);
+}
+
+/* 4. TABLA */
+.res-table-section {
+  background: var(--admin-bg-card);
+  border-radius: 20px;
+  border: 1px solid var(--admin-border-color);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-header {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--admin-border-color);
+}
+
+.table-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.table-search svg {
+  position: absolute;
+  left: 1rem;
+  color: var(--admin-text-muted);
+}
+
+.table-search input {
+  padding: 0.6rem 1rem 0.6rem 2.5rem;
+  background: rgba(var(--sena-green-rgb), 0.06);
+  border: 1px solid rgba(var(--sena-green-rgb), 0.15);
+  border-radius: 10px;
+  color: var(--admin-text-primary);
+  width: 220px;
+  outline: none;
+}
+
+.table-search input:focus {
+  border-color: var(--sena-green);
+  box-shadow: 0 0 0 3px rgba(var(--sena-green-rgb), 0.1);
+}
+
+.res-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.res-table th {
+  padding: 1.2rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.res-table td {
+  padding: 1.2rem 1rem;
+  border-bottom: 1px solid var(--admin-border-color);
+  font-size: 0.9rem;
+}
+
+.role-badge {
+  background: rgba(var(--sena-green-rgb), 0.1);
+  color: var(--sena-green);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.btn-action-view {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--admin-border-color);
+  color: var(--admin-text-primary);
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-action-view:hover {
+  background: var(--sena-green);
+  border-color: var(--sena-green);
+  color: #FEFFFF;
+}
+
+@media (max-width: 1024px) {
+  .res-charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .res-indicators-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .res-mgmt-container { padding: 1rem; }
+  .res-metrics-grid { gap: 0.75rem; }
+  .metric-card { padding: 1rem; }
+  .res-table th,
+  .res-table td { padding: 0.75rem 0.6rem; font-size: 0.82rem; }
+  .table-search input { width: 180px; }
+}
+
+@media (max-width: 540px) {
+  .res-mgmt-container { padding: 0.75rem; }
+  .table-header { padding: 1rem; }
+  .res-table th,
+  .res-table td { padding: 0.6rem 0.5rem; font-size: 0.78rem; }
+  .table-search input { width: 100%; }
+}

@@ -1,0 +1,47 @@
+# ── IDEs ─────────────────────────────────────────
+.vscode/
+.idea/
+.claude/
+*.log
+
+# ── VARIABLES DE ENTORNO (nunca subir al repo) ────
+.env
+*.env
+!.env.example
+
+# ── FRONTEND (Node / React / Vite) ───────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.eslintcache
+frontend/*.tsbuildinfo
+frontend/.env*
+app/static/node_modules/
+app/static/dist/
+app/static/.eslintcache
+app/static/*.tsbuildinfo
+app/static/.env*
+
+# ── BACKEND (Python / Flask) ──────────────────────
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+backend/.venv/
+backend/venv/
+backend/env/
+
+# ── BASE DE DATOS ─────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+backend/instance/
+
+# ── SCRIPTS TEMPORALES ────────────────────────────
+backend/migrate_db.py
+
+# ── OS ────────────────────────────────────────────
+.DS_Store
+Thumbs.db

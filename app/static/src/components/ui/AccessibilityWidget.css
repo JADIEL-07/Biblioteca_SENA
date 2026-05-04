@@ -1,0 +1,406 @@
+.accessibility-widget-container {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 15px;
+}
+
+/* ───────────────────────────────────────────────────────────
+   BOTÓN ACESIBILIDAD FLOTANTE (VERDE SENA)
+   ─────────────────────────────────────────────────────────── */
+.accessibility-btn {
+  width: 55px;
+  height: 55px;
+  background-color: var(--sena-green, #39A900);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(57, 169, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.accessibility-btn:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 12px 30px rgba(57, 169, 0, 0.6);
+  background-color: #39A900;
+}
+
+.pulse-off {
+  transform: scale(0.9);
+  opacity: 0.8;
+}
+
+/* ───────────────────────────────────────────────────────────
+   PANEL DE ACCESIBILIDAD (MODO DINÁMICO)
+   ─────────────────────────────────────────────────────────── */
+.accessibility-panel {
+  width: 280px;
+  background: #ffffff; /* Por defecto (Modo Claro como captura) */
+  border-radius: 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: 'Inter', sans-serif;
+  color: #1e293b;
+  transition: all 0.3s ease;
+  font-size: 16px; /* Reset base size */
+}
+
+/* Modo Oscuro - Requerimiento Usuario: Negro Azul y Bloques Gris-Azul */
+.theme-dark .accessibility-panel,
+body:not(.theme-light) .accessibility-panel {
+  background: #0f172a; /* Negro Azulado */
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+
+.fade-in-up {
+  animation: panelFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes panelFadeInUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header del Panel */
+.acc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.theme-dark .acc-header,
+body:not(.theme-light) .acc-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.acc-icon-box {
+  width: 42px;
+  height: 42px;
+  background: var(--sena-green);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(57, 169, 0, 0.2);
+}
+
+.acc-title-group {
+  flex: 1;
+}
+
+.acc-title-group h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.theme-dark .acc-title-group h3,
+body:not(.theme-light) .acc-title-group h3 {
+  color: #fff;
+}
+
+.acc-title-group p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+.acc-close {
+  width: 32px;
+  height: 32px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 50%;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.theme-dark .acc-close,
+body:not(.theme-light) .acc-close {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+.acc-close:hover {
+  background: #e2e8f0;
+  color: #ef4444;
+}
+
+/* Grid de Opciones 2x2 */
+.acc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 110px; /* Reducimos la altura para que el panel sea más pequeño */
+  gap: 12px;
+}
+
+.acc-card {
+  background: #f8fafc;
+  border: none;
+  border-radius: 18px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #334155;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  height: 110px; /* Altura compacta forzada */
+  box-sizing: border-box;
+}
+
+/* Requerimiento Usuario Modo Oscuro: Bloques Azul-Negro-Gris */
+.theme-dark .acc-card,
+body:not(.theme-light) .acc-card {
+  background: #1e293b; /* Azul Negro como Gris (Surface) */
+  border: none;
+  color: #f1f5f9;
+}
+
+.btn-card {
+  cursor: pointer;
+}
+
+.btn-card:hover {
+  background: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+}
+
+.theme-dark .btn-card:hover,
+body:not(.theme-light) .btn-card:hover {
+  background: #334155;
+}
+
+.btn-card.active {
+  background: #f0f9eb;
+  color: var(--sena-green);
+}
+
+.theme-dark .btn-card.active,
+body:not(.theme-light) .btn-card.active {
+  background: rgba(57, 169, 0, 0.15);
+}
+
+.acc-card-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(57, 169, 0, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sena-green);
+  transition: all 0.3s ease;
+}
+
+.btn-card.active .acc-card-icon {
+  background: var(--sena-green);
+  color: #fff;
+}
+
+.acc-card-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Stepper para tamaño de texto */
+.acc-stepper {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 0.2rem;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.theme-dark .acc-stepper,
+body:not(.theme-light) .acc-stepper {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.stepper-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent !important; /* Totalmente transparente */
+  border: none !important;
+  box-shadow: none !important; /* Sin sombra de botón */
+  color: #1e293b;
+  font-size: 1.5rem; /* Más grande para que parezca texto con acción */
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.theme-dark .stepper-btn,
+body:not(.theme-light) .stepper-btn {
+  color: #fff;
+}
+
+.stepper-btn:hover {
+  background: transparent !important;
+  color: var(--sena-green); /* Solo cambia el color del texto */
+  transform: scale(1.3); /* Crece un poco para indicar acción */
+}
+
+/* Nuevo diseño para tarjeta de letra (Boceto Usuario) */
+.size-card-custom {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 37px 8px 10px 8px; /* Ajustado para bajar más el icono circular */
+  background: #f8fafc;
+  border-radius: 18px;
+  height: 110px;
+  box-sizing: border-box;
+}
+
+.theme-dark .size-card-custom,
+body:not(.theme-light) .size-card-custom {
+  background: #1e293b;
+}
+
+.acc-card-icon-custom {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  background: rgba(57, 169, 0, 0.1); 
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sena-green);
+  margin-bottom: 3px; /* Reducimos el margen para que la letra no baje tanto */
+  flex-shrink: 0;
+}
+
+.acc-card-label-custom {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: inherit;
+  margin-bottom: auto;
+  position: relative;
+  top: -5px; /* Subimos un poquito la palabra Letra */
+}
+
+.acc-stepper-base {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px;
+  position: relative;
+  top: -10px; /* Subimos los signos sin mover lo de arriba */
+}
+
+.stepper-btn-base {
+  background: transparent !important;
+  border: none !important;
+  color: #64748b;
+  font-size: 11px; /* Tamaño mínimo como solicitó el usuario */
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+  min-width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-dark .stepper-btn-base,
+body:not(.theme-light) .stepper-btn-base {
+  color: #cbd5e1;
+}
+
+.stepper-btn-base:hover {
+  color: var(--sena-green);
+  transform: scale(1.2);
+}
+
+/* ───────────────────────────────────────────────────────────
+   APLICACIÓN DE LOS ESTILOS DE ACCESIBILIDAD AL DOM
+   ─────────────────────────────────────────────────────────── */
+
+body.accessibility-high-contrast #root > div:not(.accessibility-widget-container) {
+  filter: contrast(130%) saturate(140%) brightness(90%);
+}
+
+.accessibility-text-spacing {
+  letter-spacing: 0.05em !important;
+  line-height: 1.7 !important;
+}
+
+/* Row del Reset Button */
+.acc-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.theme-dark .acc-footer,
+body:not(.theme-light) .acc-footer {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.acc-reset-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #f1f5f9;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 12px;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-dark .acc-reset-btn,
+body:not(.theme-light) .acc-reset-btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+}
+
+.acc-reset-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
