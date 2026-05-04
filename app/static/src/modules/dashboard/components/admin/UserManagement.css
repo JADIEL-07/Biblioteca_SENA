@@ -298,9 +298,12 @@
 .user-modal-content {
   background: var(--admin-bg-card);
   width: 90%;
-  max-width: 480px;
+  max-width: 550px; /* Un poco más ancho para el formulario */
+  max-height: 90vh;
   border-radius: 24px;
   border: 1px solid var(--admin-border-color);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 0 25px 60px rgba(0,0,0,0.5);
@@ -334,7 +337,21 @@
 .btn-close:hover { color: #ef4444; }
 
 .modal-body {
-  padding: 2.5rem;
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Scrollbar personalizado para el modal */
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(var(--sena-green-rgb), 0.2);
+  border-radius: 10px;
+}
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--sena-green);
 }
 
 .profile-header {

@@ -10,6 +10,7 @@ import { ProfileOverlay } from './admin/ProfileOverlay';
 import { AprendizDashboardHome } from './aprendiz/AprendizDashboardHome';
 import { AprendizLoans } from './aprendiz/AprendizLoans';
 import { AprendizReservations } from './aprendiz/AprendizReservations';
+import { AprendizCatalog } from './aprendiz/AprendizCatalog';
 
 interface UserData {
   id: number;
@@ -178,10 +179,14 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
             )
           )}
           {activeSection === 'explore' && (
-            <div className="placeholder-view">
-              <h2>Catálogo de elementos</h2>
-              <p>Aquí se mostrarán todos los libros y equipos disponibles.</p>
-            </div>
+            currentRole === 'APRENDIZ' ? (
+              <AprendizCatalog />
+            ) : (
+              <div className="placeholder-view">
+                <h2>Catálogo de elementos</h2>
+                <p>Aquí se mostrarán todos los libros y equipos disponibles.</p>
+              </div>
+            )
           )}
           {activeSection === 'loans' && currentRole === 'APRENDIZ' && (
             <AprendizLoans onBack={() => setActiveSection('home')} />
