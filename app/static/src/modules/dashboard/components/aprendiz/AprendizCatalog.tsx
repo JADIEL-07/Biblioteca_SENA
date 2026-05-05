@@ -159,12 +159,7 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
         </button>
         
         <div className="filter-selects">
-          <CustomSelect 
-            label="Estado"
-            options={[{ id: 'ALL', name: 'Todas' }, ...filters.statuses]}
-            value={filterCategory} // Reutilizando estados si es necesario
-            onChange={() => {}}
-          />
+
           <CustomSelect 
             label="Categoría"
             options={[{ id: 'ALL', name: 'Todas' }, ...filters.categories]}
