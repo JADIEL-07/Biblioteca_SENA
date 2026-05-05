@@ -39,7 +39,7 @@
   display: flex;
   gap: 1rem;
   flex: 1;
-  max-width: 600px;
+  max-width: 1000px;
 }
 
 .search-wrapper-pro {

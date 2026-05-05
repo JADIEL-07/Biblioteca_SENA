@@ -325,6 +325,15 @@ export const UserManagement: React.FC = () => {
           <tbody>
             {loading ? (
               <tr><td colSpan={6} className="td-center">Cargando cuentas...</td></tr>
+            ) : filteredUsers.length === 0 ? (
+              <tr>
+                <td colSpan={6}>
+                  <div className="empty-state-container" style={{ padding: '4rem 2rem' }}>
+                    <FiUsers size={48} style={{ opacity: 0.2 }} />
+                    <p>No se encontraron usuarios con los filtros aplicados.</p>
+                  </div>
+                </td>
+              </tr>
             ) : filteredUsers.map(user => (
               <tr key={user.id}>
                 <td>

@@ -67,10 +67,7 @@ export const UserConfig: React.FC<UserConfigProps> = ({ user }) => {
   return (
     <div className="user-config-container">
       <aside className="config-sidebar">
-        <div className="config-sidebar-header">
-          <h2>Configuración y privacidad</h2>
-          <p>Administra tu cuenta, seguridad y preferencias.</p>
-        </div>
+
 
         <nav className="config-nav">
           {navItems.map((item, idx) => (
@@ -90,10 +87,7 @@ export const UserConfig: React.FC<UserConfigProps> = ({ user }) => {
       <main className="config-main-content">
         {activeTab === 'personal-info' && (
           <div className="config-section fade-in">
-            <div className="config-section-header">
-              <h1>Información personal</h1>
-              <p>Actualiza tu información personal y de contacto.</p>
-            </div>
+
 
             <div className="config-card">
               <h3>Datos personales</h3>
@@ -196,10 +190,7 @@ const EmailPanel: React.FC<{ currentEmail: string }> = ({ currentEmail }) => {
 
   return (
     <div className="config-section fade-in">
-      <div className="config-section-header">
-        <h1>Correo electrónico</h1>
-        <p>Cambia tu correo electrónico asociado a la cuenta.</p>
-      </div>
+
 
       <div className="config-card">
         <h3>Correo actual</h3>
@@ -281,10 +272,7 @@ const PasswordPanel: React.FC = () => {
 
   return (
     <div className="config-section fade-in">
-      <div className="config-section-header">
-        <h1>Cambiar contraseña</h1>
-        <p>Por seguridad, te pediremos tu contraseña actual.</p>
-      </div>
+
 
       <div className="config-card">
         <div className="form-grid">
@@ -332,10 +320,7 @@ const TwoFAPanel: React.FC = () => {
   const [enabled, setEnabled] = useState(false);
   return (
     <div className="config-section fade-in">
-      <div className="config-section-header">
-        <h1>Autenticación en dos pasos</h1>
-        <p>Añade una capa extra de seguridad pidiendo un código además de la contraseña.</p>
-      </div>
+
 
       <div className="config-card">
         <div className="toggle-row">
@@ -410,10 +395,7 @@ const SessionsPanel: React.FC = () => {
 
   return (
     <div className="config-section fade-in">
-      <div className="config-section-header">
-        <h1>Sesiones activas</h1>
-        <p>Dispositivos donde tu cuenta tiene una sesión iniciada.</p>
-      </div>
+
 
       <div className="config-card">
         {sessions.map(s => (
@@ -469,10 +451,7 @@ const NotificationsPanel: React.FC = () => {
 
   return (
     <div className="config-section fade-in">
-      <div className="config-section-header">
-        <h1>Preferencias de notificaciones</h1>
-        <p>Elige qué quieres recibir y por dónde.</p>
-      </div>
+
 
       <div className="config-card">
         <h3>Tipos de notificación</h3>
@@ -518,10 +497,7 @@ const AlertsPanel: React.FC = () => {
 
   return (
     <div className="config-section fade-in">
-      <div className="config-section-header">
-        <h1>Alertas y recordatorios</h1>
-        <p>Cuándo y cómo te avisamos.</p>
-      </div>
+
 
       <div className="config-card">
         <h3>Recordatorios de devolución</h3>
@@ -560,10 +536,7 @@ const PrivacyPanel: React.FC = () => {
 
   return (
     <div className="config-section fade-in">
-      <div className="config-section-header">
-        <h1>Privacidad y datos</h1>
-        <p>Controla qué información se comparte y descarga tus datos.</p>
-      </div>
+
 
       <div className="config-card">
         <h3>Visibilidad</h3>
@@ -627,10 +600,7 @@ const HistoryPanel: React.FC = () => {
 
   return (
     <div className="config-section fade-in">
-      <div className="config-section-header">
-        <h1>Historial de accesos</h1>
-        <p>Últimos eventos de seguridad de tu cuenta.</p>
-      </div>
+
 
       <div className="config-card">
         <ul className="event-list">
@@ -662,10 +632,7 @@ const DeleteAccountPanel: React.FC<{ userName: string }> = ({ userName }) => {
 
   return (
     <div className="config-section fade-in">
-      <div className="config-section-header">
-        <h1>Eliminar cuenta</h1>
-        <p>Esta acción es permanente y no se puede deshacer.</p>
-      </div>
+
 
       <div className="config-card warning-card">
         <FiAlertTriangle />

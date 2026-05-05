@@ -133,13 +133,7 @@
   border-radius: 50%;
 }
 
-.custom-select-dropdown::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-select-dropdown::-webkit-scrollbar-thumb {
-  background: var(--admin-border-color);
-  border-radius: 10px;
-}
+/* Scroll local eliminado para usar el global premium */
 
 .custom-select-no-options {
   padding: 1.5rem;

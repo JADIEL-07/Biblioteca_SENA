@@ -190,7 +190,14 @@ export const LoanManagement: React.FC = () => {
             {loading ? (
               <tr><td colSpan={9} className="td-center">Cargando...</td></tr>
             ) : filteredLoans.length === 0 ? (
-              <tr><td colSpan={9} className="td-center">No se encontraron registros en este rango.</td></tr>
+              <tr>
+                <td colSpan={9}>
+                  <div className="empty-state-container" style={{ padding: '5rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', color: 'var(--admin-text-muted)' }}>
+                    <FiClock size={48} style={{ opacity: 0.2 }} />
+                    <p>No se encontraron registros de préstamos con los filtros aplicados.</p>
+                  </div>
+                </td>
+              </tr>
             ) : (
               filteredLoans.map(loan => (
                 <tr key={loan.id}>

@@ -129,7 +129,10 @@ export const AprendizDashboardHome: React.FC<DashboardHomeProps> = ({ user, onNa
                   </div>
                 ))
               ) : (
-                <p className="empty-msg">No tienes préstamos activos en este momento.</p>
+                <div className="empty-state-mini">
+                  <FiBook size={32} />
+                  <p>No tienes préstamos activos.</p>
+                </div>
               )}
             </div>
           </div>
@@ -153,7 +156,10 @@ export const AprendizDashboardHome: React.FC<DashboardHomeProps> = ({ user, onNa
                   </div>
                 ))
               ) : (
-                <p className="empty-msg">No tienes reservas pendientes.</p>
+                <div className="empty-state-mini">
+                  <FiCalendar size={32} />
+                  <p>No tienes reservas pendientes.</p>
+                </div>
               )}
             </div>
           </div>

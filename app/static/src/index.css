@@ -31,6 +31,38 @@ body {
   min-height: 100vh;
 }
 
+/* ==========================================================================
+   SCROLLBAR GLOBAL PREMIUM
+   ========================================================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--sena-green-rgb), 0.2);
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sena-green);
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+/* Scrollbar para Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--sena-green-rgb), 0.3) transparent;
+}
+
 /* Mejora de visibilidad para iconos de calendario nativos */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
@@ -1146,4 +1178,66 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .card:hover, .stat-card:hover, .featured-card:hover, .chart-card:hover, .service-card-mini:hover, .notifications-panel:hover {
   border-color: var(--sena-green) !important;
   box-shadow: 0 8px 25px rgba(57, 169, 0, 0.15) !important;
+}
+
+/* ==========================================================================
+   DASHBOARD GLOBAL UTILITIES (Admin & Aprendiz)
+   ========================================================================== */
+.dashboard-view-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-height: 100%;
+  animation: fadeInLayout 0.4s ease-out;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  gap: 1.5rem;
+  color: var(--text-muted);
+}
+
+.empty-state svg {
+  font-size: 4rem;
+  opacity: 0.15;
+  color: var(--sena-green);
+}
+
+.empty-state h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
+}
+
+.empty-state p {
+  font-size: 1rem;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.empty-state-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  color: var(--text-muted);
+  text-align: center;
+  gap: 1rem;
+  background: rgba(var(--sena-green-rgb), 0.03);
+  border-radius: 20px;
+  border: 1px dashed rgba(var(--sena-green-rgb), 0.2);
+}
+
+@keyframes fadeInLayout {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

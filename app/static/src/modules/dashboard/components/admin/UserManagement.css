@@ -746,3 +746,13 @@
   display: flex;
   justify-content: center;
 }
+/* EMPTY STATE */
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  color: var(--admin-text-muted);
+  text-align: center;
+}

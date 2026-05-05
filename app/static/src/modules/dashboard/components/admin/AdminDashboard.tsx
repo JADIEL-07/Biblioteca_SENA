@@ -151,11 +151,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
         />
 
         <main className="dashboard-main-content">
-          <div className="section-header" style={{ marginBottom: '0.75rem' }}>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {sectionTitle[activeSection] ?? 'Sección'}
-            </h1>
-          </div>
+
 
           <div className="content-container">
             {activeSection === 'dashboard' && <AdminHome />}

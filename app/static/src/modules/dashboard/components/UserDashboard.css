@@ -472,6 +472,8 @@
   padding: 2rem;
   overflow-y: auto;
   max-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── DASHBOARD HOME ── */
@@ -1145,9 +1147,7 @@
 }
 
 /* ── ESTILOS PARA TABLAS Y VISTAS DE APRENDIZ ── */
-.dashboard-view-container {
-  animation: fadeIn 0.3s ease-out;
-}
+/* Layout base manejado globalmente en index.css */
 
 .view-header {
   margin-bottom: 2rem;
@@ -1232,16 +1232,7 @@
   font-weight: 700;
 }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 5rem 2rem;
-  color: var(--text-muted);
-  text-align: center;
-  gap: 1rem;
-}
+/* Estados vacíos manejados globalmente en index.css */
 
 .recent-activity-list {
   display: flex;

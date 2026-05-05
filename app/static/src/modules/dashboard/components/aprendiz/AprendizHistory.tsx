@@ -44,10 +44,7 @@ export const AprendizHistory: React.FC = () => {
 
   return (
     <div className="dashboard-view-container">
-      <div className="view-header">
-        <h2>Historial</h2>
 
-      </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {(['ALL', 'LOAN', 'RESERVATION'] as const).map(f => (
@@ -66,7 +63,7 @@ export const AprendizHistory: React.FC = () => {
       ) : filtered.length === 0 ? (
         <div className="empty-state">
           <FiClock size={48} />
-          <p>Sin registros aún.</p>
+          <p>No se encontraron registros en el historial.</p>
         </div>
       ) : (
         <div className="custom-table-container">

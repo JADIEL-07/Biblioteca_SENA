@@ -134,9 +134,7 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
     <div className="aprendiz-catalog-container fade-in">
       {/* 1. Header Section */}
       <div className="catalog-header-pro">
-        <div className="header-info">
-          <h1>Explorar inventario</h1>
-        </div>
+
         
         <div className="header-actions">
           <div className="search-wrapper-pro">
@@ -206,7 +204,13 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
         </div>
       ) : (
         <div className={`catalog-view-pro ${viewMode}`}>
-          {items.map(item => (
+          {items.length === 0 ? (
+            <div className="empty-state" style={{ gridColumn: '1 / -1', minHeight: '400px' }}>
+              <FiPackage size={64} style={{ opacity: 0.1, marginBottom: '1rem' }} />
+              <h3>No encontramos lo que buscas</h3>
+              <p>Prueba con otros términos o categorías.</p>
+            </div>
+          ) : items.map(item => (
             <div key={item.id} className="item-card-pro">
               <div className="card-image-area">
                 <span className={`status-badge-pro ${getStatusClass(item.status_name)}`}>

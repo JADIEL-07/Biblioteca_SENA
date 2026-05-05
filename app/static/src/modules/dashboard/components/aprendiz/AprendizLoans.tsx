@@ -30,64 +30,59 @@ export const AprendizLoans: React.FC = () => {
 
   return (
     <div className="dashboard-view-container">
-      <div className="view-header">
-        <h2>Mis Préstamos</h2>
 
-      </div>
 
       {loading ? (
         <div className="loading-container">Cargando préstamos...</div>
-      ) : (
+      ) : loans.length > 0 ? (
         <div className="loans-list-wrapper">
-          {loans.length > 0 ? (
-            <div className="custom-table-container">
-              <table className="custom-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Elementos</th>
-                    <th>Fecha Préstamo</th>
-                    <th>Fecha Entrega</th>
-                    <th>Estado</th>
-                    <th>Multa</th>
+          <div className="custom-table-container">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Elementos</th>
+                  <th>Fecha Préstamo</th>
+                  <th>Fecha Entrega</th>
+                  <th>Estado</th>
+                  <th>Multa</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loans.map(loan => (
+                  <tr key={loan.id}>
+                    <td>#{loan.id}</td>
+                    <td>
+                      {loan.items.map((it: any) => (
+                        <div key={it.id} className="table-item-name">
+                          <FiBook size={12} /> {it.name}
+                        </div>
+                      ))}
+                    </td>
+                    <td>{new Date(loan.loan_date).toLocaleDateString()}</td>
+                    <td>{new Date(loan.due_date).toLocaleDateString()}</td>
+                    <td>
+                      <span className={`status-badge ${loan.status.toLowerCase()}`}>
+                        {loan.status === 'ACTIVE' ? 'Activo' : 
+                         loan.status === 'RETURNED' ? 'Devuelto' : 
+                         loan.status === 'OVERDUE' ? 'Vencido' : loan.status}
+                      </span>
+                    </td>
+                    <td>
+                      {loan.fine_amount > 0 ? (
+                        <span className="fine-text">${loan.fine_amount}</span>
+                      ) : '-'}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {loans.map(loan => (
-                    <tr key={loan.id}>
-                      <td>#{loan.id}</td>
-                      <td>
-                        {loan.items.map((it: any) => (
-                          <div key={it.id} className="table-item-name">
-                            <FiBook size={12} /> {it.name}
-                          </div>
-                        ))}
-                      </td>
-                      <td>{new Date(loan.loan_date).toLocaleDateString()}</td>
-                      <td>{new Date(loan.due_date).toLocaleDateString()}</td>
-                      <td>
-                        <span className={`status-badge ${loan.status.toLowerCase()}`}>
-                          {loan.status === 'ACTIVE' ? 'Activo' : 
-                           loan.status === 'RETURNED' ? 'Devuelto' : 
-                           loan.status === 'OVERDUE' ? 'Vencido' : loan.status}
-                        </span>
-                      </td>
-                      <td>
-                        {loan.fine_amount > 0 ? (
-                          <span className="fine-text">${loan.fine_amount}</span>
-                        ) : '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="empty-state">
-              <FiBook size={48} />
-              <p>No tienes registros de préstamos todavía.</p>
-            </div>
-          )}
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="empty-state">
+          <FiBook size={48} />
+          <p>No tienes registros de préstamos todavía.</p>
         </div>
       )}
     </div>

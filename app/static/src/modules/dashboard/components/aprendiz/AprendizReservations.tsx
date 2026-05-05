@@ -61,16 +61,14 @@ export const AprendizReservations: React.FC = () => {
 
   return (
     <div className="dashboard-view-container">
-      <div className="view-header">
-        <h2>Mis Reservas</h2>
-      </div>
+
 
       {loading ? (
         <div className="loading-container">Cargando reservas…</div>
       ) : reservations.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-          <FiCalendar size={48} style={{ marginBottom: '1rem', opacity: 0.4 }} />
-          <p style={{ fontSize: '1rem' }}>No tienes reservas activas.</p>
+        <div className="empty-state">
+          <FiCalendar size={48} />
+          <p>No tienes reservas activas.</p>
         </div>
       ) : (
         <div className="custom-table-container">

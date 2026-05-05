@@ -197,7 +197,14 @@ export const AuditLogs: React.FC = () => {
             ) : error ? (
               <tr><td colSpan={7} className="no-data-cell" style={{ color: '#ef4444' }}>{error}</td></tr>
             ) : filteredLogs.length === 0 ? (
-              <tr><td colSpan={7} className="no-data-cell">No se encontraron registros para los filtros seleccionados.</td></tr>
+              <tr>
+                <td colSpan={7}>
+                  <div className="empty-state-container" style={{ padding: '5rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', color: 'var(--admin-text-muted)' }}>
+                    <FiActivity size={48} style={{ opacity: 0.2 }} />
+                    <p>No se encontraron registros para los filtros seleccionados.</p>
+                  </div>
+                </td>
+              </tr>
             ) : (
               filteredLogs.map(log => (
                 <tr key={log.id}>
