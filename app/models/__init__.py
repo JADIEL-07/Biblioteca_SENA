@@ -1,3 +1,4 @@
+from .dependency import Dependency
 from .user import User, Role, FormationProgram
 from .item import Item, Category, Location, Status, Supplier
 from .loan import Loan, LoanDetail

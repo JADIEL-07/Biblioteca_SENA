@@ -32,9 +32,10 @@ const emptyForm = {
 
 interface InventoryProps {
   activeTab?: 'table' | 'locations' | 'categories';
+  user?: any;
 }
 
-export const InventoryManagement: React.FC<InventoryProps> = ({ activeTab = 'table' }) => {
+export const InventoryManagement: React.FC<InventoryProps> = ({ activeTab = 'table', user }) => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,14 +67,20 @@ export const InventoryManagement: React.FC<InventoryProps> = ({ activeTab = 'tab
   const [editForm, setEditForm] = useState({ ...emptyForm });
 
   const token = () => localStorage.getItem('token');
+  const depId = user?.dependency_id;
 
   const fetchData = async () => {
     setLoading(true); setError(null);
     try {
       const params = new URLSearchParams({ search: searchTerm, category_id: filterCategory, status_id: filterStatus, location_id: filterLocation });
+      if (depId) params.append('dependency_id', String(depId));
+      
+      const filterParams = new URLSearchParams();
+      if (depId) filterParams.append('dependency_id', String(depId));
+
       const [iRes, fRes] = await Promise.all([
         fetch(`/api/v1/items/?${params}`, { headers: { Authorization: `Bearer ${token()}` } }),
-        fetch('/api/v1/items/filters',   { headers: { Authorization: `Bearer ${token()}` } })
+        fetch(`/api/v1/items/filters?${filterParams}`,   { headers: { Authorization: `Bearer ${token()}` } })
       ]);
       if (iRes.ok) { const d = await iRes.json(); setItems(Array.isArray(d) ? d : []); }
       else { setError(`Error ${iRes.status}: No se pudieron cargar los elementos`); setItems([]); }
@@ -232,11 +239,13 @@ export const InventoryManagement: React.FC<InventoryProps> = ({ activeTab = 'tab
     e.preventDefault();
     const url = editLoc ? `/api/v1/items/locations/${editLoc.id}` : '/api/v1/items/locations';
     const method = editLoc ? 'PUT' : 'POST';
+    const bodyPayload: any = { name: nameInput };
+    if (!editLoc && depId) bodyPayload.dependency_id = depId;
     try {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ name: nameInput })
+        body: JSON.stringify(bodyPayload)
       });
       if (res.ok) { fetchData(); setShowAddLoc(false); setEditLoc(null); setNameInput(''); }
       else { 

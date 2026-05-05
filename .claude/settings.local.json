@@ -23,7 +23,9 @@
       "Bash(xargs grep *)",
       "Bash(npm install *)",
       "Bash(sed -i 's|        <p>Consulta el estado de tus préstamos de libros y equipos.</p>||g' \"C:\\\\Users\\\\JADIEL\\\\Desktop\\\\BIBLIOTECA Y ALMACEN\\\\app\\\\static\\\\src\\\\modules\\\\dashboard\\\\components\\\\aprendiz\\\\AprendizLoans.tsx\")",
-      "Bash(sed -i 's|        <p>Todos tus préstamos y reservas registrados.</p>||g' \"C:\\\\Users\\\\JADIEL\\\\Desktop\\\\BIBLIOTECA Y ALMACEN\\\\app\\\\static\\\\src\\\\modules\\\\dashboard\\\\components\\\\aprendiz\\\\AprendizHistory.tsx\")"
+      "Bash(sed -i 's|        <p>Todos tus préstamos y reservas registrados.</p>||g' \"C:\\\\Users\\\\JADIEL\\\\Desktop\\\\BIBLIOTECA Y ALMACEN\\\\app\\\\static\\\\src\\\\modules\\\\dashboard\\\\components\\\\aprendiz\\\\AprendizHistory.tsx\")",
+      "Bash(curl -s http://localhost:5000/api/v1/items/)",
+      "Bash(taskkill /F /PID 17356)"
     ]
   }
 }

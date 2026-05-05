@@ -60,6 +60,11 @@ def get_items():
         query = query.filter(Item.status_id == stat_id)
     if loc_id and loc_id not in ['ALL', '', 'undefined', 'null']:
         query = query.filter(Item.location_id == loc_id)
+        
+    # Filtro de seguridad/separación por Dependencia (Biblioteca vs Almacén)
+    dep_id = request.args.get('dependency_id')
+    if dep_id and dep_id not in ['ALL', '', 'undefined', 'null']:
+        query = query.join(Location, Item.location_id == Location.id).filter(Location.dependency_id == dep_id)
 
     try:
         items = query.order_by(Item.id.desc()).all()
@@ -70,18 +75,28 @@ def get_items():
 
 @items_bp.route('/filters', methods=['GET'])
 def get_item_filters():
+    dep_id = request.args.get('dependency_id')
     try:
+        from ..models.dependency import Dependency
         categories = Category.query.all()
         statuses = Status.query.all()
-        locations = Location.query.all()
+        dependencies = Dependency.query.all()
+        
+        loc_query = Location.query
+        if dep_id and dep_id not in ['ALL', '', 'undefined', 'null']:
+            loc_query = loc_query.filter(Location.dependency_id == dep_id)
+        locations = loc_query.all()
+        
         return jsonify({
             "categories": [{"id": c.id, "name": c.name} for c in categories],
             "statuses": [{"id": s.id, "name": s.name} for s in statuses],
-            "locations": [{"id": l.id, "name": l.name} for l in locations]
+            "locations": [{"id": l.id, "name": l.name, "dependency_id": l.dependency_id} for l in locations],
+            "dependencies": [{"id": d.id, "name": d.name} for d in dependencies]
         })
     except Exception as e:
         print(f"[ERROR] get_item_filters: {e}")
-        return jsonify({"categories": [], "statuses": [], "locations": []}), 500
+        return jsonify({"categories": [], "statuses": [], "locations": [], "dependencies": []}), 500
+
 
 @items_bp.route('/<int:id>', methods=['GET'])
 def get_item(id):
@@ -253,7 +268,11 @@ def add_location():
     if not data or not data.get('name'):
         return jsonify({"error": "Nombre de ubicación requerido"}), 400
     try:
-        new_loc = Location(name=data['name'], type=data.get('type', 'internal'))
+        new_loc = Location(
+            name=data['name'], 
+            type=data.get('type', 'internal'),
+            dependency_id=data.get('dependency_id')
+        )
         db.session.add(new_loc)
         db.session.commit()
         return jsonify({"id": new_loc.id, "name": new_loc.name}), 201

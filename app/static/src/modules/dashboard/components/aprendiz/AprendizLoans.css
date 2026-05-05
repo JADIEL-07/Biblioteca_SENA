@@ -1,0 +1,367 @@
+.loans-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.loans-header-section h1 {
+  font-size: 2rem;
+  color: var(--text-primary, #ffffff);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.loans-header-section p {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Summary Grid */
+.loans-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.loan-stat-card {
+  background: var(--bg-card, #1e293b);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.loan-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+
+.stat-icon-wrapper.success { color: #39A900; border-color: rgba(57, 169, 0, 0.3); background: rgba(57, 169, 0, 0.1); }
+.stat-icon-wrapper.warning { color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.1); }
+.stat-icon-wrapper.danger  { color: #dc2626; border-color: rgba(220, 38, 38, 0.3); background: rgba(220, 38, 38, 0.1); }
+.stat-icon-wrapper.primary { color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.1); }
+
+.stat-content h5 {
+  color: var(--text-primary, #ffffff);
+  font-size: 0.95rem;
+  margin: 0 0 0.2rem 0;
+  font-weight: 600;
+}
+
+.stat-content h3 {
+  color: var(--text-primary, #ffffff);
+  font-size: 1.8rem;
+  margin: 0 0 0.1rem 0;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat-content p {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+/* Tabs */
+.loans-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.loans-tab-btn {
+  background: var(--bg-card, #1e293b);
+  border: 1px solid var(--border-color, #334155);
+  color: var(--text-secondary, #94a3b8);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.loans-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary, #ffffff);
+}
+
+.loans-tab-btn.active {
+  background: var(--sena-green, #39A900);
+  border-color: var(--sena-green, #39A900);
+  color: #ffffff;
+}
+
+/* Table Wrapper */
+.loans-table-wrapper {
+  background: var(--bg-card, #1e293b);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.loans-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.loans-table th {
+  padding: 1rem 1.5rem;
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color, #334155);
+}
+
+.loans-table td {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid var(--border-color, #334155);
+  vertical-align: middle;
+  color: var(--text-secondary, #cbd5e1);
+  font-size: 0.95rem;
+}
+
+.loans-table tr:last-child td {
+  border-bottom: none;
+}
+
+.loans-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Cell Contents */
+.item-cell-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.item-mini-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  background: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.item-mini-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-name {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.item-cat {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.date-cell, .status-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.date-str {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.time-str {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.status-text {
+  font-weight: 600;
+}
+
+.status-text.success { color: #39A900; }
+.status-text.warning { color: #f59e0b; }
+.status-text.danger  { color: #dc2626; }
+.status-text.default { color: #94a3b8; }
+
+.status-sub {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-outline:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* Renewal Banner */
+.renewal-banner {
+  display: flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.renewal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #3b82f6;
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.renewal-content {
+  flex-grow: 1;
+}
+
+.renewal-content h4 {
+  color: #ffffff;
+  margin: 0 0 0.3rem 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.renewal-content p {
+  color: #cbd5e1;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.btn-renewal {
+  background: #1d4ed8;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-renewal:hover {
+  background: #2563eb;
+}
+
+/* Empty State / Loading */
+.loans-empty-state, .loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--bg-card, #1e293b);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 12px;
+  color: #64748b;
+  text-align: center;
+}
+
+.loans-empty-state p, .loading-spinner-container p {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 1024px) {
+  .loans-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .loans-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .loans-table-wrapper {
+    border: none;
+    background: transparent;
+  }
+  
+  .loans-table thead {
+    display: none;
+  }
+  
+  .loans-table tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, #334155);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  
+  .loans-table td {
+    padding: 0.5rem 0;
+    border: none;
+  }
+  
+  .item-col {
+    padding-bottom: 1rem !important;
+    border-bottom: 1px solid var(--border-color, #334155) !important;
+    margin-bottom: 0.5rem;
+  }
+  
+  .btn-outline {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+  
+  .renewal-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .btn-renewal {
+    width: 100%;
+  }
+}

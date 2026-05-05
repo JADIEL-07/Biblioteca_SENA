@@ -12,6 +12,7 @@ class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     type = db.Column(db.String(50)) # internal/external
+    dependency_id = db.Column(db.Integer, db.ForeignKey('dependencies.id'), nullable=True) # Relación con Dependencia
     items = db.relationship('Item', backref='location', lazy=True)
 
 class Status(db.Model):

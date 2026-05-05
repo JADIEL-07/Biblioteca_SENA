@@ -26,6 +26,7 @@ class User(Base):
     # FKs
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
     formation_ficha = db.Column(db.String(50), nullable=True) # Sin validación de FK
+    dependency_id = db.Column(db.Integer, db.ForeignKey('dependencies.id'), nullable=True) # Para Bibliotecario/Almacenista
     
     # Status
     is_active = db.Column(db.Boolean, default=True)

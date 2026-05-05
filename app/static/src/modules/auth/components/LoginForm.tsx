@@ -117,8 +117,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onLoginSuccess }) =>
         setSuccessMsg('Inicio de sesión exitoso. Redirigiendo...');
         if (onLoginSuccess) onLoginSuccess(data.user);
         setTimeout(() => {
-          const role = data.user?.role?.name || data.user?.rol?.nombre;
-          navigate(role === 'ADMIN' ? '/admin' : '/dashboard');
+          const role = (data.user?.role?.name || data.user?.rol?.nombre || '').toUpperCase();
+          const dest = role === 'ADMIN' ? '/admin'
+            : (role === 'BIBLIOTECARIO' || role === 'ALMACENISTA') ? '/staff'
+            : '/dashboard';
+          navigate(dest);
         }, 800);
       }
     } catch (err: any) {

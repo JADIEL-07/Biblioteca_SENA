@@ -42,7 +42,9 @@ def get_users():
             "last_login": user.last_login.isoformat() if user.last_login else None,
             "failed_attempts": user.failed_attempts,
             "created_at": user.created_at.isoformat(),
-            "profile_image": user.profile_image
+            "profile_image": user.profile_image,
+            "dependency_id": user.dependency_id,
+            "dependency_name": user.dependency_obj.name if user.dependency_obj else None
         })
     return jsonify(result), 200
 
@@ -167,6 +169,7 @@ def create_user():
         phone=data.get('phone'),
         password=hashed_pw,
         role_id=role.id,
+        dependency_id=data.get('dependency_id'), # Nuevo: Asignar dependencia
         formation_ficha=data.get('formation_ficha'),
         created_by=get_jwt_identity()
     )

@@ -44,6 +44,7 @@ export const UserManagement: React.FC = () => {
   const [roles, setRoles] = useState<string[]>([]);
   const [showRolePanel, setShowRolePanel] = useState(false);
   const [newRole, setNewRole] = useState('');
+  const [dependencies, setDependencies] = useState<{id: number, name: string}[]>([]);
   const [showQRModal, setShowQRModal] = useState(false);
   const [userForQR, setUserForQR] = useState<User | null>(null);
   
@@ -59,6 +60,7 @@ export const UserManagement: React.FC = () => {
     email: '',
     phone: '',
     role: 'APRENDIZ',
+    dependency_id: '', // Nuevo campo
     password: '',
     formation_ficha: '',
     image_url: ''
@@ -111,19 +113,24 @@ export const UserManagement: React.FC = () => {
     } catch (error) { console.error(error); }
   };
 
-  const fetchRoles = async () => {
+  const fetchRolesAndDeps = async () => {
     try {
-      const response = await fetch('/api/v1/users_mgmt/roles', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      const data = await response.json();
-      setRoles(Array.isArray(data) ? data : []);
+      const token = localStorage.getItem('token');
+      const [rRes, fRes] = await Promise.all([
+        fetch('/api/v1/users_mgmt/roles', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/v1/items/filters', { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
+      if (rRes.ok) setRoles(await rRes.json());
+      if (fRes.ok) {
+        const fData = await fRes.json();
+        setDependencies(fData.dependencies || []);
+      }
     } catch (error) { console.error(error); }
   };
 
   useEffect(() => {
     fetchData();
-    fetchRoles();
+    fetchRolesAndDeps();
   }, [searchTerm]);
 
   // Camera Functions
@@ -177,8 +184,8 @@ export const UserManagement: React.FC = () => {
       if (response.ok) {
         setShowCreateModal(false);
         setNewUser({
-          id: '', document_type: 'CC', name: '', email: '', 
-          phone: '', role: 'APRENDIZ', password: '', formation_ficha: '', image_url: ''
+          id: '', document_type: 'CC', name: '', email: '',
+          phone: '', role: 'APRENDIZ', dependency_id: '', password: '', formation_ficha: '', image_url: ''
         });
         fetchData();
         alert('Usuario creado exitosamente');
@@ -574,6 +581,20 @@ export const UserManagement: React.FC = () => {
                     />
                   </div>
                 </div>
+                
+                {(newUser.role === 'BIBLIOTECARIO' || newUser.role === 'ALMACENISTA') && (
+                  <div className="form-group" style={{ animation: 'fadeIn 0.3s ease' }}>
+                    <CustomSelect 
+                      label="Asignar Dependencia"
+                      options={[
+                        { id: '', name: 'Seleccionar Dependencia...' },
+                        ...dependencies.map(d => ({ id: String(d.id), name: d.name }))
+                      ]}
+                      value={newUser.dependency_id}
+                      onChange={val => setNewUser({...newUser, dependency_id: val})}
+                    />
+                  </div>
+                )}
 
                 {newUser.role === 'APRENDIZ' && (
                   <div className="form-group">

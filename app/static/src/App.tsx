@@ -7,6 +7,7 @@ import { ForgotPassword } from './modules/auth/components/ForgotPassword';
 import { ResetPassword } from './modules/auth/components/ResetPassword';
 import { UserDashboard } from './modules/dashboard/components/UserDashboard';
 import { AdminDashboard } from './modules/dashboard/components/admin/AdminDashboard';
+import { StaffDashboard } from './modules/dashboard/components/staff/StaffDashboard';
 import {
   FaTwitter,
   FaFacebookF,
@@ -191,8 +192,10 @@ function AppRoutes() {
     localStorage.setItem('user', JSON.stringify(newUser));
   };
 
-  const userRole = loggedUser?.role?.name || loggedUser?.rol?.nombre;
+  const rawRole = loggedUser?.role?.name || loggedUser?.rol?.nombre || '';
+  const userRole = rawRole.toUpperCase();
   const isAdmin = userRole === 'ADMIN';
+  const isStaff = userRole === 'BIBLIOTECARIO' || userRole === 'ALMACENISTA';
 
   return (
     <Routes>
@@ -208,7 +211,7 @@ function AppRoutes() {
         path="/login"
         element={
           loggedUser
-            ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} replace />
+            ? <Navigate to={isAdmin ? '/admin' : isStaff ? '/staff' : '/dashboard'} replace />
             : <LoginForm mode="login" onLoginSuccess={handleLoginSuccess} />
         }
       />
@@ -216,7 +219,7 @@ function AppRoutes() {
         path="/register"
         element={
           loggedUser
-            ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} replace />
+            ? <Navigate to={isAdmin ? '/admin' : isStaff ? '/staff' : '/dashboard'} replace />
             : <LoginForm mode="register" onLoginSuccess={handleLoginSuccess} />
         }
       />
@@ -227,6 +230,16 @@ function AppRoutes() {
         element={
           loggedUser && isAdmin
             ? <AdminDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
+            : <Navigate to="/login" replace />
+        }
+      />
+
+      {/* Staff dashboard */}
+      <Route
+        path="/staff/*"
+        element={
+          loggedUser && isStaff
+            ? <StaffDashboard user={loggedUser} onLogout={handleLogout} />
             : <Navigate to="/login" replace />
         }
       />
@@ -251,6 +264,7 @@ function AppRoutes() {
     </Routes>
   );
 }
+
 
 function App() {
   return (

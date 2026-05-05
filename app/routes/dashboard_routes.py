@@ -148,7 +148,7 @@ def get_aprendiz_stats():
         
         active_reservations = Reservation.query.filter(
             Reservation.user_id == user_id, 
-            Reservation.status.in_(['PENDING', 'pending', 'PENDIENTE', 'pendiente'])
+            Reservation.status.in_(['QUEUED', 'READY'])
         ).count()
         
         overdue_loans = Loan.query.filter(
@@ -185,14 +185,18 @@ def get_aprendiz_stats():
             })
 
         # 3. Reservas Recientes
-        reservations = Reservation.query.filter_by(user_id=user_id, status='PENDING').order_by(Reservation.expiration_date.asc()).limit(5).all()
+        reservations = Reservation.query.filter(
+            Reservation.user_id == user_id,
+            Reservation.status.in_(['QUEUED', 'READY'])
+        ).order_by(Reservation.reservation_date.desc()).limit(5).all()
         res_list = []
         for r in reservations:
             item = Item.query.get(r.item_id)
             res_list.append({
                 "id": r.id,
                 "item_name": item.name if item else "Elemento",
-                "expiration": r.expiration_date.isoformat()
+                "expiration": r.expiration_date.isoformat() if r.expiration_date else "En espera",
+                "status": r.status
             })
 
         # 4. Actividad Reciente del Usuario

@@ -198,7 +198,9 @@ def get_my_loans():
             items.append({
                 "id": detail.item_id,
                 "name": detail.item.name if detail.item else "Ítem eliminado",
-                "category": detail.item.category.name if detail.item and detail.item.category else "N/A"
+                "code": detail.item.code if detail.item else "N/A",
+                "category": detail.item.category.name if detail.item and detail.item.category else "N/A",
+                "image_url": detail.item.image_url if detail.item else None
             })
         result.append({
             "id": loan.id,

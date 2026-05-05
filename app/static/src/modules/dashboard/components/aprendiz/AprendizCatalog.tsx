@@ -28,6 +28,7 @@ interface Item {
 interface FilterData {
   categories: { id: number, name: string }[];
   statuses: { id: number, name: string }[];
+  dependencies: { id: number, name: string }[];
 }
 
 interface AprendizCatalogProps {
@@ -39,7 +40,8 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('ALL');
-  const [filters, setFilters] = useState<FilterData>({ categories: [], statuses: [] });
+  const [filterDependency, setFilterDependency] = useState('ALL');
+  const [filters, setFilters] = useState<FilterData>({ categories: [], statuses: [], dependencies: [] });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showQRView, setShowQRView] = useState(false);
@@ -61,7 +63,8 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
       const token = localStorage.getItem('token');
       const params = new URLSearchParams({
         search: searchTerm,
-        category_id: filterCategory === 'ALL' ? '' : filterCategory
+        category_id: filterCategory === 'ALL' ? '' : filterCategory,
+        dependency_id: filterDependency === 'ALL' ? '' : filterDependency
       });
 
       const [iRes, fRes] = await Promise.all([
@@ -93,7 +96,7 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
       fetchData();
     }, 300);
     return () => clearTimeout(delayDebounce);
-  }, [searchTerm, filterCategory]);
+  }, [searchTerm, filterCategory, filterDependency]);
 
   const getCategoryIcon = (cat: string) => {
     const c = cat.toLowerCase();
@@ -174,7 +177,12 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
         </button>
         
         <div className="filter-selects">
-
+          <CustomSelect 
+            label="Área de Servicio"
+            options={[{ id: 'ALL', name: 'Todas las áreas' }, ...(filters.dependencies || [])]}
+            value={filterDependency}
+            onChange={setFilterDependency}
+          />
           <CustomSelect 
             label="Categoría"
             options={[{ id: 'ALL', name: 'Todas' }, ...filters.categories]}
@@ -187,14 +195,7 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
             value={'ALL'}
             onChange={() => {}}
           />
-          <CustomSelect 
-            label="Tipo de elemento"
-            options={[{ id: 'ALL', name: 'Todos' }]}
-            value={'ALL'}
-            onChange={() => {}}
-          />
         </div>
-
       </div>
 
       {/* 4. Catalog Content */}

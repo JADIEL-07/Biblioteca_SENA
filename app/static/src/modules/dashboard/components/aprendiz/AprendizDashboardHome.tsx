@@ -147,15 +147,21 @@ export const AprendizDashboardHome: React.FC<DashboardHomeProps> = ({ user, onNa
                     <div className="activity-item-icon"><FiCalendar /></div>
                     <div className="activity-item-details">
                       <h4>{res.item_name}</h4>
-                      <p>Expira el: {new Date(res.expiration).toLocaleString()}</p>
+                      <p>
+                        {res.status === 'READY' 
+                          ? `Expira el: ${new Date(res.expiration).toLocaleString()}` 
+                          : 'En espera (Cola)'}
+                      </p>
                     </div>
-                    <span className="status-badge pending">PENDIENTE</span>
+                    <span className={`status-badge ${res.status === 'READY' ? 'ready' : 'queued'}`}>
+                      {res.status === 'READY' ? 'LISTA' : 'EN COLA'}
+                    </span>
                   </div>
                 ))
               ) : (
                 <div className="empty-state-mini">
                   <FiCalendar size={32} />
-                  <p>No tienes reservas pendientes.</p>
+                  <p>No tienes reservas activas.</p>
                 </div>
               )}
             </div>

@@ -97,7 +97,9 @@ class AuthService:
                 "id": user.id,
                 "name": user.name,
                 "role": { "name": user.role.name } if user.role else { "name": "APRENDIZ" },
-                "profile_image": user.profile_image
+                "profile_image": user.profile_image,
+                "dependency_id": user.dependency_id,
+                "dependency_name": user.dependency_obj.name if user.dependency_obj else None
             }
         }, 200
 

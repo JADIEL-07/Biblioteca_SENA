@@ -1,0 +1,13 @@
+.staff-panel {
+  background-color: var(--admin-bg-card, #1e293b);
+  border: 1px solid var(--admin-border-color, #334155);
+  border-radius: 12px;
+  padding: 2rem;
+  color: var(--admin-text-primary, #f8fafc);
+  min-height: 400px;
+}
+
+.staff-panel h1 {
+  color: var(--sena-green, #39A900);
+  margin-bottom: 1rem;
+}
