@@ -71,20 +71,12 @@
 .search-container-pro input {
     width: 100%;
     padding: 0.8rem 1rem 0.8rem 3.2rem;
-    background: rgba(var(--sena-green-rgb), 0.12);
-    border: 1px solid rgba(var(--sena-green-rgb), 0.3);
     border-radius: 12px;
     color: var(--admin-text-primary);
     font-size: 0.95rem;
-    outline: none;
-    transition: all 0.2s;
 }
 
-.search-container-pro input:focus {
-    border-color: var(--sena-green);
-    background: rgba(var(--sena-green-rgb), 0.18);
-    box-shadow: 0 0 0 3px rgba(var(--sena-green-rgb), 0.1);
-}
+/* Interacciones manejadas globalmente en index.css */
 
 .toolbar-left .custom-select-container {
     max-width: 220px;

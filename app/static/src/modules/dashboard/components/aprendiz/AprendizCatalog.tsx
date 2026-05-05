@@ -3,8 +3,10 @@ import {
   FiSearch, FiFilter, FiPackage, FiMapPin, FiInfo, 
   FiArrowLeft, FiGrid, FiList, FiBook, FiCpu, FiTool,
   FiMaximize, FiBookmark, FiChevronDown, FiCalendar,
-  FiChevronLeft, FiChevronRight, FiX
+  FiChevronLeft, FiChevronRight, FiX, FiCheckCircle
 } from 'react-icons/fi';
+import { MdQrCodeScanner } from 'react-icons/md';
+import { QRCodeCanvas } from 'qrcode.react';
 import { CustomSelect } from '../admin/CustomSelect';
 import './AprendizCatalog.css';
 
@@ -19,6 +21,7 @@ interface Item {
   model: string | null;
   image_url: string | null;
   description: string;
+  physical_condition?: string;
   stock: number;
 }
 
@@ -39,6 +42,18 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
   const [filters, setFilters] = useState<FilterData>({ categories: [], statuses: [] });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [showQRView, setShowQRView] = useState(false);
+  const [isDark, setIsDark] = useState(!document.body.classList.contains('theme-light'));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(!document.body.classList.contains('theme-light'));
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+
 
   const fetchData = async () => {
     setLoading(true);
@@ -90,21 +105,21 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
 
   const getStatusClass = (status: string) => {
     const s = status.toUpperCase();
-    if (s === 'EXCELENTE' || s === 'BUENO' || s === 'DISPONIBLE') return 'status-available';
-    if (s === 'REGULAR' || s === 'EN MANTENIMIENTO' || s === 'LOANED' || s === 'PRESTADO') return 'status-warning';
-    if (s === 'MALO' || s === 'DAÑADO') return 'status-unavailable';
+    if (s === 'DISPONIBLE') return 'status-available';
+    if (s === 'REGULAR' || s === 'EN MANTENIMIENTO' || s === 'LOANED' || s === 'PRESTADO' || s === 'OCUPADO') return 'status-warning';
+    if (s === 'DAÑADO') return 'status-unavailable';
     return '';
   };
 
   const isLoanedOut = (status: string) => {
     const s = status.toUpperCase();
-    return s === 'LOANED' || s === 'PRESTADO';
+    return s === 'LOANED' || s === 'PRESTADO' || s === 'OCUPADO';
   };
 
   const canReserve = (status: string) => {
     const s = status.toUpperCase();
-    // No se puede reservar si está dañado o en mantenimiento
-    return s !== 'MALO' && s !== 'DAÑADO' && s !== 'EN MANTENIMIENTO';
+    // Solo se puede reservar si está Disponible u Ocupado (en cola)
+    return s === 'DISPONIBLE' || s === 'OCUPADO' || s === 'PRESTADO' || s === 'LOANED';
   };
 
   const handleReserve = async (itemId: number) => {
@@ -182,15 +197,6 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
 
       </div>
 
-      {/* 3. Results Info */}
-      <div className="results-info-bar">
-        <span>Mostrando {items.length} resultados</span>
-        <div className="sort-wrapper">
-          <span>Ordenar por: <strong>Más recientes</strong></span>
-          <FiChevronDown />
-        </div>
-      </div>
-
       {/* 4. Catalog Content */}
       {loading ? (
         <div className="catalog-loading">
@@ -209,7 +215,7 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
             <div key={item.id} className="item-card-pro">
               <div className="card-image-area">
                 <span className={`status-badge-pro ${getStatusClass(item.status_name)}`}>
-                  {isLoanedOut(item.status_name) ? 'No disponible' : item.status_name}
+                  {isLoanedOut(item.status_name) ? 'Ocupado' : item.status_name}
                 </span>
                 <button className="btn-bookmark">
                   <FiBookmark />
@@ -261,15 +267,52 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
 
       {/* Item Detail Modal */}
       {selectedItem && (
-        <div className="catalog-modal-overlay" onClick={() => setSelectedItem(null)}>
+        <div className="catalog-modal-overlay" onClick={() => { setSelectedItem(null); setShowQRView(false); }}>
           <div className="catalog-modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-close-btn" onClick={() => setSelectedItem(null)}>
+            <div className="modal-close-btn" onClick={() => { setSelectedItem(null); setShowQRView(false); }}>
+
               <FiX />
             </div>
             
             <div className="modal-grid">
               <div className="modal-left">
                 <div className="modal-image-container">
+                  <button 
+                    className={`btn-qr-toggle ${showQRView ? 'active' : ''}`}
+                    onClick={() => setShowQRView(!showQRView)}
+                    title={showQRView ? "Cerrar QR" : "Generar QR del Producto"}
+                  >
+                    <MdQrCodeScanner />
+                  </button>
+                  
+                  {showQRView && (
+                    <div className="qr-floating-panel" onClick={() => setShowQRView(false)}>
+                      <div className="qr-floating-card" onClick={e => e.stopPropagation()}>
+                        <QRCodeCanvas 
+                          value={selectedItem.code} 
+                          size={200}
+                          bgColor={isDark ? "#1e293b" : "#ffffff"}
+                          fgColor={isDark ? "#ffffff" : "#0f172a"}
+                          level={"H"}
+                          includeMargin={true}
+                          imageSettings={{
+                            src: "https://upload.wikimedia.org/wikipedia/commons/8/83/Sena_Colombia_logo.svg",
+                            x: undefined,
+                            y: undefined,
+                            height: 45,
+                            width: 45,
+                            excavate: true,
+                          }}
+                        />
+                        <div className="qr-floating-info">
+                          <span className="qr-id-text">{selectedItem.code}</span>
+                        </div>
+
+                      </div>
+                    </div>
+                  )}
+
+                  
                   {selectedItem.image_url ? (
                     <img src={selectedItem.image_url} alt={selectedItem.name} />
                   ) : (
@@ -277,11 +320,13 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
                       {getCategoryIcon(selectedItem.category_name)}
                     </div>
                   )}
+
                 </div>
               </div>
               
               <div className="modal-right">
                 <div className="modal-header-info">
+
                   <span className="modal-badge">{selectedItem.category_name}</span>
                   <h2>{selectedItem.name}</h2>
                   <span className={`modal-status ${getStatusClass(selectedItem.status_name)}`}>
@@ -304,6 +349,10 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
                     <span>{selectedItem.brand || 'N/A'} {selectedItem.model ? `/ ${selectedItem.model}` : ''}</span>
                   </div>
                   <div className="spec-item">
+                    <label>Estado Físico</label>
+                    <span className="condition-badge">{selectedItem.physical_condition || 'Bueno'}</span>
+                  </div>
+                  <div className="spec-item">
                     <label>Ubicación</label>
                     <span>{selectedItem.location_name}</span>
                   </div>
@@ -314,6 +363,7 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
                 </div>
 
                 <div className="modal-actions">
+
                   {!isGuest && (
                     <button
                       className="btn-reserve"
