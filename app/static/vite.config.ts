@@ -12,6 +12,7 @@ export default defineConfig({
         secure: false
       },
     },
+    historyApiFallback: true,
   },
   build: {
     outDir: 'dist',

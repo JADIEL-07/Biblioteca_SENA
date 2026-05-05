@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FiMail, FiLock, FiUser, FiEye, FiEyeOff, FiAlertCircle, FiPhone, FiCreditCard } from 'react-icons/fi';
 import './LoginForm.css';
 import { FloatingParticles } from '../../../components/ui/FloatingParticles';
@@ -6,13 +7,13 @@ const senaBg = '/assets/images/sena-library-bg.png';
 
 interface LoginFormProps {
   mode: 'login' | 'register';
-  onBack: () => void;
-  onForgotPassword: () => void;
+  onForgotPassword?: () => void;
   onLoginSuccess?: (user: any) => void;
   onSwitchMode?: (mode: 'login' | 'register') => void;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPassword, onLoginSuccess, onSwitchMode }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ mode, onLoginSuccess }) => {
+  const navigate = useNavigate();
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -114,8 +115,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
         setSuccessMsg('Inicio de sesión exitoso. Redirigiendo...');
+        if (onLoginSuccess) onLoginSuccess(data.user);
         setTimeout(() => {
-          if (onLoginSuccess) onLoginSuccess(data.user);
+          const role = data.user?.role?.name || data.user?.rol?.nombre;
+          navigate(role === 'ADMIN' ? '/admin' : '/dashboard');
         }, 800);
       }
     } catch (err: any) {
@@ -272,7 +275,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
                 <a 
                   href="#" 
                   className="forgot-password"
-                  onClick={(e) => { e.preventDefault(); onForgotPassword(); }}
+                  onClick={(e) => { e.preventDefault(); navigate('/forgot-password'); }}
                 >
                   ¿Olvidaste tu contraseña?
                 </a>
@@ -291,7 +294,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
                 <button 
                   type="button" 
                   className="switch-mode-btn"
-                  onClick={() => onSwitchMode?.('login')}
+                  onClick={() => navigate('/login')}
                   disabled={loading}
                 >
                   Iniciar sesión
@@ -300,10 +303,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
             ) : (
               <p>
                 ¿No tienes cuenta?{' '}
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="switch-mode-btn"
-                  onClick={() => onSwitchMode?.('register')}
+                  onClick={() => navigate('/register')}
                   disabled={loading}
                 >
                   Regístrate aquí
@@ -312,7 +315,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onBack, onForgotPass
             )}
           </div>
 
-          <button className="back-btn" onClick={onBack} disabled={loading}>
+          <button className="back-btn" onClick={() => history.back()} disabled={loading}>
             Volver al inicio
           </button>
           <div style={{ height: '20px' }}></div>

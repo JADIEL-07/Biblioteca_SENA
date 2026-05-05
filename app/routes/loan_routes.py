@@ -88,6 +88,11 @@ def create_loan():
     if not user:
         return jsonify({"error": "Usuario no encontrado"}), 404
         
+    from ..models.reservation import Reservation
+    from ..services.reservation_queue import (
+        push_notification, is_item_available_for_loan,
+    )
+
     loan = Loan(
         user_id=user_id,
         admin_id=get_jwt_identity(),
@@ -95,53 +100,90 @@ def create_loan():
         status='ACTIVE'
     )
     db.session.add(loan)
-    db.session.flush() # Para obtener el ID del préstamo
-    
+    db.session.flush()
+
     for item_id in item_ids:
         item = Item.query.get(item_id)
-        if item and item.status_obj and item.status_obj.name in ['AVAILABLE', 'EXCELENTE', 'BUENO', 'REGULAR']:
-            detail = LoanDetail(
-                loan_id=loan.id,
-                item_id=item_id,
-                delivery_status='GOOD'
-            )
-            from ..models.item import Status
-            loaned_status = Status.query.filter_by(name='LOANED').first()
-            if not loaned_status:
-                loaned_status = Status(name='LOANED')
-                db.session.add(loaned_status)
-                db.session.flush()
-            item.status_id = loaned_status.id
-            db.session.add(detail)
-        else:
+        if not item:
             db.session.rollback()
-            return jsonify({"error": f"El ítem {item_id} no está disponible"}), 400
-            
+            return jsonify({"error": f"Ítem {item_id} no existe"}), 404
+
+        # ¿Este usuario tiene una reserva READY de este ítem? Consumirla.
+        ready_res = Reservation.query.filter_by(
+            user_id=str(user_id), item_id=item_id, status='READY'
+        ).first()
+
+        if ready_res:
+            ready_res.status = 'CLAIMED'
+            ready_res.converted_at = datetime.utcnow()
+            ready_res.converted_loan_id = loan.id
+        else:
+            # Sin reserva: solo se permite si hay unidad libre y nadie en READY
+            if not is_item_available_for_loan(item):
+                db.session.rollback()
+                return jsonify({
+                    "error": f"El ítem '{item.name}' no está disponible (puede haber reservas en cola)"
+                }), 400
+
+        detail = LoanDetail(loan_id=loan.id, item_id=item_id, delivery_status='GOOD')
+        from ..models.item import Status
+        loaned_status = Status.query.filter_by(name='LOANED').first()
+        if not loaned_status:
+            loaned_status = Status(name='LOANED')
+            db.session.add(loaned_status)
+            db.session.flush()
+        item.status_id = loaned_status.id
+        db.session.add(detail)
+
+    push_notification(
+        user_id, 'LOAN_CREATED',
+        'Préstamo registrado',
+        f'Se registró tu préstamo #{loan.id}. Vence el {loan.due_date.strftime("%Y-%m-%d")}.',
+        related_type='loan', related_id=loan.id,
+    )
     db.session.commit()
-    return jsonify({"success": True, "message": "Préstamo creado exitosamente"}), 201
+    return jsonify({"success": True, "message": "Préstamo creado exitosamente", "loan_id": loan.id}), 201
 
 @loan_bp.route('/<int:id>/return', methods=['POST'])
 @jwt_required()
 def return_loan(id):
     loan = Loan.query.get_or_404(id)
-    data = request.get_json()
-    
+    data = request.get_json() or {}
+
     loan.return_date = datetime.now()
     loan.status = 'RETURNED'
-    
+
+    affected_items = []
     for detail in loan.details:
         item = Item.query.get(detail.item_id)
         if item:
             from ..models.item import Status
             avail_status = Status.query.filter_by(name='AVAILABLE').first()
-            item.status_id = avail_status.id
+            if avail_status:
+                item.status_id = avail_status.id
             detail.return_status = data.get('return_status', 'GOOD')
-            
-    # Calcular multa si es tarde
+            affected_items.append(detail.item_id)
+
+    # Notificar al aprendiz que el préstamo fue cerrado
+    from ..services.reservation_queue import push_notification, on_item_available
+    push_notification(
+        loan.user_id, 'LOAN_RETURNED',
+        'Préstamo cerrado',
+        f'Tu préstamo #{loan.id} se marcó como devuelto. ¡Gracias!',
+        related_type='loan', related_id=loan.id,
+    )
+
+    # Multa si es tarde
     if datetime.now() > loan.due_date:
-        loan.fine_amount = 5000.0 # Ejemplo: multa fija por retraso
-        
+        loan.fine_amount = 5000.0
+
     db.session.commit()
+
+    # Promover la cola de cada ítem liberado
+    for item_id in set(affected_items):
+        on_item_available(item_id)
+    db.session.commit()
+
     return jsonify({"success": True, "message": "Préstamo devuelto exitosamente"}), 200
 
 @loan_bp.route('/my', methods=['GET'])

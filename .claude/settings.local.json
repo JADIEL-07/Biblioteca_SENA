@@ -5,7 +5,25 @@
       "Bash(gh pr *)",
       "PowerShell(gh pr list --head claude/gallant-murdock-e92267 2>&1)",
       "Bash(python -c ' *)",
-      "Bash(git mv *)"
+      "Bash(git mv *)",
+      "Bash(python scripts/migrate_reservations_notifications.py)",
+      "Bash(pip install *)",
+      "Bash(python -c \"from app import create_app; a = create_app\\(\\); print\\('OK', sorted\\([r.rule for r in a.url_map.iter_rules\\(\\) if '/notifications' in r.rule or '/history' in r.rule or '/reservations' in r.rule]\\)\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(python scripts/smoke_reservation_queue.py)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "Bash(python run.py)",
+      "Bash(curl -s http://localhost:5000/api/v1/auth/login -o /dev/null -w \"%{http_code}\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(netstat -ano)",
+      "Bash(findstr :5173)",
+      "Bash(taskkill /PID 27376 /F)",
+      "PowerShell(Stop-Process -Id 27376 -Force)",
+      "Bash(xargs grep *)",
+      "Bash(npm install *)",
+      "Bash(sed -i 's|        <p>Consulta el estado de tus préstamos de libros y equipos.</p>||g' \"C:\\\\Users\\\\JADIEL\\\\Desktop\\\\BIBLIOTECA Y ALMACEN\\\\app\\\\static\\\\src\\\\modules\\\\dashboard\\\\components\\\\aprendiz\\\\AprendizLoans.tsx\")",
+      "Bash(sed -i 's|        <p>Todos tus préstamos y reservas registrados.</p>||g' \"C:\\\\Users\\\\JADIEL\\\\Desktop\\\\BIBLIOTECA Y ALMACEN\\\\app\\\\static\\\\src\\\\modules\\\\dashboard\\\\components\\\\aprendiz\\\\AprendizHistory.tsx\")"
     ]
   }
 }

@@ -3,11 +3,7 @@ import './Terms.css'; // Reutilizamos los estilos base por consistencia
 const senaBg = '/assets/images/sena-library-bg.png';
 import { FloatingParticles } from '../../../components/ui/FloatingParticles';
 
-interface PrivacyProps {
-  onBack: () => void;
-}
-
-export const Privacy = ({ onBack }: PrivacyProps) => {
+export const Privacy = () => {
   return (
     <div className="terms-wrapper">
       <div className="background-image-container">
@@ -119,7 +115,7 @@ export const Privacy = ({ onBack }: PrivacyProps) => {
           </div>
 
           <footer className="terms-footer">
-            <button className="btn-back-home" onClick={onBack}>
+            <button className="btn-back-home" onClick={() => history.back()}>
               <FiArrowLeft /> REGRESAR AL INICIO
             </button>
           </footer>

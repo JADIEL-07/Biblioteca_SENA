@@ -130,7 +130,6 @@ export const ReservationManagement: React.FC = () => {
           <div className="header-icon-box"><FiCalendar /></div>
           <div>
             <h1>Dashboard de Reservas</h1>
-            <p>Monitoreo inteligente y control de demanda</p>
           </div>
         </div>
       </div>

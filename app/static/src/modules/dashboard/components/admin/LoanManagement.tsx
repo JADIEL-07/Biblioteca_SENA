@@ -105,7 +105,6 @@ export const LoanManagement: React.FC = () => {
           <div className="header-icon-box"><FiClock /></div>
           <div>
             <h1>Historial de Préstamos</h1>
-            <p>Filtra por fechas, categorías y responsables</p>
           </div>
         </div>
       </div>

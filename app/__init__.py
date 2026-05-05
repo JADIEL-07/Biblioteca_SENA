@@ -1,3 +1,4 @@
+import os
 from config import get_config
 from .extensions import db, ma, migrate, jwt, mail, limiter
 
@@ -41,6 +42,12 @@ def create_app():
     with app.app_context():
         register_audit_listeners_v2()
 
+    # ── Scheduler (cola FIFO de reservas) ─────────────────────────────────────
+    # Evitar doble-lanzamiento bajo el reloader de Flask en desarrollo.
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug:
+        from .services.scheduler import init_scheduler
+        init_scheduler(app)
+
     # ── Blueprints ────────────────────────────────────────────────────────────
     from .routes.auth_routes import auth_bp
     from .routes.item_routes import items_bp
@@ -52,6 +59,8 @@ def create_app():
     from .routes.maintenance_routes import maintenance_bp
     from .routes.report_routes import report_bp
     from .routes.output_routes import output_bp
+    from .routes.notification_routes import notification_bp
+    from .routes.history_routes import history_bp
 
     app.register_blueprint(auth_bp,      url_prefix='/api/v1/auth')
     app.register_blueprint(items_bp,     url_prefix='/api/v1/items')
@@ -63,6 +72,8 @@ def create_app():
     app.register_blueprint(maintenance_bp, url_prefix='/api/v1/maintenance')
     app.register_blueprint(report_bp,      url_prefix='/api/v1/reports_mgmt')
     app.register_blueprint(output_bp,      url_prefix='/api/v1/outputs')
+    app.register_blueprint(notification_bp, url_prefix='/api/v1/notifications')
+    app.register_blueprint(history_bp,     url_prefix='/api/v1/history')
 
     # ── Security Headers ──────────────────────────────────────────────────────
     @app.after_request
@@ -99,6 +110,13 @@ def create_app():
 
     @app.route('/')
     def index():
+        return app.send_static_file('index.html')
+
+    # Catch-all for React Router: serve index.html for all non-API routes
+    @app.route('/<path:path>')
+    def spa_fallback(path):
+        if path.startswith('api/'):
+            return jsonify({"message": "Not found"}), 404
         return app.send_static_file('index.html')
 
     return app

@@ -100,7 +100,6 @@ export const MaintenanceManagement: React.FC = () => {
           <div className="header-icon-box"><FiTool /></div>
           <div>
             <h1>Gestión Técnica (Mantenimiento)</h1>
-            <p>Control de reparaciones, diagnósticos y costos</p>
           </div>
         </div>
       </div>

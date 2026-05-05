@@ -77,10 +77,7 @@ export const UserManagement: React.FC = () => {
         })
       ]);
 
-      if (uRes.status === 401 || sRes.status === 401) {
-        alert("Tu sesión ha caducado. Por favor, cierra sesión e ingresa nuevamente.");
-        return;
-      }
+      if (uRes.status === 401 || sRes.status === 401) return;
 
       const uData = await uRes.json();
       const sData = await sRes.json();

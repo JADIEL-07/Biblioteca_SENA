@@ -14,8 +14,13 @@ class Movement(db.Model):
 class Notification(db.Model):
     __tablename__ = 'notifications'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.String(50), db.ForeignKey('users.id'), nullable=False, index=True)
+    title = db.Column(db.String(150))
     message = db.Column(db.Text, nullable=False)
-    type = db.Column(db.String(50))
-    is_read = db.Column(db.Boolean, default=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
+    type = db.Column(db.String(50), index=True)
+    # RESERVATION_READY, RESERVATION_REMINDER, RESERVATION_EXPIRED,
+    # RESERVATION_QUEUED, LOAN_CREATED, LOAN_RETURNED, LOAN_DUE, GENERIC
+    related_type = db.Column(db.String(50))   # 'reservation' | 'loan' | 'item'
+    related_id = db.Column(db.Integer)
+    is_read = db.Column(db.Boolean, default=False, index=True)
+    date = db.Column(db.DateTime, default=datetime.utcnow, index=True)

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FiHome, FiMail, FiHelpCircle, FiMenu, FiX } from 'react-icons/fi';
+import { useNavigate, useParams } from 'react-router-dom';
+import { FiMail, FiHelpCircle, FiMenu, FiX } from 'react-icons/fi';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHome } from './AdminHome';
 import { UserConfig } from '../UserConfig';
@@ -12,8 +13,9 @@ import { SystemReports } from './SystemReports';
 import { InventoryManagement } from './InventoryManagement';
 import { OutputManagement } from './OutputManagement';
 import { ProfileOverlay } from './ProfileOverlay';
+import { NotificationBell } from '../../../../shared/NotificationBell';
 import './AdminDashboard.css';
-import '../UserDashboard.css'; // Importamos los estilos base del dashboard de usuario para coherencia
+import '../UserDashboard.css';
 
 interface UserData {
   id: number;
@@ -31,7 +33,10 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, onUserUpdate }) => {
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const navigate = useNavigate();
+  const { '*': sectionParam } = useParams();
+  const activeSection = sectionParam || 'dashboard';
+
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -52,7 +57,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
     if (section === 'profile') {
       setShowProfileModal(true);
     } else {
-      setActiveSection(section);
+      navigate(`/admin/${section}`);
       setIsMobileSidebarOpen(false);
     }
   };
@@ -64,9 +69,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
     .join('')
     .toUpperCase();
 
+  const sectionTitle: Record<string, string> = {
+    dashboard: 'Panel de Control General',
+    inventory: 'Gestión de Inventario',
+    'inventory-table': 'Tabla de Inventario',
+    'inventory-locations': 'Gestión de Ubicaciones',
+    'inventory-categories': 'Gestión de Categorías',
+    loans: 'Control de Préstamos',
+    users: 'Gestión de Usuarios',
+    reports: 'Reportes Estadísticos',
+    audit: 'Auditoría del Sistema',
+    reservations: 'Control de Reservas',
+    maintenance: 'Gestión de Mantenimiento',
+    exits: 'Control de Salidas Controladas',
+    config: 'Configuración del Sistema',
+  };
+
   return (
     <div className={`dashboard-layout theme-${theme} admin-specific`}>
-      {/* TOP NAVIGATION (Mismo diseño que el aprendiz) */}
+      {/* TOP NAVIGATION */}
       <nav className="dashboard-topnav">
         <button
           className="topnav-mobile-toggle"
@@ -95,6 +116,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
               <FiHelpCircle className="nav-icon" /> AYUDA
             </a>
           </div>
+
+          <NotificationBell />
 
           <div className="topnav-user">
             <div className="avatar-circle" style={{ background: 'var(--sena-green)', overflow: 'hidden' }}>
@@ -126,24 +149,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
           onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           isMobileOpen={isMobileSidebarOpen}
         />
-        
+
         <main className="dashboard-main-content">
-          {/* Cabecera interna opcional para el título de la sección */}
-          <div className="section-header" style={{ marginBottom: '1.5rem' }}>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {activeSection === 'dashboard' && 'Panel de Control General'}
-              {activeSection === 'inventory' && 'Gestión de Inventario'}
-              {activeSection === 'inventory-table' && 'Tabla de Inventario'}
-              {activeSection === 'inventory-locations' && 'Gestión de Ubicaciones'}
-              {activeSection === 'inventory-categories' && 'Gestión de Categorías'}
-              {activeSection === 'loans' && 'Control de Préstamos'}
-              {activeSection === 'users' && 'Gestión de Usuarios'}
-              {activeSection === 'reports' && 'Reportes Estadísticos'}
-              {activeSection === 'audit' && 'Auditoría del Sistema'}
-              {activeSection === 'reservations' && 'Control de Reservas'}
-              {activeSection === 'maintenance' && 'Gestión de Mantenimiento'}
-              {activeSection === 'exits' && 'Control de Salidas Controladas'}
-              {activeSection === 'config' && 'Configuración del Sistema'}
+          <div className="section-header" style={{ marginBottom: '0.75rem' }}>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              {sectionTitle[activeSection] ?? 'Sección'}
             </h1>
           </div>
 
@@ -156,12 +166,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
             {activeSection === 'reservations' && <ReservationManagement />}
             {activeSection === 'maintenance' && <MaintenanceManagement />}
             {activeSection === 'reports' && <SystemReports />}
-            {activeSection === 'inventory' && <InventoryManagement />}
-            {activeSection === 'inventory-table' && <InventoryManagement />}
+            {(activeSection === 'inventory' || activeSection === 'inventory-table') && <InventoryManagement />}
             {activeSection === 'inventory-locations' && <InventoryManagement activeTab="locations" />}
             {activeSection === 'inventory-categories' && <InventoryManagement activeTab="categories" />}
             {activeSection === 'exits' && <OutputManagement />}
-            {activeSection !== 'dashboard' && activeSection !== 'config' && activeSection !== 'users' && activeSection !== 'audit' && activeSection !== 'loans' && activeSection !== 'reservations' && activeSection !== 'maintenance' && activeSection !== 'reports' && activeSection !== 'inventory' && !activeSection.startsWith('inventory-') && activeSection !== 'exits' && (
+            {!sectionTitle[activeSection] && (
               <div className="placeholder-view">
                 <h2>Sección en construcción</h2>
                 <p>El módulo de {activeSection} estará disponible pronto.</p>
@@ -170,10 +179,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
           </div>
         </main>
       </div>
+
       {showProfileModal && (
-        <ProfileOverlay 
-          user={user} 
-          onClose={() => setShowProfileModal(false)} 
+        <ProfileOverlay
+          user={user}
+          onClose={() => setShowProfileModal(false)}
           onSave={(photo) => onUserUpdate({ profile_image: photo })}
         />
       )}

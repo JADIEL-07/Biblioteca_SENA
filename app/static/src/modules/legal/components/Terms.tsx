@@ -3,11 +3,7 @@ import './Terms.css';
 const senaBg = '/assets/images/sena-library-bg.png';
 import { FloatingParticles } from '../../../components/ui/FloatingParticles';
 
-interface TermsProps {
-  onBack: () => void;
-}
-
-export const Terms = ({ onBack }: TermsProps) => {
+export const Terms = () => {
   return (
     <div className="terms-wrapper">
       <div className="background-image-container">
@@ -135,7 +131,7 @@ export const Terms = ({ onBack }: TermsProps) => {
           </div>
 
           <footer className="terms-footer">
-            <button className="btn-back-home" onClick={onBack}>
+            <button className="btn-back-home" onClick={() => history.back()}>
               <FiArrowLeft /> REGRESAR AL INICIO
             </button>
           </footer>

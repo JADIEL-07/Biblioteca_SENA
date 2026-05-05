@@ -26,3 +26,6 @@ flask-mail
 
 # ── Producción (WSGI server) ──────────────────────
 gunicorn==25.3.0
+
+# ── Scheduler ─────────────────────────────────────
+APScheduler==3.10.4

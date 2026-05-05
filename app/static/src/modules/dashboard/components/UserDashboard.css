@@ -4,15 +4,15 @@
 
 /* ── VARIABLES DE TEMA ── */
 .theme-dark {
-  --bg-main: #0f172a;
-  --bg-nav: #1e293b;
-  --bg-sidebar: #1e293b;
-  --bg-card: #1e293b;
-  --bg-card-light: #334155;
-  --border-color: #334155;
+  --bg-main: #0b1120;
+  --bg-nav: #0f172a;
+  --bg-sidebar: #0f172a;
+  --bg-card: #151e32;
+  --bg-card-light: #1e293b;
+  --border-color: #2a374f;
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
   --sena-green: #39a900;
   --sena-green-hover: #2d8200;
   --sena-green-light: rgba(57, 169, 0, 0.15);
@@ -32,21 +32,21 @@
 }
 
 .theme-light {
-  --bg-main: #f8fafc;
+  --bg-main: #F1F5F9;
   --bg-nav: #ffffff;
   --bg-sidebar: #ffffff;
   --bg-card: #ffffff;
-  --bg-card-light: #f1f5f9;
+  --bg-card-light: #F1F5F9;
   --border-color: #e2e8f0;
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-muted: #94a3b8;
   --sena-green: #39a900;
   --sena-green-hover: #2d8200;
   --sena-green-light: rgba(57, 169, 0, 0.1);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.05);
-  --bg-toggle: #f1f5f9;
+  --bg-toggle: #F1F5F9;
   --text-toggle: #0f172a;
 }
 
@@ -291,9 +291,13 @@
 
 /* ── SIDEBAR ── */
 .dashboard-sidebar {
+  width: 230px;
   padding: 0;
-  transition: width 0.3s ease;
-  overflow: hidden; /* Evita que todo el sidebar haga scroll */
+  flex-shrink: 0;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  transition: width 0.3s ease, background-color 0.3s, border-color 0.3s;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -301,6 +305,7 @@
 .dashboard-sidebar.collapsed {
   width: 70px;
 }
+
 
 .sidebar-toggle-container {
   display: flex;
@@ -372,6 +377,9 @@
   border-radius: 12px;
   padding: 0.7rem 1rem;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dashboard-sidebar.collapsed .sidebar-item {
@@ -1284,7 +1292,46 @@
   color: var(--text-muted);
 }
 
-.status-badge.active { background: rgba(57, 169, 0, 0.15); color: var(--sena-green); }
-.status-badge.returned { background: rgba(51, 65, 85, 0.15); color: var(--text-muted); }
-.status-badge.overdue { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-.status-badge.pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+/* En tablas el badge es inline, no absoluto */
+td .status-badge {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Préstamos */
+.status-badge.active   { background: rgba(57, 169, 0, 0.15);   color: var(--sena-green); }
+.status-badge.returned { background: rgba(51, 65, 85, 0.15);   color: var(--text-muted); }
+.status-badge.overdue  { background: rgba(239, 68, 68, 0.15);  color: #ef4444; }
+
+/* Reservas - cola FIFO */
+.status-badge.queued    { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.status-badge.ready     { background: rgba(57, 169, 0, 0.18);   color: var(--sena-green); }
+.status-badge.claimed   { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+.status-badge.expired   { background: rgba(239, 68, 68, 0.13);  color: #ef4444; }
+.status-badge.cancelled { background: rgba(107, 114, 128, 0.15);color: #9ca3af; }
+/* legacy */
+.status-badge.pending   { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+/* Filtros pill (Historial) */
+.filter-pill {
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color, rgba(255,255,255,0.12));
+  background: transparent;
+  color: var(--text-secondary, rgba(255,255,255,0.6));
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.filter-pill:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--text-primary, #fff);
+}
+.filter-pill.active {
+  background: var(--sena-green, #39a900);
+  color: #fff;
+  border-color: var(--sena-green, #39a900);
+}

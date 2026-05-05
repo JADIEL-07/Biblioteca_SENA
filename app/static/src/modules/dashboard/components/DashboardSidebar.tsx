@@ -38,15 +38,19 @@ export const DashboardSidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { id: 'home', label: 'Inicio', icon: <FiHome /> },
     { id: 'explore', label: 'Explorar elementos', icon: <FiSearch /> },
-    { id: 'loans', label: 'Mis préstamos', icon: <FiBookOpen />, restricted: true },
-    { id: 'reservations', label: 'Mis reservas', icon: <FiCalendar />, restricted: true },
-    { id: 'history', label: 'Historial', icon: <FiClock />, restricted: true },
+    ...(!isGuest ? [
+      { id: 'loans', label: 'Mis préstamos', icon: <FiBookOpen />, restricted: true },
+      { id: 'reservations', label: 'Mis reservas', icon: <FiCalendar />, restricted: true },
+      { id: 'history', label: 'Historial', icon: <FiClock />, restricted: true },
+    ] : []),
   ];
 
   const bottomItems = [
-    { id: 'notifications', label: 'Notificaciones', icon: <FiBell /> },
-    { id: 'help', label: 'Ayuda y soporte', icon: <FiHelpCircle /> },
-    { id: 'config', label: 'Configuración', icon: <FiSettings />, restricted: true },
+    ...(!isGuest ? [
+      { id: 'notifications', label: 'Notificaciones', icon: <FiBell /> },
+      { id: 'help', label: 'Ayuda y soporte', icon: <FiHelpCircle /> },
+      { id: 'config', label: 'Configuración', icon: <FiSettings />, restricted: true },
+    ] : []),
   ];
 
   const handleNav = (item: any) => {
@@ -164,15 +168,17 @@ export const DashboardSidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        <button
-          className="sidebar-item logout-item"
-          onClick={onLogout}
-          style={{ color: '#ef4444', marginBottom: '0.5rem' }}
-          title={isCollapsed ? "Cerrar Sesión" : ""}
-        >
-          <span className="sidebar-icon"><FiLogOut /></span>
-          {!isCollapsed && <span className="sidebar-label">Cerrar Sesión</span>}
-        </button>
+        {!isGuest && (
+          <button
+            className="sidebar-item logout-item"
+            onClick={onLogout}
+            style={{ color: '#ef4444', marginBottom: '0.5rem' }}
+            title={isCollapsed ? "Cerrar Sesión" : ""}
+          >
+            <span className="sidebar-icon"><FiLogOut /></span>
+            {!isCollapsed && <span className="sidebar-label">Cerrar Sesión</span>}
+          </button>
+        )}
       </div>
     </aside>
   );

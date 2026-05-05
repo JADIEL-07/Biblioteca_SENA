@@ -109,7 +109,6 @@ export const AuditLogs: React.FC = () => {
           <div className="header-icon-box"><FiShield /></div>
           <div>
             <h1>Auditoría del Sistema</h1>
-            <p>Registro completo de transacciones y seguridad</p>
           </div>
         </div>
       </div>

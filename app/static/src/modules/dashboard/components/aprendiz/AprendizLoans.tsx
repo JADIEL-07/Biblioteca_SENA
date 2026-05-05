@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FiBook, FiClock, FiCheckCircle, FiAlertCircle, FiArrowLeft } from 'react-icons/fi';
+import { FiBook } from 'react-icons/fi';
 
-interface AprendizLoansProps {
-  onBack: () => void;
-}
-
-export const AprendizLoans: React.FC<AprendizLoansProps> = ({ onBack }) => {
+export const AprendizLoans: React.FC = () => {
   const [loans, setLoans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,7 +9,7 @@ export const AprendizLoans: React.FC<AprendizLoansProps> = ({ onBack }) => {
     const fetchLoans = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('/api/loans/my', {
+        const response = await fetch('/api/v1/loans/my', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -35,11 +31,8 @@ export const AprendizLoans: React.FC<AprendizLoansProps> = ({ onBack }) => {
   return (
     <div className="dashboard-view-container">
       <div className="view-header">
-        <button className="back-link-btn" onClick={onBack}>
-          <FiArrowLeft /> Volver al Inicio
-        </button>
         <h2>Mis Préstamos</h2>
-        <p>Consulta el estado de tus préstamos de libros y equipos.</p>
+
       </div>
 
       {loading ? (

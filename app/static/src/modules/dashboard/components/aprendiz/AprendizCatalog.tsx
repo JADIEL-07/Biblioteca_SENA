@@ -27,7 +27,11 @@ interface FilterData {
   statuses: { id: number, name: string }[];
 }
 
-export const AprendizCatalog: React.FC = () => {
+interface AprendizCatalogProps {
+  isGuest?: boolean;
+}
+
+export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = false }) => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -87,9 +91,43 @@ export const AprendizCatalog: React.FC = () => {
   const getStatusClass = (status: string) => {
     const s = status.toUpperCase();
     if (s === 'EXCELENTE' || s === 'BUENO' || s === 'DISPONIBLE') return 'status-available';
-    if (s === 'REGULAR' || s === 'EN MANTENIMIENTO') return 'status-warning';
-    if (s === 'MALO' || s === 'DAÑADO' || s === 'PRESTADO') return 'status-unavailable';
+    if (s === 'REGULAR' || s === 'EN MANTENIMIENTO' || s === 'LOANED' || s === 'PRESTADO') return 'status-warning';
+    if (s === 'MALO' || s === 'DAÑADO') return 'status-unavailable';
     return '';
+  };
+
+  const isLoanedOut = (status: string) => {
+    const s = status.toUpperCase();
+    return s === 'LOANED' || s === 'PRESTADO';
+  };
+
+  const canReserve = (status: string) => {
+    const s = status.toUpperCase();
+    // No se puede reservar si está dañado o en mantenimiento
+    return s !== 'MALO' && s !== 'DAÑADO' && s !== 'EN MANTENIMIENTO';
+  };
+
+  const handleReserve = async (itemId: number) => {
+    const token = localStorage.getItem('token');
+    const r = await fetch('/api/v1/reservations/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ item_id: itemId }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok) {
+      if (data.status === 'READY') {
+        alert('Tu reserva está lista. Tienes 5 horas para reclamarla.');
+      } else {
+        alert('Te agregamos a la cola. Te avisaremos cuando esté disponible.');
+      }
+      setSelectedItem(null);
+    } else {
+      alert(data.error || 'No se pudo crear la reserva');
+    }
   };
 
   return (
@@ -98,7 +136,6 @@ export const AprendizCatalog: React.FC = () => {
       <div className="catalog-header-pro">
         <div className="header-info">
           <h1>Explorar inventario</h1>
-          <p>Encuentra libros, herramientas y equipos disponibles para préstamo.</p>
         </div>
         
         <div className="header-actions">
@@ -173,7 +210,7 @@ export const AprendizCatalog: React.FC = () => {
             <div key={item.id} className="item-card-pro">
               <div className="card-image-area">
                 <span className={`status-badge-pro ${getStatusClass(item.status_name)}`}>
-                  {item.status_name}
+                  {isLoanedOut(item.status_name) ? 'No disponible' : item.status_name}
                 </span>
                 <button className="btn-bookmark">
                   <FiBookmark />
@@ -194,12 +231,25 @@ export const AprendizCatalog: React.FC = () => {
                 </div>
                 
                 <div className="card-actions-row">
-                  <button 
-                    className="btn-reserve-pro"
-                    disabled={item.stock === 0 || getStatusClass(item.status_name) === 'status-unavailable'}
-                  >
-                    <FiCalendar /> Reservar
-                  </button>
+                  {isGuest ? (
+                    <button
+                      className="btn-reserve-pro"
+                      style={{ background: 'var(--bg-card-light)', color: 'var(--text-secondary)', cursor: 'default', opacity: 0.7 }}
+                      disabled
+                      title="Inicia sesión para reservar"
+                    >
+                      <FiCalendar /> Inicia sesión
+                    </button>
+                  ) : (
+                    <button
+                      className="btn-reserve-pro"
+                      disabled={!canReserve(item.status_name)}
+                      onClick={() => handleReserve(item.id)}
+                      title={isLoanedOut(item.status_name) ? 'Está prestado — entrarás a la cola' : 'Reservar'}
+                    >
+                      <FiCalendar /> {isLoanedOut(item.status_name) ? 'Reservar (en cola)' : 'Reservar'}
+                    </button>
+                  )}
                   <button className="btn-info-circle" onClick={() => setSelectedItem(item)}>
                     <FiInfo />
                   </button>
@@ -265,12 +315,15 @@ export const AprendizCatalog: React.FC = () => {
                 </div>
 
                 <div className="modal-actions">
-                  <button 
-                    className="btn-reserve" 
-                    disabled={selectedItem.stock === 0 || getStatusClass(selectedItem.status_name) === 'status-unavailable'}
-                  >
-                    Solicitar Reserva
-                  </button>
+                  {!isGuest && (
+                    <button
+                      className="btn-reserve"
+                      disabled={!canReserve(selectedItem.status_name)}
+                      onClick={() => handleReserve(selectedItem.id)}
+                    >
+                      {isLoanedOut(selectedItem.status_name) ? 'Reservar (entrar a la cola)' : 'Solicitar Reserva'}
+                    </button>
+                  )}
                   <button className="btn-secondary" onClick={() => setSelectedItem(null)}>
                     Cerrar
                   </button>

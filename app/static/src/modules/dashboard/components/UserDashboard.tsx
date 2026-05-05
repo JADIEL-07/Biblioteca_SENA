@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
-  FiSettings, FiRefreshCw, FiLogOut, FiMenu, FiX, FiHome, FiMail, FiHelpCircle, FiUser, FiUserPlus
+  FiSettings, FiRefreshCw, FiMenu, FiX, FiHome, FiMail, FiHelpCircle, FiUser, FiUserPlus
 } from 'react-icons/fi';
 import './UserDashboard.css';
 import { DashboardSidebar } from './DashboardSidebar';
@@ -11,6 +12,8 @@ import { AprendizDashboardHome } from './aprendiz/AprendizDashboardHome';
 import { AprendizLoans } from './aprendiz/AprendizLoans';
 import { AprendizReservations } from './aprendiz/AprendizReservations';
 import { AprendizCatalog } from './aprendiz/AprendizCatalog';
+import { AprendizHistory } from './aprendiz/AprendizHistory';
+import { NotificationBell } from '../../../shared/NotificationBell';
 
 interface UserData {
   id: number;
@@ -30,27 +33,21 @@ interface UserDashboardProps {
   onLogin?: () => void;
   onRegister?: () => void;
   onUserUpdate?: (userData: any) => void;
-  initialSection?: string;
 }
 
 export const UserDashboard: React.FC<UserDashboardProps> = ({
-  user, onLogout, onGoToHome, onLogin, onRegister, onUserUpdate, initialSection = 'home'
+  user, onLogout, onUserUpdate,
 }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const { '*': sectionParam } = useParams();
+  const activeSection = sectionParam || 'home';
+
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>(initialSection);
   const [theme, setTheme] = useState<'dark' | 'light'>(
     (localStorage.getItem('dashboard-theme') as 'dark' | 'light') ?? 'dark'
   );
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (initialSection) {
-      setActiveSection(initialSection);
-    }
-  }, [initialSection]);
 
   const isGuest = user.id === 0;
   const currentRole = user.role?.name || user.rol?.nombre;
@@ -65,15 +62,14 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
     return () => window.removeEventListener('storage', syncTheme);
   }, []);
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  const handleNavigate = (section: string) => {
+    if (section === 'profile') {
+      setShowProfileModal(true);
+      return;
+    }
+    navigate(`/dashboard/${section}`);
+    setIsMobileSidebarOpen(false);
+  };
 
   const initials = (user.name || user.nombre || '??')
     .split(' ')
@@ -81,11 +77,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
     .slice(0, 2)
     .join('')
     .toUpperCase();
-
-  const menuItems = [
-    { id: 'config', label: 'Configuración y Privacidad', icon: <FiSettings /> },
-    { id: 'update', label: 'Actualizar Información',    icon: <FiRefreshCw /> },
-  ];
 
   return (
     <div className={`dashboard-layout theme-${theme}`}>
@@ -112,7 +103,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
         <div className="topnav-right">
           <div className="topnav-links hidden-mobile">
             {isGuest && (
-              <a href="#" onClick={(e) => { e.preventDefault(); onGoToHome(); }}>
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }}>
                 <FiHome className="nav-icon" /> INICIO
               </a>
             )}
@@ -126,13 +117,16 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
 
           {isGuest ? (
             <div className="topnav-guest-actions">
-              <button className="btn-text" onClick={onLogin}>INICIAR SESIÓN</button>
-              <button className="btn-outline" onClick={onRegister}>CREAR CUENTA</button>
+              <button className="btn-text" onClick={() => navigate('/login')}>INICIAR SESIÓN</button>
+              <button className="btn-outline" onClick={() => navigate('/register')}>CREAR CUENTA</button>
             </div>
           ) : (
-            <div className="topnav-user">
-              <div className="avatar-circle" style={{ cursor: 'default' }}>{initials}</div>
-            </div>
+            <>
+              <NotificationBell />
+              <div className="topnav-user">
+                <div className="avatar-circle" style={{ cursor: 'default' }}>{initials}</div>
+              </div>
+            </>
           )}
         </div>
       </nav>
@@ -148,14 +142,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
         )}
         <DashboardSidebar
           activeSection={activeSection}
-          onNavigate={(s) => {
-            if (s === 'profile') {
-              setShowProfileModal(true);
-              return;
-            }
-            setActiveSection(s);
-            setIsMobileSidebarOpen(false);
-          }}
+          onNavigate={handleNavigate}
           isGuest={isGuest}
           isPendingUser={isPendingUser}
           user={user}
@@ -164,17 +151,17 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
           onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           isMobileOpen={isMobileSidebarOpen}
         />
-        
+
         <main className="dashboard-main-content">
           {activeSection === 'home' && (
             currentRole === 'APRENDIZ' ? (
-              <AprendizDashboardHome user={user} onNavigate={setActiveSection} />
+              <AprendizDashboardHome user={user} onNavigate={(s) => navigate(`/dashboard/${s}`)} />
             ) : (
-              <DashboardHome 
-                user={user} 
+              <DashboardHome
+                user={user}
                 isGuest={isGuest}
                 isPendingUser={isPendingUser}
-                onNavigate={setActiveSection}
+                onNavigate={(s) => navigate(`/dashboard/${s}`)}
               />
             )
           )}
@@ -182,23 +169,26 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
             currentRole === 'APRENDIZ' ? (
               <AprendizCatalog />
             ) : (
-              <div className="placeholder-view">
-                <h2>Catálogo de elementos</h2>
-                <p>Aquí se mostrarán todos los libros y equipos disponibles.</p>
-              </div>
+              <AprendizCatalog isGuest={isGuest} />
             )
           )}
-          {activeSection === 'loans' && currentRole === 'APRENDIZ' && (
-            <AprendizLoans onBack={() => setActiveSection('home')} />
-          )}
-          {activeSection === 'reservations' && currentRole === 'APRENDIZ' && (
-            <AprendizReservations onBack={() => setActiveSection('home')} />
-          )}
+          {activeSection === 'loans' && currentRole === 'APRENDIZ' && <AprendizLoans />}
+          {activeSection === 'reservations' && currentRole === 'APRENDIZ' && <AprendizReservations />}
+          {activeSection === 'history' && currentRole === 'APRENDIZ' && <AprendizHistory />}
           {(activeSection === 'config' || activeSection === 'update') && !isGuest && (
             <UserConfig user={user} />
           )}
+          {activeSection === 'guest' && isGuest && (
+            <DashboardHome
+              user={user}
+              isGuest={isGuest}
+              isPendingUser={isPendingUser}
+              onNavigate={(s) => navigate(`/dashboard/${s}`)}
+            />
+          )}
         </main>
       </div>
+
       {showProfileModal && !isGuest && (
         <ProfileOverlay
           user={user as any}

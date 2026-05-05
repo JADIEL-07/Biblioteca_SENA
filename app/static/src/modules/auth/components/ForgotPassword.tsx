@@ -4,11 +4,7 @@ import './LoginForm.css';
 import { FloatingParticles } from '../../../components/ui/FloatingParticles';
 const senaBg = '/assets/images/sena-library-bg.png';
 
-interface ForgotPasswordProps {
-  onBack: () => void;
-}
-
-export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
+export const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -86,7 +82,7 @@ export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
             </button>
           </form>
 
-          <button className="back-btn" onClick={onBack} disabled={loading}>
+          <button className="back-btn" onClick={() => history.back()} disabled={loading}>
             <FiArrowLeft /> Volver al inicio de sesión
           </button>
         </div>
