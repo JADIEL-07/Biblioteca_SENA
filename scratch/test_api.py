@@ -1,28 +1,24 @@
 import requests
+from app import create_app
+from app.services.token_service import TokenService
+from app.models.user import User
 
-BASE_URL = "http://localhost:5000/api/v1"
-
-# Intentar obtener el token (asumiendo que hay un usuario admin para pruebas)
-# En un entorno real, necesitaríamos credenciales.
-# Pero como estamos depurando, podemos intentar ver si el endpoint responde 401 o 404.
-
-def test_endpoint(path, method='GET', data=None):
-    url = f"{BASE_URL}{path}"
-    print(f"Testing {method} {url}...")
-    try:
-        if method == 'GET':
-            res = requests.get(url)
-        elif method == 'POST':
-            res = requests.post(url, json=data)
-        elif method == 'PUT':
-            res = requests.put(url, json=data)
+app = create_app()
+with app.app_context():
+    user = User.query.get('1101755661')
+    if not user:
+        print("User not found!")
+    else:
+        access_token, _ = TokenService.generate_auth_tokens(user)
         
-        print(f"Status: {res.status_code}")
-        print(f"Response: {res.text}")
-    except Exception as e:
-        print(f"Error: {e}")
-
-if __name__ == "__main__":
-    # Test sin token para ver si al menos el 401 llega (significa que el endpoint existe)
-    test_endpoint("/items/categories", method="POST", data={"name": "Test Category"})
-    test_endpoint("/items/locations", method="POST", data={"name": "Test Location"})
+        headers = {'Authorization': f'Bearer {access_token}'}
+        
+        print("--- APP STATS ---")
+        res = requests.get('http://127.0.0.1:5000/api/v1/dashboard/aprendiz/stats', headers=headers)
+        print(res.status_code)
+        print(res.json())
+        
+        print("--- ADMIN STATS ---")
+        res2 = requests.get('http://127.0.0.1:5000/api/v1/dashboard/stats', headers=headers)
+        print(res2.status_code)
+        print(res2.json())

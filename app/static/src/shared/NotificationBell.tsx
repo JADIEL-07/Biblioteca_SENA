@@ -50,6 +50,7 @@ export const NotificationBell: React.FC = () => {
   };
 
   const fetchUnread = useCallback(async () => {
+    if (loading) return;
     try {
       const r = await fetch('/api/v1/notifications/unread-count', { headers: authHeader() });
       if (r.ok) {
@@ -57,7 +58,7 @@ export const NotificationBell: React.FC = () => {
         setUnread(data.count || 0);
       }
     } catch {/* swallow */}
-  }, []);
+  }, [loading]);
 
   const fetchList = useCallback(async () => {
     setLoading(true);

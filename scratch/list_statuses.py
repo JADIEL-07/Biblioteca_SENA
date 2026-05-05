@@ -3,4 +3,7 @@ from app.models.item import Status
 
 app = create_app()
 with app.app_context():
-    print({s.name: s.id for s in Status.query.all()})
+    statuses = Status.query.all()
+    print("STATUS_LIST:")
+    for s in statuses:
+        print(f"ID: {s.id} | Name: '{s.name}'")

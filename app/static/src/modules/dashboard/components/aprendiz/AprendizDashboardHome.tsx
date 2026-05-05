@@ -22,7 +22,7 @@ export const AprendizDashboardHome: React.FC<DashboardHomeProps> = ({ user, onNa
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('/api/dashboard/aprendiz/stats', {
+        const response = await fetch('/api/v1/dashboard/aprendiz/stats', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -92,10 +92,7 @@ export const AprendizDashboardHome: React.FC<DashboardHomeProps> = ({ user, onNa
             <h3>Mi resumen</h3>
             <div className="summary-grid">
               {summaryData.map(item => (
-                <div key={item.id} className="summary-card" onClick={() => {
-                  if (item.id === 'active-loans') onNavigate('loans');
-                  if (item.id === 'active-res') onNavigate('reservations');
-                }} style={{ cursor: 'pointer' }}>
+                <div key={item.id} className="summary-card">
                   <div className="summary-icon" style={{ color: item.color, backgroundColor: `${item.color}15` }}>
                     {item.icon}
                   </div>

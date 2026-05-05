@@ -8,6 +8,7 @@ from ..models.maintenance import Maintenance
 from ..models.audit_log import AuditLog
 from sqlalchemy import func, desc
 from datetime import datetime, timedelta
+from ..extensions import db
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -15,46 +16,40 @@ dashboard_bp = Blueprint('dashboard', __name__)
 @jwt_required()
 def get_dashboard_stats():
     try:
-        # 1. Metri-Kpis Principales
+        # 1. Metri-Kpis Principales - Conteo directo y robusto
         total_items = Item.query.count()
         
-        # Identificar estados que restan disponibilidad
-        loaned_status = Status.query.filter(Status.name.in_(['PRESTADO', 'LOANED'])).first()
-        maint_status = Status.query.filter(Status.name.in_(['EN MANTENIMIENTO', 'MANTENIMIENTO'])).first()
-        damaged_status = Status.query.filter(Status.name.in_(['DAÑADO', 'DAÃ‘ADO', 'MALO', 'PERDIDO'])).first()
+        # Identificar estados de forma flexible
+        all_statuses = Status.query.all()
+        loaned_ids = [s.id for s in all_statuses if s.name.upper() in ['PRESTADO', 'LOANED', 'OCUPADO']]
+        maint_ids = [s.id for s in all_statuses if s.name.upper() in ['EN MANTENIMIENTO', 'MANTENIMIENTO']]
+        damaged_ids = [s.id for s in all_statuses if s.name.upper() in ['DAÑADO', 'DAÑADO', 'MALO', 'PERDIDO', 'DAÃ‘ADO']]
 
-        active_loans = Item.query.filter_by(status_id=loaned_status.id).count() if loaned_status else 0
-        maintenance = Item.query.filter_by(status_id=maint_status.id).count() if maint_status else 0
-        damaged = Item.query.filter_by(status_id=damaged_status.id).count() if damaged_status else 0
+        active_loans = Item.query.filter(Item.status_id.in_(loaned_ids)).count() if loaned_ids else 0
+        maintenance = Item.query.filter(Item.status_id.in_(maint_ids)).count() if maint_ids else 0
+        damaged = Item.query.filter(Item.status_id.in_(damaged_ids)).count() if damaged_ids else 0
         
-        # Disponible = Total - Prestados - Mantenimiento - Dañados/Perdidos
+        # Disponible = Total - Prestados - Mantenimiento - Dañados
         available = total_items - active_loans - maintenance - damaged
         
-        active_reservations = Reservation.query.filter_by(status='PENDIENTE').count()
+        active_reservations = Reservation.query.filter(Reservation.status.in_(['PENDIENTE', 'PENDING'])).count()
 
         # 2. Datos para Gráfico de Torta (Estados)
-        statuses = Status.query.all()
         pie_data = []
         colors = {
-            'DISPONIBLE': '#39A900',
-            'EXCELENTE': '#39A900',
-            'BUENO': '#4ade80',
-            'REGULAR': '#fbbf24',
-            'PRESTADO': '#eab308',
-            'MANTENIMIENTO': '#f97316',
-            'EN MANTENIMIENTO': '#f97316',
-            'DAÑADO': '#ef4444',
-            'MALO': '#ef4444',
-            'PERDIDO': '#64748b'
+            'DISPONIBLE': '#39A900', 'EXCELENTE': '#39A900', 'BUENO': '#4ade80',
+            'REGULAR': '#fbbf24', 'PRESTADO': '#eab308', 'OCUPADO': '#eab308',
+            'MANTENIMIENTO': '#f97316', 'EN MANTENIMIENTO': '#f97316',
+            'DAÑADO': '#ef4444', 'MALO': '#ef4444', 'PERDIDO': '#64748b'
         }
-        for s in statuses:
+        for s in all_statuses:
             count = Item.query.filter_by(status_id=s.id).count()
             if count > 0:
-                name = s.name.upper()
+                name_upper = s.name.upper()
                 pie_data.append({
                     "name": s.name.capitalize(),
                     "value": count,
-                    "color": colors.get(name, '#94a3b8')
+                    "color": colors.get(name_upper, '#94a3b8')
                 })
         
         # Si no hay datos, enviamos los básicos vacíos para el diseño
@@ -92,12 +87,25 @@ def get_dashboard_stats():
         upcoming_loans = Loan.query.filter(Loan.status == 'ACTIVE').order_by(Loan.return_date.asc()).limit(5).all()
         upcoming_returns = []
         for l in upcoming_loans:
+            from ..models.loan import LoanDetail
+            details = LoanDetail.query.filter_by(loan_id=l.id).all()
+            item_name = "Elemento"
+            item_image = ""
+            if details:
+                item = Item.query.get(details[0].item_id)
+                if item:
+                    item_name = item.name
+                    item_image = item.image_url
+            
+            from ..models.user import User
+            user = User.query.get(l.user_id)
+            user_name = user.name if user else "Usuario"
             upcoming_returns.append({
                 "id": l.id,
-                "item_name": l.item.name if l.item else "Elemento",
-                "user_name": l.user.name if l.user else "Usuario",
-                "date": l.return_date.isoformat(),
-                "image": l.item.image_url if l.item else ""
+                "item_name": item_name,
+                "user_name": user_name,
+                "date": l.return_date.isoformat() if l.return_date else datetime.now().isoformat(),
+                "image": item_image
             })
 
         # 6. Estructura para gráfico de líneas (Últimos 6 meses)
@@ -129,27 +137,50 @@ def get_dashboard_stats():
 @jwt_required()
 def get_aprendiz_stats():
     try:
-        user_id = get_jwt_identity()
+        user_id = str(get_jwt_identity()) # Forzamos a string para coincidir con la DB
         
-        # 1. Metri-Kpis Personales
-        active_loans = Loan.query.filter_by(user_id=user_id, status='ACTIVE').count()
-        active_reservations = Reservation.query.filter_by(user_id=user_id, status='PENDING').count()
+        # 1. Metri-Kpis Personales - Usamos filtros más robustos
+        active_loans = Loan.query.filter(
+            Loan.user_id == user_id, 
+            Loan.status.in_(['ACTIVE', 'active', 'PRESTADO', 'prestado'])
+        ).count()
+        print(f"DEBUG_APRENDIZ: User {user_id} has {active_loans} loans in DB query")
         
-        overdue_loans = Loan.query.filter_by(user_id=user_id, status='OVERDUE').count()
+        active_reservations = Reservation.query.filter(
+            Reservation.user_id == user_id, 
+            Reservation.status.in_(['PENDING', 'pending', 'PENDIENTE', 'pendiente'])
+        ).count()
+        
+        overdue_loans = Loan.query.filter(
+            Loan.user_id == user_id, 
+            Loan.status.in_(['OVERDUE', 'overdue', 'VENCIDO', 'vencido'])
+        ).count()
         
         # Calcular multas pendientes
-        pending_fines = db.session.query(func.sum(Loan.fine_amount)).filter_by(user_id=user_id).scalar() or 0.0
+        pending_fines = db.session.query(func.sum(Loan.fine_amount)).filter(Loan.user_id == user_id).scalar() or 0.0
         
         # 2. Préstamos Activos Detallados
-        loans = Loan.query.filter_by(user_id=user_id, status='ACTIVE').order_by(Loan.due_date.asc()).limit(5).all()
+        loans = Loan.query.filter(
+            Loan.user_id == user_id, 
+            Loan.status.in_(['ACTIVE', 'active', 'PRESTADO', 'prestado'])
+        ).order_by(Loan.due_date.asc()).limit(5).all()
         active_loans_list = []
         for l in loans:
-            # Asumimos que un préstamo tiene detalles con ítems
-            item_names = [d.item.name for d in l.details if d.item]
+            # Obtener nombres de ítems de forma garantizada
+            from ..models.loan import LoanDetail
+            
+            # Buscamos los detalles explícitamente para evitar problemas de relación perezosa (lazy loading)
+            details = LoanDetail.query.filter_by(loan_id=l.id).all()
+            item_names = []
+            for d in details:
+                item = Item.query.get(d.item_id)
+                if item:
+                    item_names.append(item.name)
+            
             active_loans_list.append({
                 "id": l.id,
-                "items": ", ".join(item_names),
-                "due_date": l.due_date.isoformat(),
+                "items": ", ".join(item_names) if item_names else "Elemento sin nombre",
+                "due_date": l.due_date.isoformat() if l.due_date else datetime.now().isoformat(),
                 "status": l.status
             })
 
@@ -157,7 +188,6 @@ def get_aprendiz_stats():
         reservations = Reservation.query.filter_by(user_id=user_id, status='PENDING').order_by(Reservation.expiration_date.asc()).limit(5).all()
         res_list = []
         for r in reservations:
-            from ..models.item import Item
             item = Item.query.get(r.item_id)
             res_list.append({
                 "id": r.id,
@@ -178,8 +208,8 @@ def get_aprendiz_stats():
 
         return jsonify({
             "metrics": {
-                "loans": active_loans,
-                "reservations": active_reservations,
+                "loans": len(active_loans_list),
+                "reservations": len(res_list),
                 "overdue": overdue_loans,
                 "fines": pending_fines
             },

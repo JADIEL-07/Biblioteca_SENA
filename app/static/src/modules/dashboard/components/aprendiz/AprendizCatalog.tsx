@@ -252,7 +252,11 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
                       onClick={() => handleReserve(item.id)}
                       title={isLoanedOut(item.status_name) ? 'Está prestado — entrarás a la cola' : 'Reservar'}
                     >
-                      <FiCalendar /> {isLoanedOut(item.status_name) ? 'Reservar (en cola)' : 'Reservar'}
+                      <FiCalendar />
+                      <div className="btn-text-pro">
+                        <span>Reservar</span>
+                        {isLoanedOut(item.status_name) && <small>(en cola)</small>}
+                      </div>
                     </button>
                   )}
                   <button className="btn-info-circle" onClick={() => setSelectedItem(item)}>
