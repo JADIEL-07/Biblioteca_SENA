@@ -45,6 +45,7 @@ def my_history():
         rows.append({
             "kind": "RESERVATION",
             "id": r.id,
+            "token": r.token,
             "date": r.reservation_date.isoformat() if r.reservation_date else None,
             "ready_at": r.ready_at.isoformat() if r.ready_at else None,
             "expiration_date": r.expiration_date.isoformat() if r.expiration_date else None,

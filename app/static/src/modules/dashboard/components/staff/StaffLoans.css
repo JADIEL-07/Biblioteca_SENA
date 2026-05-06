@@ -193,3 +193,253 @@
   border: 1px solid var(--admin-border-color, #334155);
   padding: 1.5rem;
 }
+
+/* Customizing html5-qrcode UI */
+#qr-reader {
+  border: 2px dashed rgba(57, 169, 0, 0.4) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  background: var(--admin-bg, #0f172a);
+}
+
+#qr-reader__dashboard_section_csr {
+  padding: 2rem !important;
+}
+
+#qr-reader__dashboard_section_csr span {
+  color: var(--admin-text-secondary, #94a3b8) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+#html5-qrcode-button-camera-permission,
+#html5-qrcode-button-camera-start,
+#html5-qrcode-button-camera-stop {
+  background-color: var(--sena-green, #39A900) !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-family: 'Inter', sans-serif !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  margin: 0.5rem !important;
+  box-shadow: 0 4px 12px rgba(57, 169, 0, 0.2) !important;
+}
+
+#html5-qrcode-button-camera-permission:hover,
+#html5-qrcode-button-camera-start:hover,
+#html5-qrcode-button-camera-stop:hover {
+  background-color: #2d8a00 !important;
+  transform: translateY(-2px);
+}
+
+#html5-qrcode-anchor-scan-type-change {
+  color: var(--sena-green, #39A900) !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  margin-top: 1rem !important;
+  display: inline-block !important;
+}
+
+#qr-reader__dashboard_section_swaplink {
+  margin-top: 1rem !important;
+}
+
+#qr-reader select {
+  background-color: var(--admin-bg-card, #1e293b) !important;
+  color: white !important;
+  border: 1px solid var(--admin-border-color, #334155) !important;
+  padding: 0.5rem !important;
+  border-radius: 6px !important;
+  margin: 0.5rem !important;
+}
+
+/* Modal and Scanning Effect Styles */
+.camera-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.camera-modal-content {
+  background: var(--admin-bg-card, #1e293b);
+  border-radius: 20px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  border: 1px solid var(--admin-border-color, #334155);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.close-camera-btn {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: 2px solid white;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+  z-index: 100;
+  transition: transform 0.2s;
+}
+
+.close-camera-btn:hover {
+  transform: scale(1.1);
+}
+
+.flip-camera-btn {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: white;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  transition: all 0.2s ease;
+}
+
+.flip-camera-btn:hover {
+  transform: scale(1.1) rotate(180deg);
+  background: var(--sena-green, #39A900);
+  border-color: white;
+}
+
+/* Light Theme Support */
+.theme-light .flip-camera-btn {
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--sena-green, #39A900);
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.theme-light .flip-camera-btn:hover {
+  background: var(--sena-green, #39A900);
+  color: white;
+  border-color: var(--sena-green, #39A900);
+}
+
+.scanner-container-animated {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px var(--sena-green, #39A900);
+}
+
+.scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--sena-green, #39A900);
+  box-shadow: 0 0 15px 4px rgba(57, 169, 0, 0.7);
+  animation: scanEffect 2.5s infinite linear;
+  z-index: 10;
+  pointer-events: none;
+}
+
+@keyframes scanEffect {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.btn-scan-hero {
+  background: rgba(57, 169, 0, 0.1);
+  border: 2px solid var(--sena-green, #39A900);
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-scan-hero:hover {
+  background: var(--sena-green, #39A900);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 20px rgba(57, 169, 0, 0.3);
+}
+
+.scan-emoji {
+  font-size: 1.8rem;
+  color: var(--sena-green, #39A900);
+  transition: all 0.2s ease;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-scan-hero:hover .scan-emoji {
+  transform: scale(1.1);
+  color: #ffffff !important;
+}
+
+/* Red laser scan line moving up and down inside the button */
+.btn-scan-hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #ff3366;
+  box-shadow: 0 0 10px 2px #ff3366;
+  animation: miniScanLine alternate 1.6s infinite ease-in-out;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes miniScanLine {
+  0% { top: 12%; opacity: 0.4; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 88%; opacity: 0.4; }
+}
+
+/* Mirror the video element for front-facing camera */
+.mirrored-video video {
+  transform: scaleX(-1) !important;
+}

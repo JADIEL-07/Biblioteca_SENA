@@ -4,6 +4,7 @@ import {
   FiCalendar, FiRefreshCw, FiSearch, FiChevronDown,
   FiAlertTriangle, FiBox, FiGift, FiTrendingUp, FiShield
 } from 'react-icons/fi';
+import { MdQrCodeScanner } from 'react-icons/md';
 import './StaffLoans.css';
 
 interface Reservation {
@@ -60,6 +61,63 @@ export const StaffLoans: React.FC<{ user: any }> = ({ user }) => {
   const token = () => localStorage.getItem('token');
   const depId = user?.dependency_id;
 
+  const [scannerStarted, setScannerStarted] = useState(false);
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+  const scannerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (activeTab === 'scan' && scannerStarted) {
+      import('html5-qrcode').then(({ Html5Qrcode }) => {
+        setTimeout(() => {
+          if (!scannerRef.current) {
+            scannerRef.current = new Html5Qrcode("qr-reader");
+          }
+          // Remove qrbox to scan the full video area and avoid fixed boxes
+          const config = { fps: 10 };
+          
+          scannerRef.current.start(
+            { facingMode: facingMode },
+            config,
+            (decodedText: string) => {
+              setScanInput(decodedText);
+              // Visual flash feedback (acts as the dynamic box highlight)
+              const reader = document.getElementById('qr-reader');
+              if (reader) {
+                reader.style.boxShadow = 'inset 0 0 0 8px #39A900';
+              }
+              setTimeout(() => {
+                scannerRef.current?.stop().then(() => {
+                  setScannerStarted(false);
+                  document.getElementById('scan-form-submit')?.click();
+                }).catch(console.error);
+              }, 400);
+            },
+            () => {} // Ignore errors
+          ).catch((err: any) => {
+            console.error(err);
+          });
+        }, 100);
+      });
+    }
+
+    return () => {
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        scannerRef.current.stop().catch(console.error);
+      }
+    };
+  }, [activeTab, scannerStarted, facingMode]);
+
+  const toggleCamera = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (scannerRef.current && scannerRef.current.isScanning) {
+      scannerRef.current.stop().then(() => {
+        setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
+      }).catch(console.error);
+    } else {
+      setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
+    }
+  };
+
   const fetchReservations = async () => {
     try {
       const res = await fetch(`/api/v1/reservations/?dependency_id=${depId || ''}`, {
@@ -84,6 +142,7 @@ export const StaffLoans: React.FC<{ user: any }> = ({ user }) => {
   }, [activeTab]);
 
   const handleApprove = async (id: number) => {
+    // We try to approve by ID directly if it's found in the list
     if (!window.confirm('¿Confirmar entrega de este elemento al aprendiz?')) return;
     try {
       const res = await fetch(`/api/v1/reservations/${id}/approve`, {
@@ -95,14 +154,54 @@ export const StaffLoans: React.FC<{ user: any }> = ({ user }) => {
     } catch { alert('Error de red'); }
   };
 
+  const processLoanFromToken = async (qrToken: string) => {
+    if (!window.confirm('¿Confirmar entrega de este elemento al aprendiz por QR?')) return;
+    try {
+      const res = await fetch(`/api/v1/loans/from_reservation`, {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${token()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token: qrToken })
+      });
+      if (res.ok) { 
+        alert('Préstamo creado y elemento entregado con éxito.'); 
+        fetchReservations(); 
+      } else { 
+        const e = await res.json(); 
+        alert(`Error: ${e.error || 'No se pudo procesar el préstamo'}`); 
+      }
+    } catch { alert('Error de red'); }
+  };
+
   const handleScanSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!scanInput.trim()) return;
+    const val = scanInput.trim();
+    if (!val) return;
+    
+    // First, try to match by token
+    const matchByToken = pending.find(r => (r as any).token === val);
+    if (matchByToken) {
+      processLoanFromToken(val);
+      setScanInput('');
+      return;
+    }
+    
+    // If not found in pending locally by token, maybe it's just a token from another reservation
+    // Let's call the token endpoint if it looks like a token (length > 10)
+    if (val.length > 20) {
+      processLoanFromToken(val);
+      setScanInput('');
+      return;
+    }
+
+    // fallback: ID or user ID
     const match = pending.find(r =>
-      r.id.toString() === scanInput.trim() || r.user_id === scanInput.trim()
+      r.id.toString() === val || r.user_id === val
     );
     if (match) handleApprove(match.id);
-    else alert(`No se encontró reserva pendiente para: ${scanInput}`);
+    else alert(`No se encontró reserva pendiente para: ${val}`);
     setScanInput('');
   };
 
@@ -169,48 +268,47 @@ export const StaffLoans: React.FC<{ user: any }> = ({ user }) => {
               <FiCamera /> Escáner rápido
             </h2>
             <p style={{ margin: '0 0 1.5rem', color: 'var(--admin-text-muted, #64748b)', fontSize: '0.85rem' }}>
-              Escanea el código de barras o QR de la reserva o la tarjeta del aprendiz.
+              Escanea el código QR de la reserva o ingresa el token manualmente.
             </p>
-            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-              <div style={{
-                flex: '0 0 180px', height: '120px', borderRadius: '10px',
-                border: '2px dashed var(--admin-border-color, #334155)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--admin-text-muted, #64748b)', gap: '0.4rem', fontSize: '0.78rem',
-                background: 'rgba(0,0,0,0.15)',
-              }}>
-                <FiCamera size={28} style={{ opacity: 0.4 }} />
-                <span>Coloca el código frente a la cámara</span>
-              </div>
-              <span style={{ color: 'var(--admin-text-muted, #64748b)', fontWeight: 600 }}>o</span>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: '0.8rem', color: 'var(--admin-text-secondary, #94a3b8)', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>
-                  Código manual
-                </label>
-                <form onSubmit={handleScanSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button 
+                type="button"
+                onClick={() => setScannerStarted(true)} 
+                className="btn-scan-hero"
+                title="Abrir cámara"
+              >
+                <span className="scan-emoji" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <MdQrCodeScanner size={32} />
+                </span>
+              </button>
+              
+              <div style={{ flex: 1, minWidth: '280px' }}>
+                <form onSubmit={handleScanSubmit} style={{ display: 'flex', flexDirection: 'row', gap: '0.75rem', height: '60px' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
                     <input
                       ref={scanInputRef}
                       type="text"
-                      placeholder="Ingresa el código de la reserva o ID del aprendiz"
+                      placeholder="Ingresa código o token manualmente"
                       value={scanInput}
                       onChange={e => setScanInput(e.target.value)}
                       autoFocus
                       style={{
-                        width: '100%', padding: '0.75rem 2.5rem 0.75rem 0.9rem',
-                        borderRadius: '8px', border: '1px solid var(--admin-border-color, #334155)',
+                        width: '100%', height: '100%', padding: '0 2.5rem 0 1rem',
+                        borderRadius: '12px', border: '1px solid var(--admin-border-color, #334155)',
                         background: 'var(--admin-bg, #0f172a)', color: 'var(--admin-text-primary, #f8fafc)',
-                        fontSize: '0.9rem', boxSizing: 'border-box',
+                        fontSize: '0.95rem', boxSizing: 'border-box', outline: 'none'
                       }}
                     />
-                    <FiSearch size={15} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-muted, #64748b)' }} />
+                    <FiSearch size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-muted, #64748b)' }} />
                   </div>
-                  <button type="submit" style={{
-                    width: '100%', padding: '0.75rem',
+                  <button id="scan-form-submit" type="submit" style={{
+                    padding: '0 1.5rem',
                     background: 'var(--sena-green, #39A900)', color: 'white',
-                    border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
+                    border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+                    whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    boxShadow: '0 4px 12px rgba(57, 169, 0, 0.2)'
                   }}>
-                    Buscar reserva
+                    <FiCheckCircle size={18} /> Procesar
                   </button>
                 </form>
               </div>
@@ -390,6 +488,22 @@ export const StaffLoans: React.FC<{ user: any }> = ({ user }) => {
               })}
             </div>
           )}
+        </div>
+      )}
+      {/* Modal for Camera */}
+      {scannerStarted && (
+        <div className="camera-modal-overlay" onClick={() => setScannerStarted(false)}>
+          <div className="camera-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="close-camera-btn" onClick={() => setScannerStarted(false)}>✕</button>
+            <h3 style={{ margin: '0 0 1rem', color: 'var(--admin-text-primary)' }}>Escaneando QR...</h3>
+            <div className="scanner-container-animated">
+              <div id="qr-reader" className={facingMode === 'user' ? 'mirrored-video' : ''} style={{ width: '100%', border: 'none' }}></div>
+              <div className="scan-line"></div>
+              <button className="flip-camera-btn" onClick={toggleCamera} title="Cambiar cámara">
+                <FiRefreshCw />
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

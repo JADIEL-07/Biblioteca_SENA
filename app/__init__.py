@@ -75,7 +75,7 @@ def create_app():
     app.register_blueprint(notification_bp, url_prefix='/api/v1/notifications')
     app.register_blueprint(history_bp,     url_prefix='/api/v1/history')
 
-    # ── Security Headers ──────────────────────────────────────────────────────
+    # ── Security & Cache Headers ──────────────────────────────────────────────────────
     @app.after_request
     def set_security_headers(response):
         response.headers['X-Frame-Options']        = 'DENY'
@@ -83,6 +83,12 @@ def create_app():
         response.headers['Referrer-Policy']        = 'strict-origin-when-cross-origin'
         if not app.debug:
             response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        
+        # Prevent caching of index.html and HTML responses so frontend updates are loaded instantly
+        if request.path == '/' or request.path.endswith('.html') or response.mimetype == 'text/html':
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
         return response
 
     # ── Error Handling ────────────────────────────────────────────────────────

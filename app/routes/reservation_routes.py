@@ -28,6 +28,7 @@ def create_reservation():
     return jsonify({
         "success": True,
         "id": res.id,
+        "token": res.token,
         "status": res.status,
         "expiration_date": res.expiration_date.isoformat() if res.expiration_date else None,
     }), 201
@@ -100,6 +101,7 @@ def get_reservations():
 
         result.append({
             "id": res.id,
+            "token": res.token,
             "user_id": res.user_id,
             "user_name": user.name if user else "Desconocido",
             "user_email": user.email if user else "",
@@ -121,10 +123,10 @@ def get_reservations():
 @jwt_required()
 def get_reservation_stats():
     total = Reservation.query.count()
-    active = Reservation.query.filter_by(status='ACTIVE').count()
-    pending = Reservation.query.filter_by(status='PENDING').count()
+    active = Reservation.query.filter(Reservation.status.in_(['QUEUED', 'READY'])).count()
+    pending = Reservation.query.filter_by(status='QUEUED').count()
     expired = Reservation.query.filter_by(status='EXPIRED').count()
-    completed = Reservation.query.filter_by(status='COMPLETED').count()
+    completed = Reservation.query.filter_by(status='CLAIMED').count()
     
     # Indicadores Inteligentes
     conversion_rate = (completed / total * 100) if total > 0 else 0
@@ -184,6 +186,7 @@ def get_my_reservations():
             ).count()
         result.append({
             "id": res.id,
+            "token": res.token,
             "item_id": res.item_id,
             "item_name": item.name if item else "Eliminado",
             "item_code": item.code if item else "N/A",

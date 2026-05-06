@@ -18,8 +18,10 @@ const POLL_MS = 30000;
 const iconFor = (type: string) => {
   switch (type) {
     case 'RESERVATION_READY':    return <FiCheck />;
-    case 'RESERVATION_REMINDER': return <FiClock />;
-    case 'RESERVATION_EXPIRED':  return <FiAlertCircle />;
+    case 'RESERVATION_REMINDER': 
+    case 'PENDING_APPROVAL_RESERVATION': return <FiClock />;
+    case 'RESERVATION_EXPIRED':  
+    case 'RESERVATION_CLOSE_TO_EXPIRY':  return <FiAlertCircle />;
     case 'LOAN_CREATED':
     case 'LOAN_RETURNED':        return <FiPackage />;
     default:                     return <FiBell />;

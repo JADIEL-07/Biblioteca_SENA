@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from .. import db
 from .base import Base
@@ -11,6 +12,7 @@ from .base import Base
 class Reservation(Base):
     __tablename__ = 'reservations'
     id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(100), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(50), db.ForeignKey('users.id'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
     reservation_date = db.Column(db.DateTime, default=datetime.utcnow)
@@ -22,3 +24,4 @@ class Reservation(Base):
     converted_at = db.Column(db.DateTime)
     converted_loan_id = db.Column(db.Integer, db.ForeignKey('loans.id'), nullable=True)
     is_deleted = db.Column(db.Boolean, default=False)
+    eight_minute_reminder_sent = db.Column(db.Boolean, default=False, nullable=False, server_default="0")

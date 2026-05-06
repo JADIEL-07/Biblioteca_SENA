@@ -905,12 +905,12 @@
 .sidebar-backdrop {
   display: none;
   position: fixed;
-  top: 70px;
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.45);
-  z-index: 39;
+  z-index: 1040;
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -968,12 +968,13 @@
   .dashboard-sidebar,
   .admin-sidebar {
     position: fixed;
-    top: 70px;
+    top: 0;
     left: -110%;
-    height: calc(100vh - 70px);
+    height: 100%;
     width: 260px !important;
     max-width: 80vw;
-    z-index: 40;
+    z-index: 1050;
+    padding-top: 1rem;
     transition: left 0.3s ease;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
     background: var(--bg-sidebar);

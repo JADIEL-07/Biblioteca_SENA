@@ -42,6 +42,7 @@ instance/
 
 # ── SCRIPTS TEMPORALES ────────────────────────────
 backend/migrate_db.py
+scratch/
 
 # ── OS ────────────────────────────────────────────
 .DS_Store

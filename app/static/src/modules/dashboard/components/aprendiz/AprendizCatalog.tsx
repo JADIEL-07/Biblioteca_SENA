@@ -137,7 +137,7 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
     const data = await r.json().catch(() => ({}));
     if (r.ok) {
       if (data.status === 'READY') {
-        alert('Tu reserva está lista. Tienes 5 horas para reclamarla.');
+        alert('Tu reserva está lista. Tienes 15 minutos para reclamarla.');
       } else {
         alert('Te agregamos a la cola. Te avisaremos cuando esté disponible.');
       }

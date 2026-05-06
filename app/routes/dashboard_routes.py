@@ -32,7 +32,7 @@ def get_dashboard_stats():
         # Disponible = Total - Prestados - Mantenimiento - Dañados
         available = total_items - active_loans - maintenance - damaged
         
-        active_reservations = Reservation.query.filter(Reservation.status.in_(['PENDIENTE', 'PENDING'])).count()
+        active_reservations = Reservation.query.filter(Reservation.status.in_(['QUEUED', 'READY'])).count()
 
         # 2. Datos para Gráfico de Torta (Estados)
         pie_data = []
@@ -212,8 +212,8 @@ def get_aprendiz_stats():
 
         return jsonify({
             "metrics": {
-                "loans": len(active_loans_list),
-                "reservations": len(res_list),
+                "loans": active_loans,
+                "reservations": active_reservations,
                 "overdue": overdue_loans,
                 "fines": pending_fines
             },

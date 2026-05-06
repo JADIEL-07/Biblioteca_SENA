@@ -75,6 +75,14 @@ def enqueue_reservation(user_id, item_id, admin_id=None):
     if duplicate:
         return None, "Ya tienes una reserva activa para este ítem"
 
+    # Validar que si el elemento no tiene unidades libres, solo puede recibir 1 reserva en cola.
+    if _available_units(item) <= 0:
+        queued_count = Reservation.query.filter_by(
+            item_id=item_id, status='QUEUED'
+        ).count()
+        if queued_count >= 1:
+            return None, "El ítem ya tiene una reserva en espera y no admite más reservas simultáneas"
+
     res = Reservation(
         user_id=str(user_id),
         item_id=item_id,
@@ -93,6 +101,27 @@ def enqueue_reservation(user_id, item_id, admin_id=None):
             f'Estás en la cola para "{item.name}". Te avisaremos cuando esté disponible.',
             related_type='reservation', related_id=res.id,
         )
+
+    # Notificar a Almacenistas y Bibliotecarios de la nueva reserva pendiente de préstamo
+    try:
+        from ..models.user import User, Role
+        apprentice = User.query.get(str(user_id))
+        apprentice_name = apprentice.name if apprentice else "Un aprendiz"
+        
+        staff_users = (
+            User.query.join(Role)
+            .filter(Role.name.in_(['BIBLIOTECARIO', 'ALMACENISTA']))
+            .all()
+        )
+        for staff in staff_users:
+            push_notification(
+                staff.id, 'PENDING_APPROVAL_RESERVATION',
+                'Nueva reserva pendiente',
+                f'{apprentice_name} ha realizado una reserva y está esperando tu aprobación al préstamo.',
+                related_type='reservation', related_id=res.id,
+            )
+    except Exception as e:
+        print(f"Error enviando notificación al staff: {e}")
 
     db.session.commit()
     return res, None
@@ -188,6 +217,26 @@ def process_reservation_queue():
                 break
             _promote_to_ready(nxt, item)
             promoted += 1
+
+    # 2.5) Recordatorio de 8 minutos para el Aprendiz
+    ready_reservations_8m = Reservation.query.filter(
+        Reservation.status == 'READY',
+        Reservation.eight_minute_reminder_sent == False,
+        Reservation.expiration_date > now
+    ).all()
+    for r in ready_reservations_8m:
+        remaining = r.expiration_date - now
+        remaining_minutes = remaining.total_seconds() / 60.0
+        if remaining_minutes <= 8.0:
+            item = Item.query.get(r.item_id)
+            item_name = item.name if item else 'tu ítem'
+            push_notification(
+                r.user_id, 'RESERVATION_CLOSE_TO_EXPIRY',
+                'Reserva próxima a vencer',
+                f'Tu producto "{item_name}" está próximo a vencer (faltan {int(remaining_minutes)} minutos). Pasa a recogerlo pronto.',
+                related_type='reservation', related_id=r.id,
+            )
+            r.eight_minute_reminder_sent = True
 
     # 3) Recordatorios horarios para las que siguen READY
     threshold = now - timedelta(hours=REMINDER_INTERVAL_HOURS)

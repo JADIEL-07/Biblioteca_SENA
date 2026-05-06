@@ -102,11 +102,13 @@ def create_loan():
     db.session.add(loan)
     db.session.flush()
 
+    item_names = []
     for item_id in item_ids:
         item = Item.query.get(item_id)
         if not item:
             db.session.rollback()
             return jsonify({"error": f"Ítem {item_id} no existe"}), 404
+        item_names.append(item.name)
 
         # ¿Este usuario tiene una reserva READY de este ítem? Consumirla.
         ready_res = Reservation.query.filter_by(
@@ -135,14 +137,81 @@ def create_loan():
         item.status_id = loaned_status.id
         db.session.add(detail)
 
+    admin_user = User.query.get(str(get_jwt_identity()))
+    admin_name = admin_user.name if admin_user else "El encargado"
+    items_str = ", ".join(item_names)
+
     push_notification(
         user_id, 'LOAN_CREATED',
-        'Préstamo registrado',
-        f'Se registró tu préstamo #{loan.id}. Vence el {loan.due_date.strftime("%Y-%m-%d")}.',
+        'Préstamo aprobado',
+        f'{admin_name} te aceptó el préstamo del {items_str}.',
         related_type='loan', related_id=loan.id,
     )
     db.session.commit()
     return jsonify({"success": True, "message": "Préstamo creado exitosamente", "loan_id": loan.id}), 201
+
+@loan_bp.route('/from_reservation', methods=['POST'])
+@jwt_required()
+def create_loan_from_reservation():
+    data = request.get_json()
+    token = data.get('token')
+    days = data.get('days', 7)
+    
+    if not token:
+        return jsonify({"error": "Falta el token de reserva"}), 400
+        
+    from ..models.reservation import Reservation
+    res = Reservation.query.filter_by(token=token).first()
+    if not res:
+        return jsonify({"error": "Reserva no encontrada o token inválido"}), 404
+        
+    if res.status not in ('QUEUED', 'READY'):
+        return jsonify({"error": f"La reserva no se puede convertir (estado actual: {res.status})"}), 400
+        
+    user_id = res.user_id
+    item_id = res.item_id
+    item = Item.query.get(item_id)
+    
+    if not item:
+        return jsonify({"error": "El ítem reservado ya no existe"}), 404
+        
+    from ..services.reservation_queue import push_notification
+    
+    loan = Loan(
+        user_id=user_id,
+        admin_id=get_jwt_identity(),
+        due_date=datetime.now() + timedelta(days=days),
+        status='ACTIVE'
+    )
+    db.session.add(loan)
+    db.session.flush()
+    
+    detail = LoanDetail(loan_id=loan.id, item_id=item_id, delivery_status='GOOD')
+    from ..models.item import Status
+    loaned_status = Status.query.filter_by(name='LOANED').first()
+    if not loaned_status:
+        loaned_status = Status(name='LOANED')
+        db.session.add(loaned_status)
+        db.session.flush()
+    item.status_id = loaned_status.id
+    db.session.add(detail)
+    
+    res.status = 'CLAIMED'
+    res.converted_at = datetime.utcnow()
+    res.converted_loan_id = loan.id
+    
+    admin_user = User.query.get(str(get_jwt_identity()))
+    admin_name = admin_user.name if admin_user else "El encargado"
+
+    push_notification(
+        user_id, 'LOAN_CREATED',
+        'Préstamo aprobado',
+        f'{admin_name} te aceptó el préstamo del {item.name}.',
+        related_type='loan', related_id=loan.id,
+    )
+    db.session.commit()
+    return jsonify({"success": True, "message": "Préstamo creado desde reserva", "loan_id": loan.id}), 201
+
 
 @loan_bp.route('/<int:id>/return', methods=['POST'])
 @jwt_required()

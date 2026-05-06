@@ -20,6 +20,7 @@ interface Row {
   status: string;
   items: HistoryItem[];
   fine_amount?: number;
+  token?: string;
 }
 
 interface FlattenedRow {
@@ -31,6 +32,8 @@ interface FlattenedRow {
   statusClass: string;
   detailText: string;
   detailSub: string;
+  token?: string;
+  statusRaw: string;
 }
 
 const formatDateObj = (iso: string | null) => {
@@ -111,6 +114,7 @@ export const AprendizHistory: React.FC = () => {
   
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [selectedQR, setSelectedQR] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -139,7 +143,9 @@ export const AprendizHistory: React.FC = () => {
           statusText: parsed.text,
           statusClass: parsed.cls,
           detailText: parsed.detailText,
-          detailSub: parsed.detailSub
+          detailSub: parsed.detailSub,
+          token: row.token,
+          statusRaw: row.status
         });
       });
     });
