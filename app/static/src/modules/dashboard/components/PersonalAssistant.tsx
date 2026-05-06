@@ -347,9 +347,49 @@ export const PersonalAssistant: React.FC<PersonalAssistantProps> = ({ user }) =>
       };
     }
 
+    // Cambiar contraseña
+    if (q.includes('contraseña') || q.includes('contrasena') || q.includes('password') || q.includes('cambiar clave') || q.includes('clave')) {
+      return {
+        text: `🔐 **Cómo cambiar o recuperar tu contraseña:**\n\n1. 👤 Ve a tu **Perfil de Usuario** haciendo clic en tu nombre en la esquina inferior izquierda del menú lateral.\n2. 📝 Selecciona la opción **"Editar Perfil"** o **"Seguridad"**.\n3. 🔑 Escribe tu contraseña actual, luego ingresa la nueva clave y confírmala.\n4. 💾 Haz clic en **"Guardar Cambios"**.\n\n*Nota: Si olvidaste tu contraseña por completo y no puedes ingresar, comunícate con el Administrador del Centro de Formación o el Bibliotecario de turno para que realice un restablecimiento manual de tu clave desde el panel de administración.*`,
+        type: 'text'
+      };
+    }
+
+    // Pérdidas o daños
+    if (q.includes('perdí') || q.includes('perdi') || q.includes('pérdida') || q.includes('perdida') || q.includes('dañó') || q.includes('daño') || q.includes('dano') || q.includes('rompí') || q.includes('rompi') || q.includes('dañar') || q.includes('perder')) {
+      return {
+        text: `⚠️ **Reporte de Pérdida o Daño de Elementos:**\n\nSi se te ha extraviado o dañado un libro, herramienta o equipo bajo tu préstamo, debes proceder de la siguiente manera:\n\n1. 📢 **Informa de inmediato** al Bibliotecario (para libros) o al Almacenista (para herramientas) para registrar el estado del elemento.\n2. 📦 **Reposición del Elemento:** Según el reglamento del SENA, tienes un plazo de **15 días hábiles** para reponer el elemento por uno exactamente idéntico o de características superiores (marca, modelo, estado).\n3. ❌ **Sanción Temporal:** Mientras no se realice la reposición física del elemento, tu cuenta de préstamos permanecerá suspendida de forma temporal.\n\n*¡La honestidad y el reporte oportuno evitan sanciones disciplinarias mayores en tu ficha académica!*`,
+        type: 'text'
+      };
+    }
+
+    // Registro o crear cuenta
+    if (q.includes('registro') || q.includes('registrar') || q.includes('crear cuenta') || q.includes('crear usuario') || q.includes('registrarse')) {
+      return {
+        text: `👤 **Cómo registrarse en la plataforma:**\n\nSi eres un nuevo aprendiz, instructor o administrativo y no tienes cuenta:\n\n1. 🌐 Dirígete a la página de inicio o haz clic en **"Crear Cuenta"** en la esquina superior derecha.\n2. 📝 Completa el formulario de registro con tus datos reales:\n   *   Nombre completo\n   *   Documento de identidad (Cédula o Tarjeta de Identidad)\n   *   Correo electrónico institucional o personal\n   *   Número de ficha (obligatorio para Aprendices)\n   *   Rol (Aprendiz, Instructor o Administrativo)\n3. 🔒 Define una contraseña segura y haz clic en **"Registrarse"**.\n\n*Nota: Tu cuenta se activará de forma inmediata para consultar el catálogo, pero tus solicitudes de préstamo físico serán aprobadas por el personal tras validar tu documento.*`,
+        type: 'text'
+      };
+    }
+
+    // Iniciar sesión
+    if (q.includes('iniciar sesión') || q.includes('iniciar sesion') || q.includes('login') || q.includes('entrar') || q.includes('ingresar') || q.includes('sesión') || q.includes('sesion')) {
+      return {
+        text: `🔑 **Cómo iniciar sesión en la plataforma:**\n\n1. 🌐 Haz clic en **"Iniciar Sesión"** en la barra superior derecha.\n2. 👤 Introduce tu correo registrado o tu número de documento de identidad.\n3. 🔒 Escribe tu contraseña de seguridad.\n4. 🚀 Haz clic en el botón **"Ingresar"**.\n\n*Si experimentas algún error de credenciales inactivas o problemas con el servidor, recuerda que puedes navegar por el catálogo en modo "Invitado", pero necesitarás iniciar sesión para agendar tus reservas.*`,
+        type: 'text'
+      };
+    }
+
+    // Quiénes pueden usar / Requisitos
+    if (q.includes('quienes') || q.includes('quiénes') || q.includes('requisito') || q.includes('requisitos') || q.includes('pueden') || q.includes('puedo pedir')) {
+      return {
+        text: `🎓 **¿Quiénes pueden solicitar préstamos de biblioteca y almacén?**\n\nEl servicio está habilitado para toda la comunidad educativa de la Sede Vélez:\n\n*   **Aprendices:** Con matrícula activa en cualquier programa de formación (Técnico, Tecnólogo o Especialización).\n*   **Instructores:** Con contrato vigente en el centro de formación.\n*   **Administrativos:** Personal de apoyo y coordinadores del centro.\n\n⚠️ **Requisitos obligatorios:**\n1. Tener una cuenta registrada y activa en la plataforma.\n2. Presentar tu carnet del SENA o documento de identidad físico al retirar el elemento.\n3. No poseer sanciones pendientes o préstamos vencidos en tu cuenta.`,
+        type: 'text'
+      };
+    }
+
     // Fallback response with hints
     return {
-      text: `Entiendo tu inquietud, pero no tengo una respuesta exacta registrada en mi base de conocimientos para esa pregunta. 🧐\n\n¿Por qué no pruebas con una de nuestras consultas rápidas haciendo clic en los botones de abajo? También puedes preguntarme sobre **préstamos activos, horarios de atención, retrasos o cómo reservar elementos** en el catálogo.`,
+      text: `Entiendo tu inquietud, pero no tengo una respuesta exacta registrada en mi base de conocimientos para esa pregunta. 🧐\n\n¿Por qué no pruebas preguntándome sobre **cómo cambiar mi contraseña, qué hacer si perdí algo, requisitos de préstamo, o cómo iniciar sesión**?`,
       type: 'text'
     };
   };
