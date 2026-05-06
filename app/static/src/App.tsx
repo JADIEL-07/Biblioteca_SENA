@@ -7,7 +7,8 @@ import { ForgotPassword } from './modules/auth/components/ForgotPassword';
 import { ResetPassword } from './modules/auth/components/ResetPassword';
 import { UserDashboard } from './modules/dashboard/components/UserDashboard';
 import { AdminDashboard } from './modules/dashboard/components/admin/AdminDashboard';
-import { StaffDashboard } from './modules/dashboard/components/staff/StaffDashboard';
+import { BibliotecarioDashboard } from './modules/dashboard/components/bibliotecario/BibliotecarioDashboard';
+import { AlmacenistaDashboard } from './modules/dashboard/components/almacenista/AlmacenistaDashboard';
 import {
   FaTwitter,
   FaFacebookF,
@@ -122,8 +123,8 @@ function Landing({ loggedUser, onLogout }: { loggedUser: any; onLogout: () => vo
             className="btn cta-home-btn"
             onClick={() => {
               if (loggedUser) {
-                const role = loggedUser.role?.name || loggedUser.rol?.nombre;
-                navigate(role === 'ADMIN' ? '/admin' : '/dashboard');
+                const role = (loggedUser.role?.name || loggedUser.rol?.nombre || '').toUpperCase();
+                navigate(role === 'ADMIN' ? '/admin' : role === 'BIBLIOTECARIO' ? '/bibliotecario' : role === 'ALMACENISTA' ? '/almacenista' : '/dashboard');
               } else {
                 navigate('/dashboard/guest');
               }
@@ -195,7 +196,9 @@ function AppRoutes() {
   const rawRole = loggedUser?.role?.name || loggedUser?.rol?.nombre || '';
   const userRole = rawRole.toUpperCase();
   const isAdmin = userRole === 'ADMIN';
-  const isStaff = userRole === 'BIBLIOTECARIO' || userRole === 'ALMACENISTA';
+  const isBibliotecario = userRole === 'BIBLIOTECARIO';
+  const isAlmacenista = userRole === 'ALMACENISTA';
+  const isStaff = isBibliotecario || isAlmacenista;
 
   return (
     <Routes>
@@ -211,7 +214,7 @@ function AppRoutes() {
         path="/login"
         element={
           loggedUser
-            ? <Navigate to={isAdmin ? '/admin' : isStaff ? '/staff' : '/dashboard'} replace />
+            ? <Navigate to={isAdmin ? '/admin' : isBibliotecario ? '/bibliotecario' : isAlmacenista ? '/almacenista' : '/dashboard'} replace />
             : <LoginForm mode="login" onLoginSuccess={handleLoginSuccess} />
         }
       />
@@ -219,7 +222,7 @@ function AppRoutes() {
         path="/register"
         element={
           loggedUser
-            ? <Navigate to={isAdmin ? '/admin' : isStaff ? '/staff' : '/dashboard'} replace />
+            ? <Navigate to={isAdmin ? '/admin' : isBibliotecario ? '/bibliotecario' : isAlmacenista ? '/almacenista' : '/dashboard'} replace />
             : <LoginForm mode="register" onLoginSuccess={handleLoginSuccess} />
         }
       />
@@ -234,12 +237,22 @@ function AppRoutes() {
         }
       />
 
-      {/* Staff dashboard */}
+      {/* Bibliotecario dashboard */}
       <Route
-        path="/staff/*"
+        path="/bibliotecario/*"
         element={
-          loggedUser && isStaff
-            ? <StaffDashboard user={loggedUser} onLogout={handleLogout} />
+          loggedUser && isBibliotecario
+            ? <BibliotecarioDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
+            : <Navigate to="/login" replace />
+        }
+      />
+
+      {/* Almacenista dashboard */}
+      <Route
+        path="/almacenista/*"
+        element={
+          loggedUser && isAlmacenista
+            ? <AlmacenistaDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
             : <Navigate to="/login" replace />
         }
       />

@@ -119,7 +119,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onLoginSuccess }) =>
         setTimeout(() => {
           const role = (data.user?.role?.name || data.user?.rol?.nombre || '').toUpperCase();
           const dest = role === 'ADMIN' ? '/admin'
-            : (role === 'BIBLIOTECARIO' || role === 'ALMACENISTA') ? '/staff'
+            : role === 'BIBLIOTECARIO' ? '/bibliotecario'
+            : role === 'ALMACENISTA' ? '/almacenista'
             : '/dashboard';
           navigate(dest);
         }, 800);

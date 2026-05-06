@@ -38,6 +38,7 @@ backend/env/
 *.sqlite
 *.sqlite3
 backend/instance/
+instance/
 
 # ── SCRIPTS TEMPORALES ────────────────────────────
 backend/migrate_db.py

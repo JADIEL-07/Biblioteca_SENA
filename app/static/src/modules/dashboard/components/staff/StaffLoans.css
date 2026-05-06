@@ -46,6 +46,7 @@
 .tab-btn.active {
   background: var(--sena-green, #39A900);
   border-color: var(--sena-green, #39A900);
+  border-bottom-color: transparent;
   color: white;
 }
 

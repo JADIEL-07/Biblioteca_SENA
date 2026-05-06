@@ -121,8 +121,7 @@ export const AprendizCatalog: React.FC<AprendizCatalogProps> = ({ isGuest = fals
 
   const canReserve = (status: string) => {
     const s = status.toUpperCase();
-    // Solo se puede reservar si está Disponible u Ocupado (en cola)
-    return s === 'DISPONIBLE' || s === 'OCUPADO' || s === 'PRESTADO' || s === 'LOANED';
+    return ['DISPONIBLE', 'AVAILABLE', 'OCUPADO', 'PRESTADO', 'LOANED'].includes(s);
   };
 
   const handleReserve = async (itemId: number) => {

@@ -1,25 +1,60 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiSearch, FiCheckCircle, FiClock, FiXCircle, FiPackage, FiUser, FiCamera } from 'react-icons/fi';
+import {
+  FiCheckCircle, FiClock, FiPackage, FiUser, FiCamera,
+  FiCalendar, FiRefreshCw, FiSearch, FiChevronDown,
+  FiAlertTriangle, FiBox, FiGift, FiTrendingUp, FiShield
+} from 'react-icons/fi';
 import './StaffLoans.css';
 
 interface Reservation {
-  id: number; item_id: number; item_name: string;
-  user_name: string; document: string;
-  start_date: string; end_date: string; status: string;
+  id: number;
+  item_id: number;
+  item_name: string;
+  user_name: string;
+  user_id: string;
+  document?: string;
+  reservation_date: string;
+  expiration_date: string | null;
+  status: string;
+}
+
+interface LoanItem {
+  id: number;
+  name: string;
+  category: string;
 }
 
 interface Loan {
-  id: number; item_name: string; user_name: string;
-  loan_date: string; due_date: string;
-  return_date: string | null; status: string;
+  id: number;
+  user_id: string;
+  user_name: string;
+  admin_name: string;
+  loan_date: string;
+  due_date: string;
+  return_date: string | null;
+  status: string;
+  fine_amount: number;
+  items: LoanItem[];
 }
+
+const loanStatusMap: Record<string, { label: string; color: string; bg: string }> = {
+  ACTIVE:   { label: 'Activo',    color: '#3b82f6', bg: 'rgba(59,130,246,0.12)'  },
+  RETURNED: { label: 'Devuelto',  color: '#22c55e', bg: 'rgba(34,197,94,0.12)'   },
+  OVERDUE:  { label: 'Vencido',   color: '#ef4444', bg: 'rgba(239,68,68,0.12)'   },
+};
+
+const fmt = (iso: string) => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('es-CO');
+};
 
 export const StaffLoans: React.FC<{ user: any }> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<'scan' | 'history'>('scan');
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loans, setLoans] = useState<Loan[]>([]);
   const [scanInput, setScanInput] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState('');
   const scanInputRef = useRef<HTMLInputElement>(null);
 
   const token = () => localStorage.getItem('token');
@@ -27,14 +62,10 @@ export const StaffLoans: React.FC<{ user: any }> = ({ user }) => {
 
   const fetchReservations = async () => {
     try {
-      // Filtrar reservas que pertenecen a los items de esta dependencia
       const res = await fetch(`/api/v1/reservations/?dependency_id=${depId || ''}`, {
         headers: { Authorization: `Bearer ${token()}` }
       });
-      if (res.ok) {
-        const data = await res.json();
-        setReservations(data.filter((r: any) => r.status === 'PENDING'));
-      }
+      if (res.ok) setReservations(await res.json());
     } catch (e) { console.error(e); }
   };
 
@@ -52,135 +83,313 @@ export const StaffLoans: React.FC<{ user: any }> = ({ user }) => {
     else fetchLoans();
   }, [activeTab]);
 
-  const handleApproveReservation = async (id: number) => {
+  const handleApprove = async (id: number) => {
     if (!window.confirm('¿Confirmar entrega de este elemento al aprendiz?')) return;
     try {
       const res = await fetch(`/api/v1/reservations/${id}/approve`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token()}` }
       });
-      if (res.ok) {
-        alert('Préstamo creado y elemento entregado con éxito.');
-        fetchReservations();
-      } else {
-        const err = await res.json();
-        alert(`Error: ${err.error || 'No se pudo aprobar'}`);
-      }
-    } catch (e) { alert('Error de red'); }
+      if (res.ok) { alert('Préstamo creado y elemento entregado con éxito.'); fetchReservations(); }
+      else { const e = await res.json(); alert(`Error: ${e.error || 'No se pudo aprobar'}`); }
+    } catch { alert('Error de red'); }
   };
 
   const handleScanSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!scanInput.trim()) return;
-    
-    // Buscar si el input coincide con alguna reserva por ID o documento de usuario
-    const match = reservations.find(r => 
-      r.id.toString() === scanInput.trim() || 
-      r.document === scanInput.trim()
+    const match = pending.find(r =>
+      r.id.toString() === scanInput.trim() || r.user_id === scanInput.trim()
     );
-
-    if (match) {
-      handleApproveReservation(match.id);
-    } else {
-      alert(`No se encontró reserva pendiente para el código o documento: ${scanInput}`);
-    }
+    if (match) handleApprove(match.id);
+    else alert(`No se encontró reserva pendiente para: ${scanInput}`);
     setScanInput('');
   };
 
+  // Reservas activas: QUEUED (en cola) o READY (listas para entregar)
+  const pending = reservations.filter(r => ['QUEUED', 'READY'].includes(r.status));
+  const overdue  = pending.filter(r => r.expiration_date && new Date(r.expiration_date) < new Date());
+
+  const filteredPending = pending.filter(r =>
+    !search || [r.user_name, r.item_name, r.user_id, String(r.id)]
+      .some(v => v?.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const kpis = [
+    { label: 'Reservas pendientes', value: pending.length,          sub: 'Por entregar',       icon: <FiBox />,         color: '#3b82f6' },
+    { label: 'Vencidas',            value: overdue.length,          sub: 'Requieren atención', icon: <FiAlertTriangle />,color: '#ef4444' },
+    { label: 'Total reservas',      value: reservations.length,     sub: 'Todas las reservas', icon: <FiTrendingUp />,  color: '#a855f7' },
+    { label: 'Préstamos activos',   value: loans.filter(l => l.status === 'ACTIVE').length, sub: 'En circulación', icon: <FiClock />, color: '#f59e0b' },
+  ];
+
   return (
     <div className="staff-loans-container">
-      <div className="staff-loans-header">
-        <h1>Punto de Atención y Préstamos</h1>
-        <div className="tabs">
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h1 style={{ margin: 0, color: 'var(--admin-text-primary, #f8fafc)', fontSize: '1.5rem', fontWeight: 800 }}>
+            {activeTab === 'scan' ? 'Entrega de Reservas' : 'Historial de Préstamos'}
+          </h1>
+          <p style={{ margin: '0.25rem 0 0', color: 'var(--admin-text-muted, #64748b)', fontSize: '0.875rem' }}>
+            {activeTab === 'scan'
+              ? 'Reservas pendientes de entrega en tu dependencia.'
+              : 'Registro completo de préstamos procesados.'}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button className={`tab-btn ${activeTab === 'scan' ? 'active' : ''}`} onClick={() => setActiveTab('scan')}>
-            <FiCheckCircle /> Entregar Reservas
+            <FiGift size={15} /> Entregar Reservas
           </button>
           <button className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
-            <FiClock /> Historial de Préstamos
+            <FiClock size={15} /> Historial de Préstamos
           </button>
         </div>
       </div>
 
+      {/* ── ENTREGAR RESERVAS ── */}
       {activeTab === 'scan' && (
-        <div className="scan-section">
-          <div className="scanner-card">
-            <h2><FiCamera /> Escáner Rápido</h2>
-            <p>Escanea el código de barras de la reserva o la tarjeta de identidad del aprendiz para hacer la entrega automática.</p>
-            <form onSubmit={handleScanSubmit} className="scan-form">
-              <input 
-                ref={scanInputRef}
-                type="text" 
-                placeholder="Escanea aquí..." 
-                value={scanInput}
-                onChange={(e) => setScanInput(e.target.value)}
-                autoFocus
-              />
-              <button type="submit" className="btn btn-primary">Procesar</button>
-            </form>
+        <>
+          {/* KPIs */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+            {kpis.map((k, i) => (
+              <div key={i} className="admin-kpi-card">
+                <div className="kpi-icon-box" style={{ color: k.color, background: `${k.color}18` }}>{k.icon}</div>
+                <div className="kpi-info">
+                  <span className="kpi-title">{k.label}</span>
+                  <span className="kpi-value" style={{ color: k.color }}>{k.value}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted, #64748b)' }}>{k.sub}</span>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="reservations-list-card">
-            <h3>Reservas Virtuales Pendientes</h3>
-            <div className="res-grid">
-              {reservations.length > 0 ? reservations.map(r => (
-                <div key={r.id} className="res-card">
-                  <div className="res-header">
-                    <span className="res-id">#{r.id}</span>
-                    <span className="badge warning">Pendiente</span>
+          {/* Escáner */}
+          <div style={{ background: 'var(--admin-bg-card, #1e293b)', borderRadius: '12px', border: '1px solid var(--admin-border-color, #334155)', padding: '1.75rem' }}>
+            <h2 style={{ margin: '0 0 0.25rem', color: 'var(--sena-green, #39A900)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <FiCamera /> Escáner rápido
+            </h2>
+            <p style={{ margin: '0 0 1.5rem', color: 'var(--admin-text-muted, #64748b)', fontSize: '0.85rem' }}>
+              Escanea el código de barras o QR de la reserva o la tarjeta del aprendiz.
+            </p>
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+              <div style={{
+                flex: '0 0 180px', height: '120px', borderRadius: '10px',
+                border: '2px dashed var(--admin-border-color, #334155)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--admin-text-muted, #64748b)', gap: '0.4rem', fontSize: '0.78rem',
+                background: 'rgba(0,0,0,0.15)',
+              }}>
+                <FiCamera size={28} style={{ opacity: 0.4 }} />
+                <span>Coloca el código frente a la cámara</span>
+              </div>
+              <span style={{ color: 'var(--admin-text-muted, #64748b)', fontWeight: 600 }}>o</span>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--admin-text-secondary, #94a3b8)', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>
+                  Código manual
+                </label>
+                <form onSubmit={handleScanSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      ref={scanInputRef}
+                      type="text"
+                      placeholder="Ingresa el código de la reserva o ID del aprendiz"
+                      value={scanInput}
+                      onChange={e => setScanInput(e.target.value)}
+                      autoFocus
+                      style={{
+                        width: '100%', padding: '0.75rem 2.5rem 0.75rem 0.9rem',
+                        borderRadius: '8px', border: '1px solid var(--admin-border-color, #334155)',
+                        background: 'var(--admin-bg, #0f172a)', color: 'var(--admin-text-primary, #f8fafc)',
+                        fontSize: '0.9rem', boxSizing: 'border-box',
+                      }}
+                    />
+                    <FiSearch size={15} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-muted, #64748b)' }} />
                   </div>
-                  <div className="res-body">
-                    <p><FiPackage /> <strong>Elemento:</strong> {r.item_name}</p>
-                    <p><FiUser /> <strong>Aprendiz:</strong> {r.user_name} ({r.document})</p>
-                    <p><FiClock /> <strong>Fecha Req:</strong> {new Date(r.start_date).toLocaleDateString()}</p>
-                  </div>
-                  <div className="res-footer">
-                    <button className="btn btn-success" onClick={() => handleApproveReservation(r.id)}>
-                      Entregar Ahora
-                    </button>
-                  </div>
-                </div>
-              )) : (
-                <div className="empty-state">No hay reservas pendientes en tu dependencia.</div>
-              )}
+                  <button type="submit" style={{
+                    width: '100%', padding: '0.75rem',
+                    background: 'var(--sena-green, #39A900)', color: 'white',
+                    border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
+                  }}>
+                    Buscar reserva
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
+
+          {/* Tabla de reservas pendientes */}
+          <div style={{ background: 'var(--admin-bg-card, #1e293b)', borderRadius: '12px', border: '1px solid var(--admin-border-color, #334155)', padding: '1.25rem 1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <span style={{ fontWeight: 700, color: 'var(--admin-text-primary, #f8fafc)', fontSize: '0.95rem' }}>
+                Reservas pendientes ({filteredPending.length})
+              </span>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="text"
+                    placeholder="Buscar por aprendiz, elemento o código..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    style={{
+                      padding: '0.45rem 2.2rem 0.45rem 0.85rem', borderRadius: '8px',
+                      border: '1px solid var(--admin-border-color, #334155)',
+                      background: 'var(--admin-bg, #0f172a)', color: 'var(--admin-text-primary, #f8fafc)',
+                      fontSize: '0.82rem', width: '240px',
+                    }}
+                  />
+                  <FiSearch size={13} style={{ position: 'absolute', right: '0.7rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-muted, #64748b)' }} />
+                </div>
+                <button onClick={fetchReservations} style={{
+                  display: 'flex', alignItems: 'center', background: 'transparent',
+                  border: '1px solid var(--admin-border-color, #334155)',
+                  color: 'var(--admin-text-secondary, #94a3b8)', borderRadius: '8px',
+                  padding: '0.45rem 0.7rem', cursor: 'pointer',
+                }}>
+                  <FiRefreshCw size={13} />
+                </button>
+              </div>
+            </div>
+
+            {/* Cabecera */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: '130px 1fr 1fr 120px 120px 100px 110px',
+              gap: '0.5rem', padding: '0 0.75rem 0.6rem',
+              borderBottom: '1px solid var(--admin-border-color, #334155)',
+            }}>
+              {['Reserva', 'Aprendiz', 'Elemento', 'F. Reserva', 'F. Límite', 'Estado', 'Acción'].map(h => (
+                <span key={h} style={{ fontSize: '0.71rem', fontWeight: 700, color: 'var(--admin-text-muted, #64748b)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  {h} {h !== 'Acción' && <FiChevronDown size={10} style={{ opacity: 0.5 }} />}
+                </span>
+              ))}
+            </div>
+
+            {filteredPending.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--admin-text-muted, #64748b)' }}>
+                No hay reservas pendientes.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.5rem' }}>
+                {filteredPending.map(r => {
+                  const isOverdue = r.expiration_date ? new Date(r.expiration_date) < new Date() : false;
+                  return (
+                    <div key={r.id} style={{
+                      display: 'grid', gridTemplateColumns: '130px 1fr 1fr 120px 120px 100px 110px',
+                      gap: '0.5rem', alignItems: 'center',
+                      padding: '0.7rem 0.75rem', borderRadius: '8px',
+                      border: `1px solid ${isOverdue ? 'rgba(239,68,68,0.2)' : 'var(--admin-border-color, #2a374f)'}`,
+                      background: 'rgba(0,0,0,0.12)',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(57,169,0,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <FiPackage size={13} style={{ color: 'var(--sena-green, #39A900)' }} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--admin-text-primary, #f8fafc)' }}>RES-{String(r.id).padStart(6, '0')}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted, #64748b)' }}>#{r.id}</div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, background: '#39a900', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.68rem' }}>
+                          {r.user_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()}
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-text-primary, #f8fafc)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.user_name}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted, #64748b)' }}>Doc: {r.user_id || '—'}</div>
+                        </div>
+                      </div>
+
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-text-primary, #f8fafc)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {r.item_name || '—'}
+                      </span>
+
+                      <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted, #64748b)' }}>{fmt(r.reservation_date)}</span>
+
+                      <span style={{ fontSize: '0.8rem', color: isOverdue ? '#ef4444' : 'var(--admin-text-muted, #64748b)', fontWeight: isOverdue ? 700 : 400 }}>
+                        {fmt(r.expiration_date || '')}
+                        {isOverdue && <span style={{ display: 'block', fontSize: '0.68rem' }}>Vencida</span>}
+                      </span>
+
+                      <span style={{ padding: '0.25rem 0.65rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap', display: 'inline-block', textAlign: 'center', color: isOverdue ? '#ef4444' : '#f59e0b', background: isOverdue ? 'rgba(239,68,68,0.13)' : 'rgba(245,158,11,0.13)' }}>
+                        {isOverdue ? 'Vencida' : 'Pendiente'}
+                      </span>
+
+                      <button onClick={() => handleApprove(r.id)} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.4rem 0.75rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 700, border: 'none', cursor: 'pointer', background: 'var(--sena-green, #39A900)', color: 'white' }}>
+                        <FiCheckCircle size={13} /> Entregar
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </>
       )}
 
+      {/* ── HISTORIAL DE PRÉSTAMOS ── */}
       {activeTab === 'history' && (
-        <div className="history-section">
-          <div className="table-responsive">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Elemento</th>
-                  <th>Usuario</th>
-                  <th>Fecha Préstamo</th>
-                  <th>Fecha Vencimiento</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loans.length > 0 ? loans.map(l => (
-                  <tr key={l.id}>
-                    <td>{l.id}</td>
-                    <td>{l.item_name}</td>
-                    <td>{l.user_name}</td>
-                    <td>{new Date(l.loan_date).toLocaleDateString()}</td>
-                    <td>{new Date(l.due_date).toLocaleDateString()}</td>
-                    <td>
-                      <span className={`badge ${l.status === 'ACTIVE' ? 'primary' : l.status === 'RETURNED' ? 'success' : 'danger'}`}>
-                        {l.status}
-                      </span>
-                    </td>
-                  </tr>
-                )) : (
-                  <tr><td colSpan={6} style={{ textAlign: 'center' }}>No hay historial registrado.</td></tr>
-                )}
-              </tbody>
-            </table>
+        <div style={{ background: 'var(--admin-bg-card, #1e293b)', borderRadius: '12px', border: '1px solid var(--admin-border-color, #334155)', padding: '1.25rem 1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <h3 style={{ margin: 0, color: 'var(--admin-text-primary, #f8fafc)', fontSize: '1.1rem', fontWeight: 700 }}>
+              Historial de Préstamos
+            </h3>
+            <button onClick={fetchLoans} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'transparent', border: '1px solid var(--admin-border-color, #334155)', color: 'var(--admin-text-secondary, #94a3b8)', borderRadius: '8px', padding: '0.4rem 0.9rem', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
+              <FiRefreshCw size={13} /> Actualizar
+            </button>
           </div>
+
+          {/* Cabecera */}
+          <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 1fr 160px 120px 120px 90px', gap: '0.75rem', padding: '0 1rem 0.5rem', borderBottom: '1px solid var(--admin-border-color, #334155)', marginBottom: '0.5rem' }}>
+            {['#', 'Elemento(s)', 'Aprendiz', 'Procesado por', 'F. Préstamo', 'F. Vencimiento', 'Estado'].map(h => (
+              <span key={h} style={{ fontSize: '0.71rem', fontWeight: 700, color: 'var(--admin-text-muted, #64748b)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</span>
+            ))}
+          </div>
+
+          {loans.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--admin-text-muted, #64748b)' }}>No hay historial de préstamos registrado.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {loans.map(l => {
+                const s = loanStatusMap[l.status] ?? { label: l.status, color: '#94a3b8', bg: 'rgba(148,163,184,0.1)' };
+                const isOverdue = l.status === 'ACTIVE' && new Date(l.due_date) < new Date();
+                const itemNames = l.items?.map(i => i.name).join(', ') || '—';
+                return (
+                  <div key={l.id} style={{ display: 'grid', gridTemplateColumns: '48px 1fr 1fr 160px 120px 120px 90px', gap: '0.75rem', alignItems: 'center', background: 'rgba(0,0,0,0.15)', border: `1px solid ${isOverdue ? 'rgba(239,68,68,0.3)' : 'var(--admin-border-color, #2a374f)'}`, borderRadius: '8px', padding: '0.75rem 1rem' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '7px', background: 'rgba(57,169,0,0.12)', color: 'var(--sena-green, #39A900)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.78rem' }}>{l.id}</div>
+
+                    <span style={{ fontWeight: 600, color: 'var(--admin-text-primary, #f8fafc)', fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <FiPackage size={12} style={{ marginRight: '0.3rem', verticalAlign: 'middle', opacity: 0.6 }} />
+                      {itemNames}
+                    </span>
+
+                    <span style={{ color: 'var(--admin-text-secondary, #94a3b8)', fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <FiUser size={12} style={{ marginRight: '0.3rem', verticalAlign: 'middle', opacity: 0.6 }} />
+                      {l.user_name}
+                    </span>
+
+                    <span style={{ color: 'var(--admin-text-secondary, #94a3b8)', fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <FiShield size={12} style={{ marginRight: '0.3rem', verticalAlign: 'middle', opacity: 0.6 }} />
+                      {l.admin_name || 'Sistema'}
+                    </span>
+
+                    <span style={{ color: 'var(--admin-text-muted, #64748b)', fontSize: '0.82rem' }}>
+                      <FiCalendar size={11} style={{ marginRight: '0.25rem', verticalAlign: 'middle', opacity: 0.6 }} />
+                      {fmt(l.loan_date)}
+                    </span>
+
+                    <span style={{ color: isOverdue ? '#ef4444' : 'var(--admin-text-muted, #64748b)', fontSize: '0.82rem', fontWeight: isOverdue ? 700 : 400 }}>
+                      <FiCalendar size={11} style={{ marginRight: '0.25rem', verticalAlign: 'middle', opacity: 0.6 }} />
+                      {fmt(l.due_date)}{isOverdue && ' ⚠️'}
+                    </span>
+
+                    <span style={{ padding: '0.25rem 0.65rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, color: s.color, background: s.bg, whiteSpace: 'nowrap', textAlign: 'center', display: 'inline-block' }}>
+                      {s.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

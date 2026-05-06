@@ -23,6 +23,7 @@ def my_history():
                 "id": d.item_id,
                 "name": d.item.name if d.item else "Ítem eliminado",
                 "category": d.item.category.name if d.item and d.item.category else "N/A",
+                "image_url": d.item.image_url if d.item else None
             }
             for d in loan.details
         ]
@@ -52,6 +53,7 @@ def my_history():
                 "id": r.item_id,
                 "name": item.name if item else "Ítem eliminado",
                 "category": item.category.name if item and item.category else "N/A",
+                "image_url": item.image_url if item else None
             }],
         })
 

@@ -59,8 +59,15 @@ def get_reservations():
     start_date = request.args.get('startDate', '')
     end_date = request.args.get('endDate', '')
     category = request.args.get('category', 'ALL')
+    dependency_id = request.args.get('dependency_id', '')
 
+    from ..models.item import Location
     query = Reservation.query.join(User, Reservation.user_id == User.id).join(Item, Reservation.item_id == Item.id)
+
+    if dependency_id:
+        query = query.join(Location, Item.location_id == Location.id).filter(
+            Location.dependency_id == int(dependency_id)
+        )
 
     if search:
         search_filter = f"%{search}%"
