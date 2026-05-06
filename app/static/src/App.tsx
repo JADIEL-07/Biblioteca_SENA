@@ -28,6 +28,7 @@ import {
 import { SERVICES_DATA } from './shared/constants';
 const senaBg = '/assets/images/sena-library-bg.png';
 import { FloatingParticles } from './components/ui/FloatingParticles';
+import { AnimatedRobotIcon } from './components/ui/AnimatedRobotIcon';
 
 // ── Landing Page ──────────────────────────────────────────────────────────────
 function Landing({ loggedUser, onLogout }: { loggedUser: any; onLogout: () => void }) {
@@ -65,7 +66,7 @@ function Landing({ loggedUser, onLogout }: { loggedUser: any; onLogout: () => vo
             <FiMail className="nav-icon" /> CONTACTO
           </a>
           <a href="#help" onClick={() => setMobileNavOpen(false)}>
-            <FiHelpCircle className="nav-icon" /> AYUDA
+            <AnimatedRobotIcon className="nav-icon" /> ASISTENTE PERSONAL
           </a>
 
           {loggedUser ? (

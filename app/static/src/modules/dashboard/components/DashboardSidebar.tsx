@@ -3,6 +3,7 @@ import {
   FiHome, FiSearch, FiBookOpen, FiCalendar, FiClock, 
   FiBell, FiHelpCircle, FiSettings, FiLogOut, FiMenu, FiEdit3
 } from 'react-icons/fi';
+import { AnimatedRobotIcon } from '../../../components/ui/AnimatedRobotIcon';
 
 interface UserData {
   id: number;
@@ -46,9 +47,9 @@ export const DashboardSidebar: React.FC<SidebarProps> = ({
   ];
 
   const bottomItems = [
+    { id: 'help', label: 'Asistente personal', icon: <AnimatedRobotIcon /> },
     ...(!isGuest ? [
       { id: 'notifications', label: 'Notificaciones', icon: <FiBell /> },
-      { id: 'help', label: 'Ayuda y soporte', icon: <FiHelpCircle /> },
       { id: 'config', label: 'Configuración', icon: <FiSettings />, restricted: true },
     ] : []),
   ];

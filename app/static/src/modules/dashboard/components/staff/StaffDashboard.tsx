@@ -10,6 +10,8 @@ import { StaffHome } from './StaffHome';
 import { ProfileOverlay } from '../admin/ProfileOverlay';
 import '../admin/AdminDashboard.css';
 import '../UserDashboard.css';
+import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
+import { PersonalAssistant } from '../PersonalAssistant';
 
 interface StaffDashboardProps {
   user: any;
@@ -86,7 +88,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ user, onLogout, 
               <FiMail className="nav-icon" /> CONTACTO
             </a>
             <a href="#help">
-              <FiHelpCircle className="nav-icon" /> AYUDA
+              <AnimatedRobotIcon className="nav-icon" /> ASISTENTE PERSONAL
             </a>
           </div>
 
@@ -130,6 +132,7 @@ export const StaffDashboard: React.FC<StaffDashboardProps> = ({ user, onLogout, 
             {activeSection === 'inventory' && <InventoryManagement user={user} />}
             {activeSection === 'loans'     && <StaffLoans user={user} />}
             {activeSection === 'config'    && <UserConfig user={user} />}
+            {activeSection === 'help'      && <PersonalAssistant user={user} />}
           </div>
         </main>
       </div>

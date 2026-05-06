@@ -3,6 +3,7 @@ import {
   FiHome, FiBox, FiBookOpen, FiSettings, FiHelpCircle,
   FiLogOut, FiMenu, FiEdit3, FiList, FiMapPin, FiLayers, FiChevronDown
 } from 'react-icons/fi';
+import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
 
 interface Props {
   activeSection: string;
@@ -44,7 +45,7 @@ export const BibliotecarioSidebar: React.FC<Props> = ({
 
   const bottomItems = [
     { id: 'config', label: 'Configuración', icon: <FiSettings /> },
-    { id: 'help',   label: 'Ayuda',         icon: <FiHelpCircle /> },
+    { id: 'help',   label: 'Asistente personal', icon: <AnimatedRobotIcon /> },
   ];
 
   const handleItemClick = (item: any) => {

@@ -3,6 +3,7 @@ import {
   FiHome, FiBox, FiBookOpen, FiSettings, FiHelpCircle,
   FiLogOut, FiMenu, FiEdit3
 } from 'react-icons/fi';
+import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
 
 interface StaffSidebarProps {
   activeSection: string;
@@ -29,7 +30,7 @@ export const StaffSidebar: React.FC<StaffSidebarProps> = ({
 
   const bottomItems = [
     { id: 'config', label: 'Configuración', icon: <FiSettings /> },
-    { id: 'help',   label: 'Ayuda',         icon: <FiHelpCircle /> },
+    { id: 'help',   label: 'Asistente personal', icon: <AnimatedRobotIcon /> },
   ];
 
   const initials = (user?.name || '??')

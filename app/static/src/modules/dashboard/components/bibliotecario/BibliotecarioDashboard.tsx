@@ -10,6 +10,8 @@ import { StaffHome } from '../staff/StaffHome';
 import { ProfileOverlay } from '../admin/ProfileOverlay';
 import '../admin/AdminDashboard.css';
 import '../UserDashboard.css';
+import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
+import { PersonalAssistant } from '../PersonalAssistant';
 
 interface Props {
   user: any;
@@ -73,7 +75,7 @@ export const BibliotecarioDashboard: React.FC<Props> = ({ user, onLogout, onUser
         <div className="topnav-right">
           <div className="topnav-links hidden-mobile">
             <a href="#contact"><FiMail className="nav-icon" /> CONTACTO</a>
-            <a href="#help"><FiHelpCircle className="nav-icon" /> AYUDA</a>
+            <a href="#help"><AnimatedRobotIcon className="nav-icon" /> ASISTENTE PERSONAL</a>
           </div>
           <NotificationBell />
           <div className="topnav-user">
@@ -110,6 +112,7 @@ export const BibliotecarioDashboard: React.FC<Props> = ({ user, onLogout, onUser
             )}
             {activeSection === 'loans'              && <StaffLoans user={user} />}
             {activeSection === 'config'             && <UserConfig user={user} />}
+            {activeSection === 'help'               && <PersonalAssistant user={user} />}
           </div>
         </main>
       </div>

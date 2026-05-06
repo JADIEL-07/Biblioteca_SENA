@@ -562,3 +562,180 @@
   image-rendering: crisp-edges;
   display: block;
 }
+
+/* ── MICRO-ANIMACIONES INTERACTIVAS PARA ICONOS Y EMOJIS ── */
+
+/* Transición suave con amortiguación tipo resorte (cubic-bezier) */
+.sidebar-icon svg,
+.admin-sidebar-icon svg,
+.nav-icon,
+.nav-icon svg,
+.service-icon-wrapper-mini svg,
+.service-icon-wrapper-mini span {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease, stroke 0.3s ease, fill 0.3s ease;
+  transform-origin: center;
+}
+
+/* Efecto hover interactivo general: Elevación y rebote */
+.sidebar-item:hover .sidebar-icon svg,
+.sidebar-item.active .sidebar-icon svg,
+.admin-sidebar-item:hover .admin-sidebar-icon svg,
+.admin-sidebar-item.active .admin-sidebar-icon svg,
+.topnav-links a:hover .nav-icon,
+.nav-links a:hover .nav-icon,
+.service-card-mini:hover .service-icon-wrapper-mini svg,
+.service-card-mini:hover .service-icon-wrapper-mini span {
+  transform: translateY(-3px) scale(1.22);
+}
+
+/* ⚙️ CONFIGURACIÓN (Settings):
+   La rueda tiene una rotación constante muy lenta en estado inactivo.
+   Al hacer hover sobre el botón, gira de forma enérgica e interactiva. */
+.sidebar-icon svg[class*="Settings"],
+.admin-sidebar-icon svg[class*="Settings"] {
+  animation: gear-spin-idle 12s linear infinite;
+  transform-origin: center;
+}
+.sidebar-item:hover .sidebar-icon svg[class*="Settings"],
+.admin-sidebar-item:hover .admin-sidebar-icon svg[class*="Settings"] {
+  animation: gear-spin-active 1.5s linear infinite !important;
+}
+
+/* 🔔 NOTIFICACIONES (Bell):
+   La campana se sacude de lado a lado (rotación superior),
+   mientras que el badajo inferior (el clapper) oscila de manera realista en sentido opuesto. */
+.sidebar-icon svg[class*="Bell"] path:nth-of-type(1),
+.admin-sidebar-icon svg[class*="Bell"] path:nth-of-type(1),
+.topnav-right :hover svg[class*="Bell"] path:nth-of-type(1),
+.notification-bell-container:hover svg path:nth-of-type(1) {
+  animation: bell-body-swing 0.7s ease-in-out infinite alternate;
+  transform-origin: 12px 4px;
+}
+.sidebar-icon svg[class*="Bell"] path:nth-of-type(2),
+.admin-sidebar-icon svg[class*="Bell"] path:nth-of-type(2),
+.topnav-right :hover svg[class*="Bell"] path:nth-of-type(2),
+.notification-bell-container:hover svg path:nth-of-type(2) {
+  animation: bell-clapper-swing 0.7s ease-in-out infinite alternate;
+  transform-origin: 12px 18px;
+}
+
+/* ⏱️ RELOJES Y HISTORIAL (Clock):
+   La brújula y manecilla (el elemento polyline de react-icons) tiene un sutil movimiento continuo,
+   pero al hacer hover, las manecillas giran con velocidad y precisión técnica simulando un reloj de alta gama. */
+.sidebar-icon svg[class*="Clock"] polyline,
+.admin-sidebar-icon svg[class*="Clock"] polyline {
+  animation: clock-hands-idle 15s linear infinite;
+  transform-origin: 12px 12px;
+}
+.sidebar-item:hover .sidebar-icon svg[class*="Clock"] polyline,
+.admin-sidebar-item:hover .admin-sidebar-icon svg[class*="Clock"] polyline {
+  animation: clock-hands-active 2s linear infinite !important;
+}
+
+/* 🏠 INICIO (Home):
+   El icono de inicio se comprime y rebota de forma elástica al hacer hover. */
+.sidebar-item:hover .sidebar-icon svg[class*="Home"],
+.admin-sidebar-item:hover .admin-sidebar-icon svg[class*="Home"] {
+  animation: house-elastic-bounce 0.6s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+/* 🔍 BUSCAR Y EXPLORAR (Search):
+   La lupa de búsqueda se inclina y aumenta su tamaño simulando un acercamiento o foco visual interactivo. */
+.sidebar-item:hover .sidebar-icon svg[class*="Search"],
+.admin-sidebar-item:hover .admin-sidebar-icon svg[class*="Search"] {
+  animation: search-lens-zoom 1s ease-in-out infinite alternate;
+  transform-origin: 12px 12px;
+}
+
+/* 📖 LIBROS (Book / BookOpen):
+   Las páginas se abren y contraen como si estuvieran hojeándose de forma animada. */
+.sidebar-item:hover .sidebar-icon svg[class*="Book"] path,
+.admin-sidebar-item:hover .admin-sidebar-icon svg[class*="Book"] path {
+  animation: book-pages-fold 1s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+/* 🛡️ SEGURIDAD Y AUDITORÍA (Shield):
+   El escudo de seguridad genera un pulso de aura verde neón y expande su tamaño suavemente. */
+.admin-sidebar-item:hover .admin-sidebar-icon svg[class*="Shield"] {
+  animation: shield-safety-pulse 1.4s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+/* 👥 GRUPOS Y USUARIOS (Users):
+   Cada silueta de usuario tiene un desfase (delay) de elevación, subiendo y bajando de forma alternada. */
+.admin-sidebar-item:hover .admin-sidebar-icon svg[class*="Users"] path {
+  animation: users-alternate-bob 1s ease-in-out infinite alternate;
+}
+.admin-sidebar-item:hover .admin-sidebar-icon svg[class*="Users"] path:nth-of-type(2) {
+  animation-delay: 0.3s;
+}
+
+/* 🚪 CERRAR SESIÓN (LogOut):
+   La flecha de salida se desplaza saliendo y entrando de la puerta de manera interactiva. */
+.sidebar-item.logout-item:hover .sidebar-icon svg polyline,
+.sidebar-item.logout-item:hover .sidebar-icon svg line,
+.admin-sidebar-item.logout-item:hover .admin-sidebar-icon svg polyline,
+.admin-sidebar-item.logout-item:hover .admin-sidebar-icon svg line {
+  animation: logout-arrow-slide 0.7s ease-in-out infinite alternate;
+}
+
+/* ── KEYFRAMES DE LAS COMPLEJAS MICRO-ANIMACIONES INTERACTIVAS ── */
+
+@keyframes gear-spin-idle {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes gear-spin-active {
+  from { transform: translateY(-3px) scale(1.22) rotate(0deg); }
+  to { transform: translateY(-3px) scale(1.22) rotate(360deg); }
+}
+
+@keyframes bell-body-swing {
+  0% { transform: rotate(-14deg); }
+  100% { transform: rotate(14deg); }
+}
+@keyframes bell-clapper-swing {
+  0% { transform: rotate(20deg) translateX(-1px); }
+  100% { transform: rotate(-20deg) translateX(1px); }
+}
+
+@keyframes clock-hands-idle {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes clock-hands-active {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes house-elastic-bounce {
+  0% { transform: translateY(-3px) scale(1.22) scaleY(1); }
+  100% { transform: translateY(-3px) scale(1.22) scaleY(0.82) scaleX(1.1) translateY(1px); }
+}
+
+@keyframes search-lens-zoom {
+  0% { transform: translateY(-3px) scale(1.22) rotate(0deg) scale(1); }
+  100% { transform: translateY(-3px) scale(1.22) rotate(8deg) scale(1.15); }
+}
+
+@keyframes book-pages-fold {
+  0% { transform: scaleX(1); }
+  100% { transform: scaleX(0.84) skewY(1.5deg); }
+}
+
+@keyframes shield-safety-pulse {
+  0% { filter: drop-shadow(0 0 0px var(--sena-green)); transform: translateY(-3px) scale(1.22); }
+  100% { filter: drop-shadow(0 0 4px var(--sena-green)); transform: translateY(-3px) scale(1.28); }
+}
+
+@keyframes users-alternate-bob {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+
+@keyframes logout-arrow-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(4px); }
+}

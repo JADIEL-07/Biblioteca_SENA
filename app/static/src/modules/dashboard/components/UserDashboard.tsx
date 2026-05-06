@@ -14,6 +14,8 @@ import { AprendizReservations } from './aprendiz/AprendizReservations';
 import { AprendizCatalog } from './aprendiz/AprendizCatalog';
 import { AprendizHistory } from './aprendiz/AprendizHistory';
 import { NotificationBell } from '../../../shared/NotificationBell';
+import { AnimatedRobotIcon } from '../../../components/ui/AnimatedRobotIcon';
+import { PersonalAssistant } from './PersonalAssistant';
 
 interface UserData {
   id: number;
@@ -111,7 +113,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
               <FiMail className="nav-icon" /> CONTACTO
             </a>
             <a href="#help">
-              <FiHelpCircle className="nav-icon" /> AYUDA
+              <AnimatedRobotIcon className="nav-icon" /> ASISTENTE PERSONAL
             </a>
           </div>
 
@@ -178,6 +180,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
           {(activeSection === 'config' || activeSection === 'update') && !isGuest && (
             <UserConfig user={user} />
           )}
+          {activeSection === 'help' && <PersonalAssistant user={user} />}
           {activeSection === 'guest' && isGuest && (
             <DashboardHome
               user={user}

@@ -16,6 +16,8 @@ import { ProfileOverlay } from './ProfileOverlay';
 import { NotificationBell } from '../../../../shared/NotificationBell';
 import './AdminDashboard.css';
 import '../UserDashboard.css';
+import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
+import { PersonalAssistant } from '../PersonalAssistant';
 
 interface UserData {
   id: number;
@@ -83,6 +85,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
     maintenance: 'Gestión de Mantenimiento',
     exits: 'Control de Salidas Controladas',
     config: 'Configuración del Sistema',
+    help: 'Asistente Personal',
   };
 
   return (
@@ -113,7 +116,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
               <FiMail className="nav-icon" /> CONTACTO
             </a>
             <a href="#help">
-              <FiHelpCircle className="nav-icon" /> AYUDA
+              <AnimatedRobotIcon className="nav-icon" /> ASISTENTE PERSONAL
             </a>
           </div>
 
@@ -166,6 +169,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, 
             {activeSection === 'inventory-locations' && <InventoryManagement activeTab="locations" />}
             {activeSection === 'inventory-categories' && <InventoryManagement activeTab="categories" />}
             {activeSection === 'exits' && <OutputManagement />}
+            {activeSection === 'help' && <PersonalAssistant user={user} />}
             {!sectionTitle[activeSection] && (
               <div className="placeholder-view">
                 <h2>Sección en construcción</h2>

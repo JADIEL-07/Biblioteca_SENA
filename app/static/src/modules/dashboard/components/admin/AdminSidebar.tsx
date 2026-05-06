@@ -5,6 +5,7 @@ import {
   FiSettings, FiShield, FiHelpCircle, FiChevronDown, FiLogOut, FiMenu, FiEdit3, FiPackage, FiActivity,
   FiList, FiMapPin, FiLayers
 } from 'react-icons/fi';
+import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
 
 interface UserData {
   id: number;
@@ -66,7 +67,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const adminBottomItems = [
     { id: 'config', label: 'Configuración', icon: <FiSettings /> },
     { id: 'audit', label: 'Auditoría', icon: <FiShield /> },
-    { id: 'help', label: 'Ayuda', icon: <FiHelpCircle /> },
+    { id: 'help', label: 'Asistente personal', icon: <AnimatedRobotIcon /> },
   ];
 
   const handleItemClick = (item: any) => {
