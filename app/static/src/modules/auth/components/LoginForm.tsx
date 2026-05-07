@@ -114,16 +114,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onLoginSuccess }) =>
       } else {
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        setSuccessMsg('Inicio de sesión exitoso. Redirigiendo...');
         if (onLoginSuccess) onLoginSuccess(data.user);
-        setTimeout(() => {
-          const role = (data.user?.role?.name || data.user?.rol?.nombre || '').toUpperCase();
-          const dest = role === 'ADMIN' ? '/admin'
-            : role === 'BIBLIOTECARIO' ? '/bibliotecario'
-            : role === 'ALMACENISTA' ? '/almacenista'
-            : '/dashboard';
-          navigate(dest);
-        }, 800);
       }
     } catch (err: any) {
       setServerError(err.message);

@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { 
-  FiHome, FiBox, FiBook, FiCalendar, FiTool, 
-  FiArrowRightCircle, FiBarChart2, FiUsers, 
-  FiSettings, FiShield, FiHelpCircle, FiChevronDown, FiLogOut, FiMenu, FiEdit3, FiPackage, FiActivity,
-  FiList, FiMapPin, FiLayers
+import React from 'react';
+import {
+  FiHome, FiAlertCircle, FiTool, FiMonitor, FiClipboard, FiBox, FiClock, FiFileText,
+  FiMessageSquare, FiCalendar, FiSettings, FiLogOut, FiMenu, FiUsers, FiMaximize, FiEdit3
 } from 'react-icons/fi';
 import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
+import '../admin/AdminDashboard.css';
 
 interface UserData {
   id: number;
@@ -16,17 +15,17 @@ interface UserData {
   profile_image?: string;
 }
 
-interface AdminSidebarProps {
+interface SoporteSidebarProps {
   activeSection: string;
   onNavigate: (section: string) => void;
   user: UserData;
   onLogout: () => void;
-  isCollapsed?: boolean;
-  onToggle?: () => void;
-  isMobileOpen?: boolean;
+  isCollapsed: boolean;
+  onToggle: () => void;
+  isMobileOpen: boolean;
 }
 
-export const AdminSidebar: React.FC<AdminSidebarProps> = ({
+export const SoporteSidebar: React.FC<SoporteSidebarProps> = ({
   activeSection,
   onNavigate,
   user,
@@ -35,48 +34,23 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   onToggle,
   isMobileOpen = false
 }) => {
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
-
-  const toggleExpand = (id: string) => {
-    setExpandedItems(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
-  };
-
   const mainItems = [
     { id: 'dashboard', label: 'Inicio', icon: <FiHome /> },
-    { 
-      id: 'inventory', 
-      label: 'Inventario', 
-      icon: <FiBox />,
-      hasDropdown: true,
-      subItems: [
-        { id: 'inventory-table', label: 'Tabla de inventario', icon: <FiList /> },
-        { id: 'inventory-locations', label: 'Ubicación', icon: <FiMapPin /> },
-        { id: 'inventory-categories', label: 'Categorías', icon: <FiLayers /> },
-      ]
-    },
-    { id: 'loans', label: 'Préstamos', icon: <FiBook /> },
-    { id: 'reservations', label: 'Reservas', icon: <FiCalendar /> },
-    { id: 'maintenance', label: 'Mantenimiento', icon: <FiTool /> },
-    { id: 'exits', label: 'Salidas', icon: <FiArrowRightCircle /> },
-    { id: 'reports', label: 'Reportes', icon: <FiBarChart2 /> },
-    { id: 'users', label: 'Usuarios', icon: <FiUsers /> },
+    { id: 'incidencias', label: 'Incidencias', icon: <FiAlertCircle />, badge: 7, badgeColor: 'red' },
+    { id: 'mantenimientos', label: 'Mantenimientos', icon: <FiTool />, badge: 5, badgeColor: 'green' },
+    { id: 'equipos', label: 'Equipos', icon: <FiMonitor /> },
+    { id: 'ordenes', label: 'Órdenes de trabajo', icon: <FiClipboard />, badge: 12, badgeColor: 'purple' },
+    { id: 'repuestos', label: 'Repuestos', icon: <FiBox /> },
+    { id: 'historial', label: 'Historial técnico', icon: <FiClock /> },
+    { id: 'reportes', label: 'Reportes', icon: <FiFileText /> },
+    { id: 'solicitudes', label: 'Solicitudes', icon: <FiMessageSquare /> },
+    { id: 'calendario', label: 'Calendario', icon: <FiCalendar /> },
   ];
 
-  const adminBottomItems = [
+  const bottomItems = [
     { id: 'config', label: 'Configuración', icon: <FiSettings /> },
-    { id: 'audit', label: 'Auditoría', icon: <FiShield /> },
     { id: 'help', label: 'Asistente personal', icon: <AnimatedRobotIcon /> },
   ];
-
-  const handleItemClick = (item: any) => {
-    if (item.hasDropdown && !isCollapsed) {
-      toggleExpand(item.id);
-    } else {
-      onNavigate(item.id);
-    }
-  };
 
   return (
     <aside className={`admin-sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`} style={{ maxHeight: '100vh' }}>
@@ -93,45 +67,30 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
       <div className="admin-sidebar-menu" style={{ gap: '0.1rem' }}>
         {mainItems.map(item => (
-          <React.Fragment key={item.id}>
-            <button
-              className={`admin-sidebar-item ${activeSection === item.id || (item.subItems?.some(s => s.id === activeSection)) ? 'active' : ''}`}
-              onClick={() => handleItemClick(item)}
-              title={isCollapsed ? item.label : ''}
-            >
-              <div className="admin-sidebar-item-content">
-                <span className="admin-sidebar-icon">{item.icon}</span>
-                {!isCollapsed && <span className="admin-sidebar-label">{item.label}</span>}
-              </div>
-              {item.hasDropdown && !isCollapsed && (
-                <FiChevronDown 
-                  style={{ 
-                    fontSize: '0.8rem',
-                    transition: 'transform 0.3s', 
-                    transform: expandedItems.includes(item.id) ? 'rotate(180deg)' : 'rotate(0)' 
-                  }} 
-                />
+          <button
+            key={item.id}
+            className={`admin-sidebar-item ${activeSection === item.id ? 'active' : ''}`}
+            onClick={() => onNavigate(item.id)}
+            title={isCollapsed ? item.label : ''}
+          >
+            <div className="admin-sidebar-item-content">
+              <span className="admin-sidebar-icon">{item.icon}</span>
+              {!isCollapsed && <span className="admin-sidebar-label">{item.label}</span>}
+              {!isCollapsed && item.badge && (
+                <span style={{ 
+                  background: item.badgeColor === 'red' ? '#ef4444' : item.badgeColor === 'green' ? 'var(--sena-green, #39A900)' : item.badgeColor === 'purple' ? '#a855f7' : '#3b82f6', 
+                  color: 'white', 
+                  padding: '2px 6px', 
+                  borderRadius: '10px', 
+                  fontSize: '0.65rem', 
+                  fontWeight: 'bold',
+                  marginLeft: 'auto'
+                }}>
+                  {item.badge}
+                </span>
               )}
-            </button>
-            
-            {item.hasDropdown && !isCollapsed && expandedItems.includes(item.id) && (
-              <div style={{ paddingLeft: '1.2rem' }}>
-                {item.subItems?.map(sub => (
-                  <button
-                    key={sub.id}
-                    className={`admin-sidebar-item sub-item ${activeSection === sub.id ? 'active' : ''}`}
-                    onClick={() => onNavigate(sub.id)}
-                    style={{ height: '32px', fontSize: '0.8rem', padding: '0 0.8rem' }}
-                  >
-                    <div className="admin-sidebar-item-content" style={{ gap: '0.5rem' }}>
-                      <span className="admin-sidebar-icon" style={{ fontSize: '0.85rem' }}>{sub.icon}</span>
-                      <span className="admin-sidebar-label">{sub.label}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </React.Fragment>
+            </div>
+          </button>
         ))}
 
       </div>
@@ -139,7 +98,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       <div style={{ flex: 1 }}></div>
 
       <div className="admin-sidebar-bottom">
-        {adminBottomItems.map(item => (
+        {bottomItems.map(item => (
           <button
             key={item.id}
             className={`admin-sidebar-item ${activeSection === item.id ? 'active' : ''}`}
@@ -157,14 +116,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       <div className="admin-sidebar-footer" style={{ paddingBottom: '0.5rem' }}>
         <div style={{ margin: '0.3rem 0', height: '1px', background: 'rgba(255,255,255,0.1)', opacity: 0.1 }}></div>
 
-        {/* PERFIL VERTICAL CENTRADO CON ICONO FLOTANTE PARA ADMIN */}
+        {/* PERFIL VERTICAL CENTRADO CON ICONO FLOTANTE PARA SOPORTE */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.4rem', marginTop: '0.4rem' }}>
           <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{
               width: isCollapsed ? '34px' : '40px',
               height: isCollapsed ? '34px' : '40px',
               borderRadius: '50%',
-              background: '#39a900',
+              background: 'var(--sena-green, #39A900)', // SENA Green matching main theme
               color: 'white',
               display: 'flex',
               alignItems: 'center',
@@ -177,7 +136,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               {user.profile_image ? (
                 <img src={user.profile_image} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                (user.name || user.nombre || 'AD').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+                (user.name || user.nombre || 'ST').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
               )}
             </div>
             
@@ -189,9 +148,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   position: 'absolute',
                   top: '0',
                   right: '-2px',
-                  background: 'var(--admin-profile-edit-bg)',
-                  border: '1px solid var(--admin-border-color)',
-                  color: 'var(--admin-profile-edit-text)',
+                  background: 'var(--admin-profile-edit-bg, #334155)',
+                  border: '1px solid var(--admin-border-color, #475569)',
+                  color: 'var(--admin-profile-edit-text, #f8fafc)',
                   width: '18px',
                   height: '18px',
                   borderRadius: '50%',
@@ -208,7 +167,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             )}
             
             {!isCollapsed && (
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.2rem', fontWeight: 600 }}>Administrador</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--soporte-text-muted, #64748b)', marginTop: '0.2rem', fontWeight: 600 }}>Soporte Técnico</span>
             )}
           </div>
         </div>

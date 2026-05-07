@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  FiHome, FiBox, FiBookOpen, FiSettings, FiHelpCircle,
+  FiHome, FiBox, FiBookOpen, FiSettings,
   FiLogOut, FiMenu, FiEdit3, FiList, FiMapPin, FiLayers, FiChevronDown
 } from 'react-icons/fi';
 import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
@@ -109,8 +109,11 @@ export const AlmacenistaSidebar: React.FC<Props> = ({
           </React.Fragment>
         ))}
 
-        <div style={{ height: '1.2rem' }} />
+      </div>
 
+      <div style={{ flex: 1 }} />
+
+      <div className="admin-sidebar-bottom">
         {bottomItems.map(item => (
           <button
             key={item.id}
@@ -125,8 +128,6 @@ export const AlmacenistaSidebar: React.FC<Props> = ({
           </button>
         ))}
       </div>
-
-      <div style={{ flex: 1 }} />
 
       <div className="admin-sidebar-footer" style={{ paddingBottom: '0.5rem' }}>
         <div style={{ margin: '0.3rem 0', height: '1px', background: 'rgba(255,255,255,0.1)', opacity: 0.1 }} />

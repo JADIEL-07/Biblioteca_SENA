@@ -56,6 +56,21 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
   const isPendingUser = !isGuest && currentRole !== 'APRENDIZ' && currentRole !== 'ADMIN';
 
   useEffect(() => {
+    if (!isGuest && currentRole) {
+      const roleUpper = currentRole.toUpperCase();
+      if (roleUpper === 'ADMIN') {
+        navigate('/admin', { replace: true });
+      } else if (roleUpper === 'BIBLIOTECARIO') {
+        navigate('/bibliotecario', { replace: true });
+      } else if (roleUpper === 'ALMACENISTA') {
+        navigate('/almacenista', { replace: true });
+      } else if (roleUpper === 'SOPORTE TÉCNICO' || roleUpper === 'SOPORTE TECNICO' || roleUpper === 'SOPORTE_TECNICO' || roleUpper === 'SOPORTE') {
+        navigate('/soporte', { replace: true });
+      }
+    }
+  }, [currentRole, isGuest, navigate]);
+
+  useEffect(() => {
     const syncTheme = () => {
       const storedTheme = (localStorage.getItem('dashboard-theme') as 'dark' | 'light') ?? 'dark';
       setTheme(storedTheme);

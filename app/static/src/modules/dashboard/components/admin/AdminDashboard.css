@@ -122,7 +122,7 @@
 
 /* ── SIDEBAR ── */
 .admin-sidebar {
-  width: 210px;
+  width: 235px;
   background-color: var(--admin-bg-sidebar);
   border-right: 1px solid var(--admin-border-color);
   display: flex;
@@ -138,17 +138,37 @@
   width: 70px;
 }
 
-.admin-sidebar-menu,
-.admin-sidebar-bottom {
+.admin-sidebar-menu {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem; /* Más amplio */
+  gap: 0.1rem;
   padding: 0.5rem 0.75rem;
-  flex: 1;
+  flex: 0 1 auto;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* Custom scrollbar for the sidebar menu */
+.admin-sidebar-menu::-webkit-scrollbar {
+  width: 4px;
+}
+.admin-sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+.admin-sidebar-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .admin-sidebar-bottom {
-  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.admin-sidebar-footer {
+  padding: 0.5rem 0.75rem;
 }
 
 .admin-sidebar.collapsed .admin-sidebar-menu,
@@ -231,7 +251,11 @@
 .admin-sidebar-item-content {
   display: flex;
   align-items: center;
-  gap: 1rem; /* Sincronizado con los demás */
+  gap: 0.6rem; /* Sincronizado con los demás */
+}
+
+.admin-sidebar-label {
+  white-space: nowrap;
 }
 
 .admin-sidebar-icon {

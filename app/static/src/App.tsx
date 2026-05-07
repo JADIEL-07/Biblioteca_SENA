@@ -9,6 +9,7 @@ import { UserDashboard } from './modules/dashboard/components/UserDashboard';
 import { AdminDashboard } from './modules/dashboard/components/admin/AdminDashboard';
 import { BibliotecarioDashboard } from './modules/dashboard/components/bibliotecario/BibliotecarioDashboard';
 import { AlmacenistaDashboard } from './modules/dashboard/components/almacenista/AlmacenistaDashboard';
+import { SoporteDashboard } from './modules/dashboard/components/soporte/SoporteDashboard';
 import {
   FaTwitter,
   FaFacebookF,
@@ -125,7 +126,7 @@ function Landing({ loggedUser, onLogout }: { loggedUser: any; onLogout: () => vo
             onClick={() => {
               if (loggedUser) {
                 const role = (loggedUser.role?.name || loggedUser.rol?.nombre || '').toUpperCase();
-                navigate(role === 'ADMIN' ? '/admin' : role === 'BIBLIOTECARIO' ? '/bibliotecario' : role === 'ALMACENISTA' ? '/almacenista' : '/dashboard');
+                navigate(role === 'ADMIN' ? '/admin' : role === 'BIBLIOTECARIO' ? '/bibliotecario' : role === 'ALMACENISTA' ? '/almacenista' : role === 'SOPORTE TÉCNICO' || role === 'SOPORTE TECNICO' || role === 'SOPORTE_TECNICO' || role === 'SOPORTE' ? '/soporte' : '/dashboard');
               } else {
                 navigate('/dashboard/guest');
               }
@@ -199,7 +200,8 @@ function AppRoutes() {
   const isAdmin = userRole === 'ADMIN';
   const isBibliotecario = userRole === 'BIBLIOTECARIO';
   const isAlmacenista = userRole === 'ALMACENISTA';
-  const isStaff = isBibliotecario || isAlmacenista;
+  const isSoporte = userRole === 'SOPORTE TÉCNICO' || userRole === 'SOPORTE TECNICO' || userRole === 'SOPORTE_TECNICO' || userRole === 'SOPORTE';
+  const isStaff = isBibliotecario || isAlmacenista || isSoporte;
 
   return (
     <Routes>
@@ -215,7 +217,7 @@ function AppRoutes() {
         path="/login"
         element={
           loggedUser
-            ? <Navigate to={isAdmin ? '/admin' : isBibliotecario ? '/bibliotecario' : isAlmacenista ? '/almacenista' : '/dashboard'} replace />
+            ? <Navigate to={isAdmin ? '/admin' : isBibliotecario ? '/bibliotecario' : isAlmacenista ? '/almacenista' : isSoporte ? '/soporte' : '/dashboard'} replace />
             : <LoginForm mode="login" onLoginSuccess={handleLoginSuccess} />
         }
       />
@@ -223,7 +225,7 @@ function AppRoutes() {
         path="/register"
         element={
           loggedUser
-            ? <Navigate to={isAdmin ? '/admin' : isBibliotecario ? '/bibliotecario' : isAlmacenista ? '/almacenista' : '/dashboard'} replace />
+            ? <Navigate to={isAdmin ? '/admin' : isBibliotecario ? '/bibliotecario' : isAlmacenista ? '/almacenista' : isSoporte ? '/soporte' : '/dashboard'} replace />
             : <LoginForm mode="register" onLoginSuccess={handleLoginSuccess} />
         }
       />
@@ -258,18 +260,32 @@ function AppRoutes() {
         }
       />
 
+      {/* Soporte Técnico dashboard */}
+      <Route
+        path="/soporte/*"
+        element={
+          loggedUser && isSoporte
+            ? <SoporteDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
+            : <Navigate to="/login" replace />
+        }
+      />
+
       {/* User / Aprendiz / Guest dashboard */}
       <Route
         path="/dashboard/*"
         element={
-          <UserDashboard
-            user={loggedUser ?? { nombre: 'Invitado SENA', rol: { nombre: 'Invitado' }, id: 0 }}
-            onLogout={loggedUser ? handleLogout : () => {}}
-            onGoToHome={() => {}}
-            onLogin={() => {}}
-            onRegister={() => {}}
-            onUserUpdate={loggedUser ? handleUserUpdate : undefined}
-          />
+          loggedUser && isAdmin ? <Navigate to="/admin" replace />
+          : loggedUser && isBibliotecario ? <Navigate to="/bibliotecario" replace />
+          : loggedUser && isAlmacenista ? <Navigate to="/almacenista" replace />
+          : loggedUser && isSoporte ? <Navigate to="/soporte" replace />
+          : <UserDashboard
+              user={loggedUser ?? { nombre: 'Invitado SENA', rol: { nombre: 'Invitado' }, id: 0 }}
+              onLogout={loggedUser ? handleLogout : () => {}}
+              onGoToHome={() => {}}
+              onLogin={() => {}}
+              onRegister={() => {}}
+              onUserUpdate={loggedUser ? handleUserUpdate : undefined}
+            />
         }
       />
 
