@@ -48,6 +48,13 @@
   animation: pulse-glow 2s infinite ease-in-out;
 }
 
+.header-robot-avatar {
+  width: 32px;
+  height: 32px;
+  color: var(--sena-green);
+  animation: pulse-glow 2.5s infinite ease-in-out;
+}
+
 .header-info h1 {
   font-size: 1.35rem;
   font-weight: 800;
@@ -182,7 +189,7 @@
 .message-content-box {
   display: flex;
   flex-direction: column;
-  padding: 0.9rem 1.2rem;
+  padding: 0.7rem 1.1rem 1.15rem 1.1rem;
   border-radius: 16px;
   position: relative;
   box-shadow: var(--shadow-sm);
@@ -223,10 +230,13 @@
 }
 
 .message-time {
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.7);
-  align-self: flex-end;
-  margin-top: 0.35rem;
+  position: absolute;
+  bottom: 0.3rem;
+  right: 0.65rem;
+  font-size: 0.64rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  line-height: 1;
 }
 
 .bot .message-time {
@@ -434,6 +444,94 @@
   font-size: 0.92rem;
   font-family: 'Inter', sans-serif;
   transition: all 0.25s ease;
+}
+
+.attachment-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.attachment-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--sena-green);
+}
+
+.attachment-btn.recording {
+  color: #ef4444;
+  animation: pulse-glow 1.5s infinite;
+}
+
+.media-preview-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-nav);
+  border-top: 1px solid var(--border-color);
+}
+
+.media-preview-box {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+}
+
+.media-preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-preview-box audio {
+  width: 200px;
+  height: 40px;
+}
+
+.remove-media-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.chat-image-attachment {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.chat-audio-attachment {
+  margin-top: 0.5rem;
+  width: 100%;
+  max-width: 250px;
 }
 
 .chat-input-bar input:focus {
@@ -913,3 +1011,14 @@
     max-width: 95%;
   }
 }
+
+/* Apple Color Emoji Styles */
+.apple-emoji {
+  display: inline-block;
+  width: 1.35em;
+  height: 1.35em;
+  vertical-align: -0.22em;
+  margin: 0 0.12em;
+  object-fit: contain;
+}
+

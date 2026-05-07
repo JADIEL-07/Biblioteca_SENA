@@ -61,6 +61,8 @@ def create_app():
     from .routes.output_routes import output_bp
     from .routes.notification_routes import notification_bp
     from .routes.history_routes import history_bp
+    from .routes.assistant_routes import assistant_bp
+
 
     app.register_blueprint(auth_bp,      url_prefix='/api/v1/auth')
     app.register_blueprint(items_bp,     url_prefix='/api/v1/items')
@@ -74,6 +76,8 @@ def create_app():
     app.register_blueprint(output_bp,      url_prefix='/api/v1/outputs')
     app.register_blueprint(notification_bp, url_prefix='/api/v1/notifications')
     app.register_blueprint(history_bp,     url_prefix='/api/v1/history')
+    app.register_blueprint(assistant_bp,   url_prefix='/api/v1/assistant')
+
 
     # ── Security & Cache Headers ──────────────────────────────────────────────────────
     @app.after_request
