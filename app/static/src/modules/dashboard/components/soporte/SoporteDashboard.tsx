@@ -7,6 +7,8 @@ import { UserConfig } from '../UserConfig';
 import { ProfileOverlay } from '../admin/ProfileOverlay'; // Reusing from admin
 import { NotificationBell } from '../../../../shared/NotificationBell';
 import { MaintenanceManagement } from '../admin/MaintenanceManagement'; // Reusing if exists, or just placeholder
+import { SystemReports } from '../admin/SystemReports';
+import { SoporteIncidencias } from './SoporteIncidencias';
 import './SoporteDashboard.css';
 import '../UserDashboard.css';
 import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
@@ -150,7 +152,9 @@ export const SoporteDashboard: React.FC<SoporteDashboardProps> = ({ user, onLogo
             {activeSection === 'config' && <UserConfig user={user} />}
             {activeSection === 'mantenimientos' && <MaintenanceManagement />}
             {activeSection === 'help' && <PersonalAssistant user={user} />}
-            {!['dashboard', 'config', 'mantenimientos', 'help'].includes(activeSection) && (
+            {activeSection === 'reportes' && <SystemReports />}
+            {activeSection === 'incidencias' && <SoporteIncidencias user={user} />}
+            {!['dashboard', 'config', 'mantenimientos', 'help', 'reportes', 'incidencias'].includes(activeSection) && (
               <div className="placeholder-view">
                 <h2>Sección en construcción</h2>
                 <p>El módulo de {sectionTitle[activeSection] || activeSection} estará disponible pronto.</p>

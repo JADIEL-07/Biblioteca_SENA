@@ -55,6 +55,73 @@ export const AprendizLoans: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'activos' | 'devueltos'>('activos');
 
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedItemForReport, setSelectedItemForReport] = useState<FlattenedLoanItem | null>(null);
+  const [reportDescription, setReportDescription] = useState('');
+  const [reportSeverity, setReportSeverity] = useState('MEDIUM');
+  const [reportPhoto, setReportPhoto] = useState<string | null>(null);
+  const [submittingReport, setSubmittingReport] = useState(false);
+
+  const handleOpenReportModal = (item: FlattenedLoanItem) => {
+    setSelectedItemForReport(item);
+    setReportDescription('');
+    setReportSeverity('MEDIUM');
+    setReportPhoto(null);
+    setShowReportModal(true);
+  };
+
+  const handleCloseReportModal = () => {
+    setShowReportModal(false);
+    setSelectedItemForReport(null);
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReportPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedItemForReport || !reportDescription.trim()) return;
+
+    setSubmittingReport(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/v1/reports_mgmt/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          subject: `Incidencia: ${selectedItemForReport.item.name} (${selectedItemForReport.item.code})`,
+          description: reportDescription,
+          severity: reportSeverity,
+          photo: reportPhoto
+        })
+      });
+
+      if (response.ok) {
+        alert("Reporte de incidencia creado con éxito.");
+        handleCloseReportModal();
+      } else {
+        const err = await response.json();
+        alert(err.error || "Error al crear el reporte.");
+      }
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      alert("Error de conexión al enviar el reporte.");
+    } finally {
+      setSubmittingReport(false);
+    }
+  };
+
   useEffect(() => {
     const fetchLoans = async () => {
       try {
@@ -252,7 +319,18 @@ export const AprendizLoans: React.FC = () => {
                       </div>
                     </td>
                     <td>
-                      <button className="btn-outline">Ver detalle</button>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <button className="btn-outline">Ver detalle</button>
+                        {(fi.status === 'ACTIVE' || fi.status === 'OVERDUE') && (
+                          <button 
+                            className="btn-outline" 
+                            style={{ borderColor: '#ef4444', color: '#ef4444' }}
+                            onClick={() => handleOpenReportModal(fi)}
+                          >
+                            Reportar Daño
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -273,6 +351,81 @@ export const AprendizLoans: React.FC = () => {
             <p>Puedes solicitar una renovación si el elemento no ha sido reservado por otra persona.</p>
           </div>
           <button className="btn-renewal">Solicitar renovación</button>
+        </div>
+      )}
+
+      {/* GLASSMORPHISM BLUR-BACKDROP MODAL */}
+      {showReportModal && selectedItemForReport && (
+        <div className="report-modal-overlay" onClick={handleCloseReportModal}>
+          <div className="report-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="report-modal-header">
+              <h3>Reportar Incidencia / Daño</h3>
+              <button className="btn-close-modal" onClick={handleCloseReportModal}>&times;</button>
+            </div>
+            <form onSubmit={handleReportSubmit}>
+              <div className="report-modal-body">
+                <div style={{ marginBottom: '1rem', background: '#0f172a', padding: '0.8rem', borderRadius: '8px', border: '1px solid #334155' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Elemento en Reporte</span>
+                  <strong style={{ fontSize: '1rem', color: '#ffffff', marginTop: '0.2rem', display: 'block' }}>{selectedItemForReport.item.name}</strong>
+                  <span style={{ fontSize: '0.8rem', color: '#39A900', marginTop: '0.1rem', display: 'block' }}>Código: {selectedItemForReport.item.code}</span>
+                </div>
+
+                <div className="report-form-group">
+                  <label htmlFor="report-desc">Descripción del Problema</label>
+                  <textarea
+                    id="report-desc"
+                    className="report-form-control"
+                    rows={4}
+                    placeholder="Describe en detalle el problema o daño presentado en el elemento..."
+                    value={reportDescription}
+                    onChange={(e) => setReportDescription(e.target.value)}
+                    required
+                  ></textarea>
+                </div>
+
+                <div className="report-form-group">
+                  <label htmlFor="report-sev">Gravedad de la Incidencia</label>
+                  <select
+                    id="report-sev"
+                    className="report-form-control"
+                    value={reportSeverity}
+                    onChange={(e) => setReportSeverity(e.target.value)}
+                  >
+                    <option value="LOW">Baja (Funcionamiento parcial, daño estético)</option>
+                    <option value="MEDIUM">Media (Falla intermitente, requiere revisión)</option>
+                    <option value="HIGH">Alta (Inoperable, requiere reparación urgente)</option>
+                    <option value="CRITICAL">Crítica (Riesgo físico, daño catastrófico)</option>
+                  </select>
+                </div>
+
+                <div className="report-form-group">
+                  <label>Adjuntar Evidencia Fotográfica</label>
+                  {!reportPhoto ? (
+                    <div className="report-file-upload">
+                      <input type="file" accept="image/*" onChange={handlePhotoChange} />
+                      <div className="upload-icon">📷</div>
+                      <span className="upload-text">Haz clic o arrastra una imagen aquí</span>
+                      <span className="upload-hint">Formatos soportados: JPG, PNG, WEBP</span>
+                    </div>
+                  ) : (
+                    <div className="photo-preview-container">
+                      <img src={reportPhoto} alt="Evidencia de daño" />
+                      <button type="button" className="btn-remove-photo" onClick={() => setReportPhoto(null)}>&times;</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="report-modal-footer">
+                <button type="button" className="btn-report-cancel" onClick={handleCloseReportModal} disabled={submittingReport}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-report-submit" disabled={submittingReport || !reportDescription.trim()}>
+                  {submittingReport ? "Enviando..." : "Enviar Reporte"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
