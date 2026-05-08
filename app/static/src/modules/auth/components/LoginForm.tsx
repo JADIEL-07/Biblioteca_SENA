@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiMail, FiLock, FiUser, FiEye, FiEyeOff, FiAlertCircle, FiPhone, FiCreditCard } from 'react-icons/fi';
 import './LoginForm.css';
 import { FloatingParticles } from '../../../components/ui/FloatingParticles';
-const senaBg = '/assets/images/sena-library-bg.png';
 
 interface LoginFormProps {
   mode: 'login' | 'register';
@@ -14,6 +13,30 @@ interface LoginFormProps {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ mode, onLoginSuccess }) => {
   const navigate = useNavigate();
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return document.body.classList.contains('theme-light') ? 'light' : 'dark';
+  });
+
+  useEffect(() => {
+    const isLightNow = document.body.classList.contains('theme-light');
+    setTheme(isLightNow ? 'light' : 'dark');
+
+    const observer = new MutationObserver(() => {
+      const isLight = document.body.classList.contains('theme-light');
+      setTheme(isLight ? 'light' : 'dark');
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const currentBg = theme === 'light'
+    ? '/assets/images/Tema blanco.png'
+    : '/assets/images/Tema oscuro.png';
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -128,7 +151,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ mode, onLoginSuccess }) =>
   return (
     <div className="login-wrapper">
       <div className="background-image-container">
-        <img src={senaBg} alt="Biblioteca SENA" />
+        <img src={currentBg} alt="Biblioteca SENA" />
         <div className="bg-overlay"></div>
       </div>
       

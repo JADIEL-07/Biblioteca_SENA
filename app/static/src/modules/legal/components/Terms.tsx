@@ -1,13 +1,38 @@
+import { useState, useEffect } from 'react';
 import { FiArrowLeft, FiShield } from 'react-icons/fi';
 import './Terms.css';
-const senaBg = '/assets/images/sena-library-bg.png';
 import { FloatingParticles } from '../../../components/ui/FloatingParticles';
 
 export const Terms = () => {
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return document.body.classList.contains('theme-light') ? 'light' : 'dark';
+  });
+
+  useEffect(() => {
+    const isLightNow = document.body.classList.contains('theme-light');
+    setTheme(isLightNow ? 'light' : 'dark');
+
+    const observer = new MutationObserver(() => {
+      const isLight = document.body.classList.contains('theme-light');
+      setTheme(isLight ? 'light' : 'dark');
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const currentBg = theme === 'light'
+    ? '/assets/images/Tema blanco.png'
+    : '/assets/images/Tema oscuro.png';
+
   return (
     <div className="terms-wrapper">
       <div className="background-image-container">
-        <img src={senaBg} alt="Biblioteca SENA" />
+        <img src={currentBg} alt="Biblioteca SENA" />
         <div className="bg-overlay"></div>
       </div>
       <FloatingParticles />

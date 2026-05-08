@@ -6,7 +6,10 @@ export const AccessibilityWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [textSize, setTextSize] = useState(100);
   const [highContrast, setHighContrast] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const stored = localStorage.getItem('dashboard-theme');
+    return stored ? stored === 'dark' : true;
+  });
   const [textSpacing, setTextSpacing] = useState(false);
   
   // Estados para el efecto de hover en los botones de tamaño

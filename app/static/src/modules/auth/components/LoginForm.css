@@ -37,6 +37,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  filter: brightness(1.08) contrast(0.9) !important; /* Brillo suave y cómodo, menor contraste */
 }
 
 .bg-overlay {
@@ -77,6 +78,11 @@
 
 .clean-form.register-mode {
   max-width: 520px;
+}
+
+/* Reducir contraste y viveza de colores de la imagen en modo claro para que sea sumamente cómoda */
+.theme-light .background-image-container img {
+  filter: brightness(1.04) contrast(0.82) saturate(0.85) !important;
 }
 
 .theme-light .clean-form {

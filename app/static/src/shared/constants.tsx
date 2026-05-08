@@ -4,7 +4,8 @@ import {
   FiBookOpen, 
   FiMonitor, 
   FiTool, 
-  FiBox 
+  FiBox,
+  FiCpu
 } from 'react-icons/fi';
 
 export const SERVICES_DATA = [
@@ -37,6 +38,12 @@ export const SERVICES_DATA = [
     title: 'Insumos',
     icon: <FiBox />,
     description: 'Suministros consumibles para programas tecnicos.'
+  },
+  {
+    id: 'ai-assistant',
+    title: 'Asistente Personal',
+    icon: <FiCpu />,
+    description: 'Un asistente inteligente diseñado para guiarte y facilitar el flujo por toda la web.'
   }
 ];
 

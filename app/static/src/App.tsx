@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LoginForm } from './modules/auth/components/LoginForm';
 import { Terms } from './modules/legal/components/Terms';
@@ -31,14 +31,88 @@ const senaBg = '/assets/images/sena-library-bg.png';
 import { FloatingParticles } from './components/ui/FloatingParticles';
 import { AnimatedRobotIcon } from './components/ui/AnimatedRobotIcon';
 
+// Helper component for reveal on scroll animations
+function RevealOnScroll({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false); // Reset so it animates again next time the user scrolls
+        }
+      },
+      {
+        threshold: 0.05,
+        rootMargin: '0px 0px -30px 0px',
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`reveal-item ${isVisible ? 'revealed' : ''}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
+
 // ── Landing Page ──────────────────────────────────────────────────────────────
 function Landing({ loggedUser, onLogout }: { loggedUser: any; onLogout: () => void }) {
   const navigate = useNavigate();
   const [menuOpenLanding, setMenuOpenLanding] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [theme] = useState<'dark' | 'light'>(
+  const [theme, setTheme] = useState<'dark' | 'light'>(
     (localStorage.getItem('dashboard-theme') as 'dark' | 'light') ?? 'dark'
   );
+
+  useEffect(() => {
+    // Sincronizar el tema inicial según las clases de document.body
+    const isLightNow = document.body.classList.contains('theme-light');
+    setTheme(isLightNow ? 'light' : 'dark');
+
+    // Usar MutationObserver para reaccionar inmediatamente a los cambios de clase en document.body
+    const observer = new MutationObserver(() => {
+      const isLight = document.body.classList.contains('theme-light');
+      setTheme(isLight ? 'light' : 'dark');
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    const syncTheme = () => {
+      const storedTheme = (localStorage.getItem('dashboard-theme') as 'dark' | 'light') ?? 'dark';
+      setTheme(storedTheme);
+    };
+    window.addEventListener('storage', syncTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('storage', syncTheme);
+    };
+  }, []);
+
+  const currentBg = theme === 'light' 
+    ? '/assets/images/Tema blanco.png' 
+    : '/assets/images/Tema oscuro.png';
 
   return (
     <div className={`home-wrapper ${theme === 'light' ? 'theme-light' : 'theme-dark'}`}>
@@ -92,49 +166,55 @@ function Landing({ loggedUser, onLogout }: { loggedUser: any; onLogout: () => vo
 
       <section className="hero-section">
         <div className="hero-bg">
-          <img src={senaBg} alt="Fondo Biblioteca & Almacén SENA" className="bw-filter" />
+          <img src={currentBg} alt="Fondo Biblioteca & Almacén SENA" />
           <div className="hero-overlay"></div>
           <FloatingParticles />
         </div>
 
-        <div className="hero-content">
-          <h1>SISTEMA INTEGRAL: BIBLIOTECA, ALMACÉN E INVENTARIO</h1>
-          <p>Gestión unificada de material bibliográfico, equipos, herramientas e insumos para el centro de formación.</p>
-        </div>
+        <RevealOnScroll delay={100}>
+          <div className="hero-content">
+            <h1>SISTEMA INTEGRAL: BIBLIOTECA, ALMACÉN E INVENTARIO</h1>
+            <p>Gestión unificada de material bibliográfico, equipos, herramientas e insumos para el centro de formación.</p>
+          </div>
+        </RevealOnScroll>
 
         <div className="services-grid-overlay">
-          {SERVICES_DATA.map((service) => (
-            <div key={service.id} className="service-card-mini">
-              <div className="service-icon-wrapper-mini">
-                {service.icon || <span>📦</span>}
+          {SERVICES_DATA.map((service, index) => (
+            <RevealOnScroll key={service.id} delay={index * 80}>
+              <div className="service-card-mini">
+                <div className="service-icon-wrapper-mini">
+                  {service.icon || <span>📦</span>}
+                </div>
+                <h3>{service.title}</h3>
+                <p>{service.description}</p>
               </div>
-              <h3>{service.title}</h3>
-              <p>{service.description}</p>
-            </div>
+            </RevealOnScroll>
           ))}
         </div>
 
-        <div className="hero-cta-footer">
-          <p className="privacy-text">
-            Al hacer clic en Comienza ahora, aceptas nuestros{' '}
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/terms'); }}>terminos</a>{' '}
-            y{' '}
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/privacy'); }}>politica de privacidad</a>
-          </p>
-          <button
-            className="btn cta-home-btn"
-            onClick={() => {
-              if (loggedUser) {
-                const role = (loggedUser.role?.name || loggedUser.rol?.nombre || '').toUpperCase();
-                navigate(role === 'ADMIN' ? '/admin' : role === 'BIBLIOTECARIO' ? '/bibliotecario' : role === 'ALMACENISTA' ? '/almacenista' : role === 'SOPORTE TÉCNICO' || role === 'SOPORTE TECNICO' || role === 'SOPORTE_TECNICO' || role === 'SOPORTE' ? '/soporte' : '/dashboard');
-              } else {
-                navigate('/dashboard/guest');
-              }
-            }}
-          >
-            COMIENZA AHORA
-          </button>
-        </div>
+        <RevealOnScroll delay={200}>
+          <div className="hero-cta-footer">
+            <p className="privacy-text">
+              Al hacer clic en Comienza ahora, aceptas nuestros{' '}
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/terms'); }}>terminos</a>{' '}
+              y{' '}
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/privacy'); }}>politica de privacidad</a>
+            </p>
+            <button
+              className="btn cta-home-btn"
+              onClick={() => {
+                if (loggedUser) {
+                  const role = (loggedUser.role?.name || loggedUser.rol?.nombre || '').toUpperCase();
+                  navigate(role === 'ADMIN' ? '/admin' : role === 'BIBLIOTECARIO' ? '/bibliotecario' : role === 'ALMACENISTA' ? '/almacenista' : role === 'SOPORTE TÉCNICO' || role === 'SOPORTE TECNICO' || role === 'SOPORTE_TECNICO' || role === 'SOPORTE' ? '/soporte' : '/dashboard');
+                } else {
+                  navigate('/dashboard/guest');
+                }
+              }}
+            >
+              COMIENZA AHORA
+            </button>
+          </div>
+        </RevealOnScroll>
       </section>
 
       <footer className="main-footer">
