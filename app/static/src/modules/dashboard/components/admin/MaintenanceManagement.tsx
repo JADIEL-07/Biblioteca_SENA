@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FiTool, FiAlertTriangle, FiCheckCircle, FiClock, FiDollarSign, 
-  FiUser, FiPackage, FiFilter, FiSearch, FiPlus, FiMoreVertical, FiCalendar 
+  FiChevronDown, FiClock, FiUser, FiMapPin, 
+  FiBox, FiUploadCloud, FiCheckCircle, FiServer, FiPhone
 } from 'react-icons/fi';
-import { CustomSelect } from './CustomSelect';
 import './MaintenanceManagement.css';
 
-interface Maintenance {
+interface ActiveCase {
   id: number;
   item_name: string;
   item_category?: string;
@@ -19,37 +18,99 @@ interface Maintenance {
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   report_date: string;
-  maintenance_type: 'PREVENTIVE' | 'CORRECTIVE';
+  maintenance_type: string;
   cost: number;
 }
 
 export const MaintenanceManagement: React.FC = () => {
-  const [records, setRecords] = useState<Maintenance[]>([]);
+  const [activeCase, setActiveCase] = useState<ActiveCase | null>(null);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterSeverity, setFilterSeverity] = useState('ALL');
-  const [filterCategory, setFilterCategory] = useState('ALL');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
-  const categories = Array.from(new Set(records.map(r => r.item_category || 'N/A')));
+  const handleStatusChange = async (newStatus: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED') => {
+    if (!activeCase) return;
+    setUpdating(true);
+    try {
+      const response = await fetch(`/api/v1/maintenance/${activeCase.id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (response.ok) {
+        setShowStatusDropdown(false);
+        await fetchData();
+      } else {
+        const err = await response.json();
+        alert(err.error || "No se pudo actualizar el estado.");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Error de conexión al actualizar el estado.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [diagnosis, setDiagnosis] = useState('');
+  const [solution, setSolution] = useState('');
+  const [cost, setCost] = useState('0');
+
+  const handleOpenCompleteModal = () => {
+    setDiagnosis('');
+    setSolution('');
+    setCost('0');
+    setShowCompleteModal(true);
+  };
+
+  const handleCompleteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeCase) return;
+
+    setUpdating(true);
+    try {
+      const response = await fetch(`/api/v1/maintenance/${activeCase.id}/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ 
+          diagnosis, 
+          solution, 
+          cost: parseFloat(cost) || 0 
+        })
+      });
+      if (response.ok) {
+        setShowCompleteModal(false);
+        alert("¡Caso finalizado con éxito!");
+        await fetchData();
+      } else {
+        alert("No se pudo finalizar el caso.");
+      }
+    } catch (error) {
+      console.error("Error completing case:", error);
+      alert("Error de conexión al finalizar el caso.");
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        search: searchTerm,
-        startDate: startDate,
-        endDate: endDate,
-        severity: filterSeverity
-      });
-
-      const response = await fetch(`/api/v1/maintenance/?${params.toString()}`, {
+      const response = await fetch('/api/v1/maintenance/', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (response.ok) {
         const data = await response.json();
-        setRecords(data);
+        // Filtrar el primer caso que requiera atención
+        const pendingCase = data.find((r: ActiveCase) => r.status === 'IN_PROGRESS' || r.status === 'PENDING');
+        setActiveCase(pendingCase || null);
       }
     } catch (error) {
       console.error('Error fetching maintenance:', error);
@@ -60,181 +121,288 @@ export const MaintenanceManagement: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [searchTerm, startDate, endDate, filterSeverity]);
+  }, []);
 
-  const getSeverityBadge = (sev: string) => {
-    return <span className={`sev-badge ${sev.toLowerCase()}`}>{sev}</span>;
-  };
+  if (loading) {
+    return (
+      <div className="maint-mgmt-container fade-in">
+        <div className="at-empty">
+          <div className="spinner" style={{ width: '40px', height: '40px', borderTopColor: 'var(--sena-green)' }}></div>
+          <h2 style={{ marginTop: '1rem' }}>Cargando Área de Trabajo...</h2>
+        </div>
+      </div>
+    );
+  }
 
-  const getStatusBadge = (status: string) => {
-    return <span className={`status-pill ${status.toLowerCase()}`}>{status}</span>;
-  };
-
-  const filteredRecords = records.filter(r => {
-    const s = searchTerm.toLowerCase();
-    const maintDate = new Date(r.report_date);
-    
-    const matchesSearch = 
-      r.item_name.toLowerCase().includes(s) || 
-      (r.item_code?.toLowerCase() || '').includes(s) ||
-      r.reported_by_name.toLowerCase().includes(s) ||
-      (r.reported_by_email?.toLowerCase() || '').includes(s) ||
-      (r.technician_name?.toLowerCase() || '').includes(s) ||
-      r.id.toString().includes(searchTerm);
-    const matchesSev = filterSeverity === 'ALL' || r.severity === filterSeverity;
-    const matchesCategory = filterCategory === 'ALL' || r.item_category === filterCategory;
-    
-    const start = startDate ? new Date(startDate + 'T00:00:00') : null;
-    const end = endDate ? new Date(endDate + 'T23:59:59') : null;
-    let matchesDate = true;
-    if (start && maintDate < start) matchesDate = false;
-    if (end && maintDate > end) matchesDate = false;
-    
-    return matchesSearch && matchesSev && matchesCategory && matchesDate;
-  });
+  if (!activeCase) {
+    return (
+      <div className="maint-mgmt-container fade-in">
+        <div className="at-empty">
+          <FiCheckCircle size={64} color="var(--sena-green)" />
+          <h2>No tienes casos activos</h2>
+          <p>Ve a la Bandeja de Reportes para asignarte un nuevo caso.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="maint-mgmt-container fade-in">
-      <div className="maint-mgmt-header">
-        <div className="header-title">
-          <div className="header-icon-box"><FiTool /></div>
-          <div>
-            <h1>Gestión Técnica (Mantenimiento)</h1>
+      {/* Header */}
+      <div className="at-header-row">
+        <div className="at-header-left">
+          <h5>Caso Activo</h5>
+          <div className="at-incident-id">
+            INC-{new Date().getFullYear()}-0{activeCase.id} 
+            {activeCase.severity === 'CRITICAL' && <span className="at-badge-critical">CRÍTICA</span>}
           </div>
-        </div>
-      </div>
-
-      <div className="maint-stats-summary">
-        <div className="mini-stat">
-          <FiAlertTriangle className="icon critical" />
-          <div><span>Críticos</span><strong>{records.filter(r => r.severity === 'CRITICAL').length}</strong></div>
-        </div>
-        <div className="mini-stat">
-          <FiClock className="icon pending" />
-          <div><span>Pendientes</span><strong>{records.filter(r => r.status === 'PENDING').length}</strong></div>
-        </div>
-        <div className="mini-stat">
-          <FiDollarSign className="icon cost" />
-          <div><span>Costo Total</span><strong>${records.reduce((acc, curr) => acc + curr.cost, 0).toLocaleString()}</strong></div>
-        </div>
-      </div>
-
-      {/* FILTROS COMPLEJOS */}
-      <div className="loan-filters-complex">
-        <div className="filter-row">
-          <div className="filter-item search">
-            <label>BÚSQUEDA RÁPIDA</label>
-            <div className="input-with-icon">
-              <FiSearch />
-              <input 
-                type="text" 
-                placeholder="Nombre o ID..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="filter-item">
-            <CustomSelect 
-              label="CATEGORÍA DEL ELEMENTO"
-              options={[{ id: 'ALL', name: 'Todas las categorías' }, ...categories.map(cat => ({ id: cat, name: cat }))]}
-              value={filterCategory}
-              onChange={setFilterCategory}
-              icon={<FiPackage />}
-            />
-          </div>
-        </div>
-
-        <div className="filter-row">
-          <div className="filter-item">
-            <label>DESDE (FECHA)</label>
-            <div className="input-with-icon">
-              <FiCalendar />
-              <input 
-                type="date" 
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="filter-item">
-            <label>HASTA (FECHA)</label>
-            <div className="input-with-icon">
-              <FiCalendar />
-              <input 
-                type="date" 
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-          </div>
+          <h1>{activeCase.item_name} reporta falla</h1>
           
-          <div className="filter-item-actions">
-            <button className="btn-reset" onClick={() => {
-              setStartDate('');
-              setEndDate('');
-              setFilterCategory('ALL');
-              setSearchTerm('');
-              setFilterSeverity('ALL');
-            }}>Limpiar Filtros</button>
+          <div className="at-header-tags">
+            <div className="at-tag">
+              <span className="at-tag-label"><FiClock size={14} /> Estado</span>
+              <span className="at-tag-value">
+                <div className={`at-status-dot ${activeCase.status.toLowerCase()}`}></div> 
+                {activeCase.status === 'IN_PROGRESS' ? 'En reparación' : 
+                 activeCase.status === 'PENDING' ? 'Pendiente de revisión' : 
+                 activeCase.status === 'CANCELLED' ? 'Cancelado' : 'Completado'}
+              </span>
+            </div>
+            <div className="at-tag">
+              <span className="at-tag-label"><FiClock size={14} /> Reportado el</span>
+              <span className="at-tag-value">{new Date(activeCase.report_date).toLocaleDateString()}</span>
+            </div>
+            <div className="at-tag">
+              <span className="at-tag-label"><FiUser size={14} /> Responsable</span>
+              <span className="at-tag-value">{activeCase.technician_name || 'Sin asignar'}</span>
+            </div>
+            <div className="at-tag">
+              <span className="at-tag-label"><FiMapPin size={14} /> Ubicación</span>
+              <span className="at-tag-value">SENA Sede Principal</span>
+            </div>
           </div>
         </div>
+
       </div>
 
-      <div className="maint-table-wrapper">
-        <table className="maint-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Equipo / Elemento</th>
-              <th>Reportado por</th>
-              <th>Técnico</th>
-              <th>Gravedad</th>
-              <th>Tipo</th>
-              <th>Estado</th>
-              <th>Costo</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={9} className="td-center">Cargando reportes técnicos...</td></tr>
-            ) : filteredRecords.map(m => (
-              <tr key={m.id}>
-                <td><span className="id-badge">#{m.id}</span></td>
-                <td>
-                  <div className="item-cell">
-                    <FiPackage className="cell-icon" />
-                    <div className="cell-text">
-                      <span className="main">{m.item_name}</span>
-                      <span className="sub">ID: #{m.item_id}</span>
+      <div className="at-main-grid">
+        {/* LEFT COLUMN */}
+        <div className="at-left-col">
+          <div className="at-card">
+            <div className="at-section">
+              <h3 className="at-card-title">Descripción del incidente</h3>
+              <p className="at-desc-text">
+                El usuario {activeCase.reported_by_name} reportó un problema con el equipo {activeCase.item_name} (Código: {activeCase.item_code}). 
+                La falla está categorizada como {activeCase.severity}. Se requiere revisión técnica en la ubicación especificada.
+              </p>
+            </div>
+
+            <div className="at-section" style={{ marginTop: '1rem' }}>
+              <h3 className="at-card-title">Línea de tiempo</h3>
+              <div className="at-timeline">
+                <div className="at-timeline-item">
+                  <div className="at-timeline-icon red"><FiClock size={10} /></div>
+                  <div className="at-timeline-content">
+                    <div className="at-timeline-header">
+                      <span className="at-timeline-time">{new Date(activeCase.report_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      <span className="at-timeline-title">Reporte recibido</span>
+                    </div>
+                    <span className="at-timeline-desc">El usuario reportó la falla del elemento en el sistema.</span>
+                  </div>
+                </div>
+                {activeCase.status === 'IN_PROGRESS' && (
+                  <div className="at-timeline-item">
+                    <div className="at-timeline-icon blue"><FiCheckCircle size={10} /></div>
+                    <div className="at-timeline-content">
+                      <div className="at-timeline-header">
+                        <span className="at-timeline-time">Caso Activo</span>
+                        <span className="at-timeline-title">Diagnóstico iniciado</span>
+                      </div>
+                      <span className="at-timeline-desc">Se inicia verificación y revisión del equipo afectado.</span>
                     </div>
                   </div>
-                </td>
-                <td>
-                  <div className="user-cell">
-                    <FiUser className="cell-icon" />
-                    <span>{m.reported_by_name}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="at-section" style={{ marginTop: '1rem' }}>
+              <h3 className="at-card-title">Notas técnicas</h3>
+              <div className="at-note-input-row">
+                <input type="text" className="at-note-input" placeholder="Agregar una nota técnica..." />
+                <button className="at-btn-green">Guardar nota</button>
+              </div>
+            </div>
+
+            <div className="at-section" style={{ marginTop: '1rem' }}>
+              <h3 className="at-card-title">Evidencias</h3>
+              <div className="at-evidences-grid">
+                <div className="at-upload-box">
+                  <FiUploadCloud size={24} />
+                  <span>Subir archivo</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="at-card-footer">
+              <div className="at-dropdown-container">
+                <button 
+                  className="at-btn-dropdown" 
+                  onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                  disabled={updating}
+                >
+                  Cambiar estado <FiChevronDown style={{ marginLeft: '0.5rem' }} />
+                </button>
+                {showStatusDropdown && (
+                  <div className="at-dropdown-menu">
+                    <button 
+                      className={`at-dropdown-item ${activeCase.status === 'PENDING' ? 'active' : ''}`}
+                      onClick={() => handleStatusChange('PENDING')}
+                    >
+                      <div className="at-status-dot pending"></div> Pendiente de revisión
+                    </button>
+                    <button 
+                      className={`at-dropdown-item ${activeCase.status === 'IN_PROGRESS' ? 'active' : ''}`}
+                      onClick={() => handleStatusChange('IN_PROGRESS')}
+                    >
+                      <div className="at-status-dot in-progress"></div> En reparación
+                    </button>
+                    <button 
+                      className={`at-dropdown-item ${activeCase.status === 'CANCELLED' ? 'active' : ''}`}
+                      onClick={() => handleStatusChange('CANCELLED')}
+                    >
+                      <div className="at-status-dot cancelled"></div> Cancelado
+                    </button>
                   </div>
-                </td>
-                <td>
-                  <div className="user-cell">
-                    <FiTool className="cell-icon" />
-                    <span>{m.technician_name}</span>
-                  </div>
-                </td>
-                <td>{getSeverityBadge(m.severity)}</td>
-                <td><span className="type-badge">{m.maintenance_type}</span></td>
-                <td>{getStatusBadge(m.status)}</td>
-                <td className="cost-cell">${m.cost.toLocaleString()}</td>
-                <td className="date-cell">{new Date(m.report_date).toLocaleDateString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                )}
+              </div>
+
+              <button 
+                className="at-btn-green" 
+                style={{ background: '#22c55e', color: 'white', border: 'none' }}
+                onClick={handleOpenCompleteModal}
+                disabled={updating}
+              >
+                <FiCheckCircle /> Finalizar caso
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN */}
+        <div className="at-right-col">
+          <div className="at-side-card">
+            <h3 className="at-card-title">Información del equipo</h3>
+            <div className="at-side-header">
+              <div className="at-server-icon"><FiServer size={24} /></div>
+              <div className="at-info-list">
+                <div className="at-info-row">
+                  <span className="at-info-label">Elemento</span>
+                  <span className="at-info-value">{activeCase.item_name}</span>
+                </div>
+                <div className="at-info-row">
+                  <span className="at-info-label">Código</span>
+                  <span className="at-info-value">{activeCase.item_code || 'N/A'}</span>
+                </div>
+                <div className="at-info-row">
+                  <span className="at-info-label">ID Sistema</span>
+                  <span className="at-info-value">#{activeCase.item_id}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="at-side-card">
+            <h3 className="at-card-title">Categoría</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>
+              <FiBox /> {activeCase.item_category || 'General'}
+            </div>
+          </div>
+
+          <div className="at-side-card">
+            <h3 className="at-card-title">Reportado por</h3>
+            <div className="at-user-row">
+              <div className="at-user-avatar">
+                <FiUser size={20} />
+              </div>
+              <div className="at-user-details">
+                <h4>{activeCase.reported_by_name}</h4>
+                <p>{activeCase.reported_by_email}</p>
+                <p style={{ marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <FiPhone size={12} /> Contacto no registrado
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
+
+      {/* CUSTOM FLOATING BACKDROP BLUR MODAL */}
+      {showCompleteModal && (
+        <div className="at-modal-overlay">
+          <div className="at-modal-card">
+            <div className="at-modal-header">
+              <h2>Finalizar Caso Técnico</h2>
+              <button className="at-modal-close" onClick={() => setShowCompleteModal(false)}>&times;</button>
+            </div>
+            
+            <form onSubmit={handleCompleteSubmit} className="at-modal-form">
+              <div className="at-form-group">
+                <label>Diagnóstico Final del Equipo</label>
+                <textarea 
+                  required
+                  placeholder="Describe detalladamente el diagnóstico y estado en que encontraste el equipo..."
+                  value={diagnosis}
+                  onChange={e => setDiagnosis(e.target.value)}
+                  className="at-modal-textarea"
+                />
+              </div>
+              
+              <div className="at-form-group">
+                <label>Procedimiento o Solución Realizada</label>
+                <textarea 
+                  required
+                  placeholder="Detalla las acciones o pasos ejecutados para solucionar la falla..."
+                  value={solution}
+                  onChange={e => setSolution(e.target.value)}
+                  className="at-modal-textarea"
+                />
+              </div>
+              
+              <div className="at-form-group">
+                <label>Costo total de la reparación (COP)</label>
+                <input 
+                  type="number"
+                  min="0"
+                  required
+                  placeholder="0"
+                  value={cost}
+                  onChange={e => setCost(e.target.value)}
+                  className="at-modal-input"
+                />
+              </div>
+              
+              <div className="at-modal-actions">
+                <button 
+                  type="button" 
+                  className="at-btn-cancel" 
+                  onClick={() => setShowCompleteModal(false)}
+                  disabled={updating}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="at-btn-submit"
+                  disabled={updating}
+                >
+                  {updating ? 'Procesando...' : 'Finalizar Caso'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -9,6 +9,8 @@ import { NotificationBell } from '../../../../shared/NotificationBell';
 import { MaintenanceManagement } from '../admin/MaintenanceManagement'; // Reusing if exists, or just placeholder
 import { SystemReports } from '../admin/SystemReports';
 import { SoporteIncidencias } from './SoporteIncidencias';
+import { SoporteHistorial } from './SoporteHistorial';
+import { SoporteRepuestos } from './SoporteRepuestos';
 import './SoporteDashboard.css';
 import '../UserDashboard.css';
 import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
@@ -68,15 +70,11 @@ export const SoporteDashboard: React.FC<SoporteDashboardProps> = ({ user, onLogo
 
   const sectionTitle: Record<string, string> = {
     dashboard: 'Panel de Control Técnico',
-    incidencias: 'Gestión de Incidencias',
-    mantenimientos: 'Gestión de Mantenimientos',
-    equipos: 'Equipos',
-    ordenes: 'Órdenes de Trabajo',
+    incidencias: 'Gestión de Reportes',
+    mantenimientos: 'Área de Trabajo',
     repuestos: 'Gestión de Repuestos',
     historial: 'Historial Técnico',
-    reportes: 'Reportes Técnicos',
     solicitudes: 'Solicitudes Internas',
-    calendario: 'Calendario',
     config: 'Configuración',
     help: 'Asistente Personal',
   };
@@ -154,7 +152,9 @@ export const SoporteDashboard: React.FC<SoporteDashboardProps> = ({ user, onLogo
             {activeSection === 'help' && <PersonalAssistant user={user} />}
             {activeSection === 'reportes' && <SystemReports />}
             {activeSection === 'incidencias' && <SoporteIncidencias user={user} />}
-            {!['dashboard', 'config', 'mantenimientos', 'help', 'reportes', 'incidencias'].includes(activeSection) && (
+            {activeSection === 'historial' && <SoporteHistorial />}
+            {activeSection === 'repuestos' && <SoporteRepuestos />}
+            {!['dashboard', 'config', 'mantenimientos', 'help', 'reportes', 'incidencias', 'historial', 'repuestos'].includes(activeSection) && (
               <div className="placeholder-view">
                 <h2>Sección en construcción</h2>
                 <p>El módulo de {sectionTitle[activeSection] || activeSection} estará disponible pronto.</p>

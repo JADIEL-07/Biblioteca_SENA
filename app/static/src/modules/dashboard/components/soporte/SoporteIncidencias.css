@@ -9,13 +9,13 @@
 
 .incidencias-header-section h1 {
   font-size: 2rem;
-  color: #ffffff;
+  color: var(--admin-text-primary);
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
 
 .incidencias-header-section p {
-  color: #94a3b8;
+  color: var(--admin-text-muted);
   font-size: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -29,8 +29,8 @@
 }
 
 .incidencia-stat-card {
-  background: #1e293b;
-  border: 1px solid #334155;
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
   border-radius: 12px;
   padding: 1.2rem;
   display: flex;
@@ -64,14 +64,14 @@
   display: flex;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid var(--admin-border-color);
   padding-bottom: 0.75rem;
 }
 
 .incidencias-tab-btn {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #94a3b8;
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  color: var(--admin-text-muted);
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
   font-weight: 600;
@@ -80,8 +80,8 @@
 }
 
 .incidencias-tab-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  background: var(--admin-item-hover);
+  color: var(--admin-text-primary);
 }
 
 .incidencias-tab-btn.active {
@@ -92,8 +92,8 @@
 
 /* Table styling */
 .incidencias-table-wrapper {
-  background: #1e293b;
-  border: 1px solid #334155;
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
   border-radius: 12px;
   overflow-x: auto;
 }
@@ -106,17 +106,17 @@
 
 .incidencias-table th {
   padding: 1rem 1.5rem;
-  color: #94a3b8;
+  color: var(--admin-text-muted);
   font-size: 0.9rem;
   font-weight: 600;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid var(--admin-border-color);
 }
 
 .incidencias-table td {
   padding: 1.2rem 1.5rem;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid var(--admin-border-color);
   vertical-align: middle;
-  color: #cbd5e1;
+  color: var(--admin-text-secondary);
   font-size: 0.95rem;
 }
 
@@ -125,7 +125,7 @@
 }
 
 .incidencias-table tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--admin-item-hover);
 }
 
 /* Severity badge styling */
@@ -313,10 +313,10 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  background: #1e293b;
-  border: 1px solid #334155;
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
   border-radius: 12px;
-  color: #64748b;
+  color: var(--admin-text-muted);
   text-align: center;
 }
 
@@ -337,8 +337,8 @@
   .incidencias-table tr {
     display: flex;
     flex-direction: column;
-    background: #1e293b;
-    border: 1px solid #334155;
+    background: var(--admin-bg-card);
+    border: 1px solid var(--admin-border-color);
     border-radius: 12px;
     margin-bottom: 1rem;
     padding: 1rem;
@@ -355,7 +355,7 @@
   .incidencias-table td::before {
     content: attr(data-label);
     font-weight: 600;
-    color: #94a3b8;
+    color: var(--admin-text-muted);
     font-size: 0.85rem;
   }
   

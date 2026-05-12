@@ -1,0 +1,368 @@
+.repuestos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.repuestos-header-section h1 {
+  font-size: 2rem;
+  color: var(--admin-text-primary);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.repuestos-header-section p {
+  color: var(--admin-text-muted);
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Stats grid */
+.repuestos-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.repuestos-stat-card {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.repuestos-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.repuestos-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+
+.repuestos-icon-wrapper.pending { color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.1); }
+.repuestos-icon-wrapper.received { color: #10b981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); }
+.repuestos-icon-wrapper.total { color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.1); }
+
+/* Header controls */
+.repuestos-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--admin-border-color);
+  padding-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.repuestos-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.repuestos-tab-btn {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  color: var(--admin-text-muted);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.repuestos-tab-btn:hover {
+  background: var(--admin-item-hover);
+  color: var(--admin-text-primary);
+}
+
+.repuestos-tab-btn.active {
+  background: var(--sena-green, #39A900);
+  border-color: var(--sena-green, #39A900);
+  color: #ffffff;
+}
+
+.btn-add-repuesto {
+  background: var(--sena-green, #39A900);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s;
+}
+
+.btn-add-repuesto:hover {
+  opacity: 0.9;
+}
+
+/* Table styling */
+.repuestos-table-wrapper {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.repuestos-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.repuestos-table th {
+  padding: 1rem 1.5rem;
+  color: var(--admin-text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--admin-border-color);
+}
+
+.repuestos-table td {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid var(--admin-border-color);
+  vertical-align: middle;
+  color: var(--admin-text-secondary);
+  font-size: 0.95rem;
+}
+
+.repuestos-table tr:hover {
+  background: var(--admin-item-hover);
+}
+
+.cost-label {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.repuestos-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  color: var(--admin-text-muted);
+  text-align: center;
+}
+
+/* Modals */
+.repuestos-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.repuestos-modal {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.repuestos-modal-header {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid var(--admin-border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.repuestos-modal-header h3 {
+  margin: 0;
+  color: var(--admin-text-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  color: var(--admin-text-muted);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.repuestos-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-group label {
+  display: block;
+  color: var(--admin-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.form-control {
+  width: 100%;
+  background: var(--admin-bg-main);
+  border: 1px solid var(--admin-border-color);
+  color: var(--admin-text-primary);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--sena-green, #39A900);
+}
+
+.repuestos-modal-footer {
+  padding: 1.2rem 1.5rem;
+  border-top: 1px solid var(--admin-border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.btn-submit {
+  background: var(--sena-green, #39A900);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: #475569;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* File Upload */
+.file-upload-box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--admin-border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--admin-bg-main);
+  cursor: pointer;
+}
+
+.file-upload-box input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.photo-preview {
+  position: relative;
+  width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--admin-border-color);
+}
+
+.photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.btn-remove-photo {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .repuestos-table thead { display: none; }
+  .repuestos-table tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--admin-bg-card);
+    border: 1px solid var(--admin-border-color);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  .repuestos-table td {
+    padding: 0.5rem 0;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .repuestos-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--admin-text-muted);
+    font-size: 0.85rem;
+  }
+}

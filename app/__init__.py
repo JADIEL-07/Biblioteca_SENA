@@ -62,6 +62,7 @@ def create_app():
     from .routes.notification_routes import notification_bp
     from .routes.history_routes import history_bp
     from .routes.assistant_routes import assistant_bp
+    from .routes.spare_part_routes import spare_part_bp
 
 
     app.register_blueprint(auth_bp,      url_prefix='/api/v1/auth')
@@ -77,6 +78,7 @@ def create_app():
     app.register_blueprint(notification_bp, url_prefix='/api/v1/notifications')
     app.register_blueprint(history_bp,     url_prefix='/api/v1/history')
     app.register_blueprint(assistant_bp,   url_prefix='/api/v1/assistant')
+    app.register_blueprint(spare_part_bp,  url_prefix='/api/v1/spare_parts')
 
 
     # ── Security & Cache Headers ──────────────────────────────────────────────────────

@@ -36,15 +36,11 @@ export const SoporteSidebar: React.FC<SoporteSidebarProps> = ({
 }) => {
   const mainItems = [
     { id: 'dashboard', label: 'Inicio', icon: <FiHome /> },
-    { id: 'incidencias', label: 'Incidencias', icon: <FiAlertCircle />, badge: 7, badgeColor: 'red' },
-    { id: 'mantenimientos', label: 'Mantenimientos', icon: <FiTool />, badge: 5, badgeColor: 'green' },
-    { id: 'equipos', label: 'Equipos', icon: <FiMonitor /> },
-    { id: 'ordenes', label: 'Órdenes de trabajo', icon: <FiClipboard />, badge: 12, badgeColor: 'purple' },
+    { id: 'incidencias', label: 'Reportes de Fallas', icon: <FiAlertCircle /> },
+    { id: 'mantenimientos', label: 'Área de Trabajo', icon: <FiTool /> },
     { id: 'repuestos', label: 'Repuestos', icon: <FiBox /> },
     { id: 'historial', label: 'Historial técnico', icon: <FiClock /> },
-    { id: 'reportes', label: 'Reportes', icon: <FiFileText /> },
     { id: 'solicitudes', label: 'Solicitudes', icon: <FiMessageSquare /> },
-    { id: 'calendario', label: 'Calendario', icon: <FiCalendar /> },
   ];
 
   const bottomItems = [

@@ -707,3 +707,172 @@
   color: var(--soporte-text) !important;
   border: 1px solid var(--soporte-border) !important;
 }
+
+/* ================================================
+   HORIZONTAL STATS & FILTER SECTION
+   ================================================ */
+
+.admin-horizontal-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-stat-box {
+  flex: 1;
+  min-width: 240px;
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-height: 78px;
+}
+
+.admin-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.admin-stat-icon.green { color: #22c55e; }
+.admin-stat-icon.blue { color: #3b82f6; }
+.admin-stat-icon.red { color: #ef4444; }
+.admin-stat-icon.yellow { color: #eab308; }
+
+.admin-stat-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.admin-stat-title {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--admin-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2 !important;
+}
+
+.admin-stat-value {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--admin-text-primary);
+  line-height: 1 !important;
+}
+
+.admin-filter-section {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.admin-filter-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.admin-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-filter-group.flex-2 { flex: 2; min-width: 200px; }
+.admin-filter-group.flex-1 { flex: 1; min-width: 150px; }
+
+.admin-filter-group label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-input-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-input-icon .icon {
+  position: absolute;
+  left: 12px;
+  color: var(--admin-text-muted);
+}
+
+.admin-input-icon input {
+  padding-left: 2.75rem !important;
+}
+
+.admin-filter-section input,
+.admin-filter-section select {
+  width: 100%;
+  background: var(--admin-bg-main) !important;
+  border: 1px solid var(--admin-border-color) !important;
+  color: var(--admin-text-primary) !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.9rem !important;
+  outline: none !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.admin-filter-section input:focus,
+.admin-filter-section select:focus {
+  border-color: rgba(57, 169, 0, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(57, 169, 0, 0.1) !important;
+}
+
+.admin-filter-section select {
+  cursor: pointer !important;
+}
+
+.admin-filter-section select option {
+  background: var(--admin-bg-card) !important;
+  color: var(--admin-text-primary) !important;
+}
+
+.admin-filter-group-btn {
+  display: flex;
+}
+
+.admin-btn-clear {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 43px;
+  display: flex;
+  align-items: center;
+}
+
+.admin-btn-clear:hover {
+  background: rgba(239, 68, 68, 0.2);
+}

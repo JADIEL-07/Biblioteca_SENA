@@ -96,6 +96,37 @@ def create_maintenance():
     
     return jsonify({"success": True, "id": new_m.id}), 201
 
+@maintenance_bp.route('/<int:id>/status', methods=['PUT'])
+@jwt_required()
+def update_status(id):
+    m = Maintenance.query.get_or_404(id)
+    data = request.get_json()
+    new_status = data.get('status')
+    
+    if new_status not in ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']:
+        return jsonify({"error": "Estado inválido"}), 400
+        
+    m.status = new_status
+    
+    # Manage item status based on maintenance status
+    item = Item.query.get(m.item_id)
+    if new_status in ['COMPLETED', 'CANCELLED']:
+        m.end_date = datetime.utcnow()
+        avail_status = Status.query.filter_by(name='AVAILABLE').first()
+        if item and avail_status:
+            item.status_id = avail_status.id
+    elif new_status == 'IN_PROGRESS':
+        maint_status = Status.query.filter_by(name='IN_MAINTENANCE').first()
+        if item and maint_status:
+            item.status_id = maint_status.id
+    elif new_status == 'PENDING':
+        maint_status = Status.query.filter_by(name='IN_MAINTENANCE').first()
+        if item and maint_status:
+            item.status_id = maint_status.id
+
+    db.session.commit()
+    return jsonify({"success": True}), 200
+
 @maintenance_bp.route('/<int:id>/complete', methods=['POST'])
 @jwt_required()
 def complete_maintenance(id):

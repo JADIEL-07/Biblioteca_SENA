@@ -10,3 +10,4 @@ from .movement import Movement, Notification
 from .ticket import Ticket
 from .item_output import ItemOutput, OutputType, OutputStatus
 from .ai_knowledge import AILearnedResponse
+from .spare_part import SparePartRequest

@@ -1,0 +1,187 @@
+.historial-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.historial-header-section h1 {
+  font-size: 2rem;
+  color: var(--admin-text-primary);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.historial-header-section p {
+  color: var(--admin-text-muted);
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Stats grid */
+.historial-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.historial-stat-card {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.historial-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.historial-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+
+.historial-icon-wrapper.maint  { color: #10b981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); }
+.historial-icon-wrapper.incid  { color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.1); }
+.historial-icon-wrapper.costs  { color: #eab308; border-color: rgba(234, 179, 8, 0.3); background: rgba(234, 179, 8, 0.1); }
+
+/* Tabs */
+.historial-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--admin-border-color);
+  padding-bottom: 0.75rem;
+}
+
+.historial-tab-btn {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  color: var(--admin-text-muted);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.historial-tab-btn:hover {
+  background: var(--admin-item-hover);
+  color: var(--admin-text-primary);
+}
+
+.historial-tab-btn.active {
+  background: #39A900;
+  border-color: #39A900;
+  color: #ffffff;
+}
+
+/* Table styling */
+.historial-table-wrapper {
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.historial-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.historial-table th {
+  padding: 1rem 1.5rem;
+  color: var(--admin-text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--admin-border-color);
+}
+
+.historial-table td {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid var(--admin-border-color);
+  vertical-align: middle;
+  color: var(--admin-text-secondary);
+  font-size: 0.95rem;
+}
+
+.historial-table tr:last-child td {
+  border-bottom: none;
+}
+
+.historial-table tr:hover {
+  background: var(--admin-item-hover);
+}
+
+.cost-label {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.historial-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  color: var(--admin-text-muted);
+  text-align: center;
+}
+
+.historial-empty-state p {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .historial-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .historial-table thead {
+    display: none;
+  }
+  
+  .historial-table tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--admin-bg-card);
+    border: 1px solid var(--admin-border-color);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  
+  .historial-table td {
+    padding: 0.5rem 0;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .historial-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--admin-text-muted);
+    font-size: 0.85rem;
+  }
+}

@@ -170,6 +170,41 @@ def get_unassigned_reports():
         
     return jsonify(result), 200
 
+@report_bp.route('/all_incidents', methods=['GET'])
+@jwt_required()
+def get_all_incidents():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+        
+    role_name = user.role.name.upper() if user.role else ""
+    is_support = 'SOPORTE' in role_name
+    is_admin = role_name == 'ADMIN'
+    
+    if not is_support and not is_admin:
+        return jsonify({"error": "No tienes permisos para ver todas las incidencias."}), 403
+        
+    tickets = Ticket.query.filter_by(is_deleted=False).order_by(Ticket.created_at.desc()).all()
+        
+    result = []
+    for t in tickets:
+        reporter = User.query.get(t.user_id)
+        support = User.query.get(t.assigned_to) if t.assigned_to else None
+        result.append({
+            "id": t.id,
+            "subject": t.subject,
+            "description": t.description,
+            "severity": t.severity,
+            "status": t.status,
+            "reported_by": reporter.name if reporter else "N/A",
+            "support_person": support.name if support else "Pendiente",
+            "created_at": t.created_at.isoformat(),
+            "photo": t.photo
+        })
+        
+    return jsonify(result), 200
+
 @report_bp.route('/stats', methods=['GET'])
 @jwt_required()
 def get_report_stats():

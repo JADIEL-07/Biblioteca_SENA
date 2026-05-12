@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FiAlertCircle, FiCheck, FiClock, FiUser, FiEye, FiActivity, FiBriefcase } from 'react-icons/fi';
+import { FiAlertCircle, FiCheck, FiClock, FiUser, FiActivity, FiBriefcase, FiList, FiFileText, FiSearch } from 'react-icons/fi';
 import './SoporteIncidencias.css';
 
 interface Incident {
@@ -11,7 +11,6 @@ interface Incident {
   reported_by: string;
   support_person: string;
   created_at: string;
-  photo: string | null;
 }
 
 interface SoporteIncidenciasProps {
@@ -19,36 +18,27 @@ interface SoporteIncidenciasProps {
 }
 
 export const SoporteIncidencias: React.FC<SoporteIncidenciasProps> = ({ user }) => {
-  const [unassigned, setUnassigned] = useState<Incident[]>([]);
-  const [myCases, setMyCases] = useState<Incident[]>([]);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'disponibles' | 'mis_casos'>('disponibles');
-
-  // Preview photo states
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
-  const [previewIncident, setPreviewIncident] = useState<Incident | null>(null);
+  const [activeTab, setActiveTab] = useState<'todos' | 'pendientes' | 'mis_casos'>('todos');
+  
+  // Filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('Todas las categorías');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const fetchIncidents = async () => {
     try {
       const token = localStorage.getItem('token');
-      
-      // Fetch unassigned tickets
-      const unassignedRes = await fetch('/api/v1/reports_mgmt/unassigned', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetch('/api/v1/reports_mgmt/all_incidents', {
+        headers: { 'Authorization': `Bearer {token}`.replace('{token}', token || '') }
       });
-      if (unassignedRes.ok) {
-        setUnassigned(await unassignedRes.json());
-      }
-
-      // Fetch my tickets
-      const myRes = await fetch('/api/v1/reports_mgmt/', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (myRes.ok) {
-        setMyCases(await myRes.json());
+      if (response.ok) {
+        setIncidents(await response.json());
       }
     } catch (error) {
-      console.error("Error fetching incidents:", error);
+      console.error("Error fetching all incidents:", error);
     } finally {
       setLoading(false);
     }
@@ -67,7 +57,7 @@ export const SoporteIncidencias: React.FC<SoporteIncidenciasProps> = ({ user }) 
       });
 
       if (res.ok) {
-        alert("¡Has tomado el caso con éxito! Ahora aparecerá en la sección 'Mis Casos'.");
+        alert("¡Has tomado el caso con éxito!");
         setLoading(true);
         await fetchIncidents();
       } else {
@@ -88,6 +78,13 @@ export const SoporteIncidencias: React.FC<SoporteIncidenciasProps> = ({ user }) 
     return <span className="severity-badge critical">Crítica</span>;
   };
 
+  const getStatusBadge = (status: string) => {
+    const s = status.toUpperCase();
+    if (s === 'OPEN') return <span style={{ color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>Abierto</span>;
+    if (s === 'IN_PROGRESS') return <span style={{ color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>En Progreso</span>;
+    return <span style={{ color: '#39A900', background: 'rgba(57, 169, 0, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>Resuelto</span>;
+  };
+
   const formatDate = (iso: string) => {
     const d = new Date(iso);
     return d.toLocaleDateString('es-CO', {
@@ -100,58 +97,121 @@ export const SoporteIncidencias: React.FC<SoporteIncidenciasProps> = ({ user }) 
     });
   };
 
-  const handleOpenPreview = (incident: Incident) => {
-    if (incident.photo) {
-      setPreviewPhoto(incident.photo);
-      setPreviewIncident(incident);
+  const userName = user.name || user.nombre || "Soporte Técnico";
+
+  const stats = useMemo(() => {
+    return {
+      total: incidents.length,
+      pending: incidents.filter(i => i.support_person === 'Pendiente').length,
+      mine: incidents.filter(i => i.support_person === userName).length,
+      critical: incidents.filter(i => i.severity === 'CRITICAL' && i.status !== 'RESOLVED' && i.status !== 'CLOSED').length
+    };
+  }, [incidents, userName]);
+
+  const filteredIncidents = useMemo(() => {
+    let filtered = [...incidents];
+    if (activeTab === 'pendientes') {
+      filtered = filtered.filter(i => i.support_person === 'Pendiente');
+    } else if (activeTab === 'mis_casos') {
+      filtered = filtered.filter(i => i.support_person === userName);
     }
-  };
+    
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(i => 
+        i.subject.toLowerCase().includes(term) ||
+        i.reported_by.toLowerCase().includes(term) ||
+        i.id.toString().includes(term)
+      );
+    }
 
-  const handleClosePreview = () => {
-    setPreviewPhoto(null);
-    setPreviewIncident(null);
-  };
+    if (dateFrom) {
+      filtered = filtered.filter(i => new Date(i.created_at) >= new Date(dateFrom));
+    }
+    if (dateTo) {
+      filtered = filtered.filter(i => new Date(i.created_at) <= new Date(dateTo));
+    }
 
-  const currentList = activeTab === 'disponibles' ? unassigned : myCases;
+    return filtered;
+  }, [incidents, activeTab, userName, searchTerm, dateFrom, dateTo]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setCategoryFilter('Todas las categorías');
+    setDateFrom('');
+    setDateTo('');
+  };
 
   return (
     <div className="incidencias-container fade-in">
       <div className="incidencias-header-section">
-        <h1>Bandeja de Incidencias</h1>
-        <p>Gestiona, asigna y da seguimiento a los reportes de daños enviados por los aprendices.</p>
+        <h1>Bandeja de Reportes</h1>
+        <p>Bandeja unificada con todos los reportes de soporte técnico de la sede hechos por los aprendices.</p>
 
         {/* SUMMARY STATS GRID */}
-        <div className="incidencias-summary-grid">
-          <div className="incidencia-stat-card">
-            <div className="stat-icon-wrapper available">
-              <FiAlertCircle size={22} />
+        <div className="admin-horizontal-stats">
+          <div className="admin-stat-box">
+            <div className="admin-stat-icon green">
+              <FiFileText size={22} />
             </div>
-            <div className="stat-content">
-              <h5>Por atender (Disponibles)</h5>
-              <h3>{unassigned.length}</h3>
-              <p>Esperando técnico</p>
-            </div>
-          </div>
-
-          <div className="incidencia-stat-card">
-            <div className="stat-icon-wrapper my-cases">
-              <FiBriefcase size={22} />
-            </div>
-            <div className="stat-content">
-              <h5>Mis casos en progreso</h5>
-              <h3>{myCases.length}</h3>
-              <p>Asignados a mí</p>
+            <div className="admin-stat-info">
+              <p className="admin-stat-title">TOTAL REPORTES</p>
+              <h3 className="admin-stat-value">{stats.total}</h3>
             </div>
           </div>
-
-          <div className="incidencia-stat-card">
-            <div className="stat-icon-wrapper total">
+          <div className="admin-stat-box">
+            <div className="admin-stat-icon blue">
               <FiActivity size={22} />
             </div>
-            <div className="stat-content">
-              <h5>Total gestionados</h5>
-              <h3>{unassigned.length + myCases.length}</h3>
-              <p>Incidencias activas</p>
+            <div className="admin-stat-info">
+              <p className="admin-stat-title">CASOS ABIERTOS</p>
+              <h3 className="admin-stat-value">{stats.pending}</h3>
+            </div>
+          </div>
+          <div className="admin-stat-box">
+            <div className="admin-stat-icon red">
+              <FiAlertCircle size={22} />
+            </div>
+            <div className="admin-stat-info">
+              <p className="admin-stat-title">URGENCIA CRÍTICA</p>
+              <h3 className="admin-stat-value">{stats.critical}</h3>
+            </div>
+          </div>
+        </div>
+
+        {/* FILTERS */}
+        <div className="admin-filter-section">
+          <div className="admin-filter-row">
+            <div className="admin-filter-group flex-2">
+              <label>BÚSQUEDA RÁPIDA</label>
+              <div className="admin-input-icon">
+                <FiSearch className="icon" />
+                <input 
+                  type="text" 
+                  placeholder="Asunto, usuario o ID..." 
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="admin-filter-group flex-1">
+              <label>CATEGORÍA DEL REPORTE</label>
+              <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+                <option>Todas las categorías</option>
+              </select>
+            </div>
+          </div>
+          <div className="admin-filter-row">
+            <div className="admin-filter-group flex-1">
+              <label>DESDE (FECHA)</label>
+              <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+            </div>
+            <div className="admin-filter-group flex-1">
+              <label>HASTA (FECHA)</label>
+              <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+            </div>
+            <div className="admin-filter-group-btn">
+              <button className="admin-btn-clear" onClick={clearFilters}>Limpiar Filtros</button>
             </div>
           </div>
         </div>
@@ -159,16 +219,22 @@ export const SoporteIncidencias: React.FC<SoporteIncidenciasProps> = ({ user }) 
         {/* TABS */}
         <div className="incidencias-tabs">
           <button
-            className={`incidencias-tab-btn ${activeTab === 'disponibles' ? 'active' : ''}`}
-            onClick={() => setActiveTab('disponibles')}
+            className={`incidencias-tab-btn ${activeTab === 'todos' ? 'active' : ''}`}
+            onClick={() => setActiveTab('todos')}
           >
-            Disponibles ({unassigned.length})
+            Todos los Reportes
+          </button>
+          <button
+            className={`incidencias-tab-btn ${activeTab === 'pendientes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pendientes')}
+          >
+            Pendientes
           </button>
           <button
             className={`incidencias-tab-btn ${activeTab === 'mis_casos' ? 'active' : ''}`}
             onClick={() => setActiveTab('mis_casos')}
           >
-            Mis Casos ({myCases.length})
+            Mis Casos
           </button>
         </div>
       </div>
@@ -178,67 +244,62 @@ export const SoporteIncidencias: React.FC<SoporteIncidenciasProps> = ({ user }) 
           <div className="spinner"></div>
           <p>Cargando incidencias...</p>
         </div>
-      ) : currentList.length === 0 ? (
+      ) : filteredIncidents.length === 0 ? (
         <div className="incidencias-empty-state">
-          <FiCheckCircle size={48} style={{ color: '#39A900' }} />
-          <p>No hay reportes de incidencias en esta sección.</p>
+          <FiActivity size={48} style={{ color: '#64748b' }} />
+          <p>No se encontraron incidencias en esta sección.</p>
         </div>
       ) : (
         <div className="incidencias-table-wrapper">
           <table className="incidencias-table">
             <thead>
               <tr>
-                <th>Asunto / Incidencia</th>
+                <th>Elemento / Asunto</th>
                 <th>Reportado por</th>
                 <th>Fecha de Reporte</th>
                 <th>Gravedad</th>
-                <th>Evidencia</th>
+                <th>Estado</th>
+                <th>Atendido por</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {currentList.map((inc) => (
+              {filteredIncidents.map((inc) => (
                 <tr key={inc.id}>
-                  <td data-label="Asunto" className="item-col" style={{ maxWidth: '300px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                      <span style={{ color: '#ffffff', fontWeight: 600 }}>{inc.subject}</span>
-                      <span style={{ fontSize: '0.85rem', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                        {inc.description}
-                      </span>
-                    </div>
+                  <td data-label="Elemento" className="item-col">
+                    <span style={{ color: 'var(--admin-text-primary)', fontWeight: 600 }}>{inc.subject}</span>
                   </td>
                   <td data-label="Reportado por">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <FiUser size={14} style={{ color: '#94a3b8' }} />
+                      <FiUser size={14} style={{ color: 'var(--admin-text-muted)' }} />
                       <span>{inc.reported_by}</span>
                     </div>
                   </td>
-                  <td data-label="Fecha">
+                  <td data-label="Fecha de Reporte">
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ color: '#ffffff' }}>{formatDate(inc.created_at).split(' ')[0]}</span>
-                      <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{formatDate(inc.created_at).split(' ').slice(1).join(' ')}</span>
+                      <span style={{ color: 'var(--admin-text-primary)' }}>{formatDate(inc.created_at).split(' ')[0]}</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>{formatDate(inc.created_at).split(' ').slice(1).join(' ')}</span>
                     </div>
                   </td>
                   <td data-label="Gravedad">{getSeverityBadge(inc.severity)}</td>
-                  <td data-label="Evidencia">
-                    {inc.photo ? (
-                      <button className="photo-thumbnail-btn" onClick={() => handleOpenPreview(inc)} title="Ver imagen adjunta">
-                        <img src={inc.photo} alt="Evidencia" />
-                      </button>
-                    ) : (
-                      <div className="photo-thumbnail-btn" style={{ cursor: 'default' }} title="Sin foto adjunta">
-                        <span className="no-img-icon">📷</span>
-                      </div>
-                    )}
+                  <td data-label="Estado">{getStatusBadge(inc.status)}</td>
+                  <td data-label="Atendido por">
+                    <span style={{ color: inc.support_person === 'Pendiente' ? 'var(--admin-text-muted)' : '#39A900', fontWeight: inc.support_person === 'Pendiente' ? 400 : 600 }}>
+                      {inc.support_person}
+                    </span>
                   </td>
                   <td data-label="Acciones">
-                    {activeTab === 'disponibles' ? (
+                    {inc.support_person === 'Pendiente' ? (
                       <button className="btn-take-case" onClick={() => handleTakeCase(inc.id)}>
                         <FiCheck size={16} /> Tomar caso
                       </button>
+                    ) : inc.support_person === userName ? (
+                      <span className="btn-my-case-active" style={{ background: '#2563eb' }}>
+                        <FiClock size={16} /> Asignado a mí
+                      </span>
                     ) : (
-                      <span className="btn-my-case-active">
-                        <FiClock size={16} /> En Progreso
+                      <span className="btn-my-case-active" style={{ background: '#475569', cursor: 'default' }}>
+                        Asignado
                       </span>
                     )}
                   </td>
@@ -246,20 +307,6 @@ export const SoporteIncidencias: React.FC<SoporteIncidenciasProps> = ({ user }) 
               ))}
             </tbody>
           </table>
-        </div>
-      )}
-
-      {/* FULL-SCREEN GLASSMORPHISM IMAGE PREVIEW MODAL */}
-      {previewPhoto && previewIncident && (
-        <div className="img-preview-overlay" onClick={handleClosePreview}>
-          <div className="img-preview-container" onClick={(e) => e.stopPropagation()}>
-            <button className="btn-close-preview" onClick={handleClosePreview}>&times;</button>
-            <img src={previewPhoto} alt="Evidencia de daño" />
-            <div className="img-preview-caption">
-              <h4>{previewIncident.subject}</h4>
-              <p>Reportado por <strong>{previewIncident.reported_by}</strong> • {formatDate(previewIncident.created_at)}</p>
-            </div>
-          </div>
         </div>
       )}
     </div>
