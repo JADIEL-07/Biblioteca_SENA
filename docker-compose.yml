@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: sena_db
+    environment:
+      POSTGRES_USER: sena_user
+      POSTGRES_PASSWORD: sena_password
+      POSTGRES_DB: biblioteca_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sena_user -d biblioteca_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sena_backend
+    # Se carga el archivo .env para tener los tokens de seguridad y la configuración de correo
+    env_file:
+      - .env
+    environment:
+      - FLASK_APP=run.py
+      # Sobrescribimos el entorno para evitar SQLite y apuntar a Postgres en Docker
+      - DATABASE_URL=postgresql://sena_user:sena_password@db:5432/biblioteca_db
+      - FLASK_ENV=development
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    # Se inicializa la base de datos de manera automática antes de arrancar gunicorn
+    command: >
+      sh -c "flask --app run init-db &&
+             gunicorn --bind 0.0.0.0:5000 --workers 2 run:app"
+
+  frontend:
+    image: node:20-alpine
+    container_name: sena_frontend
+    working_dir: /app/app/static
+    volumes:
+      - .:/app
+    environment:
+      # Vite se comunicará con el contenedor del backend para sus peticiones /api
+      - VITE_API_PROXY_TARGET=http://backend:5000
+    ports:
+      - "5173:5173"
+    # Almacenamos el cache global de NPM dentro del contenedor
+    # Se instalan dependencias y se ejecuta vite
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

@@ -1,0 +1,8 @@
+app/static/node_modules
+app/static/dist
+__pycache__
+*.pyc
+venv
+.env
+.git
+instance/
