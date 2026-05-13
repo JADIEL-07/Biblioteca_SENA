@@ -89,11 +89,33 @@ def create_report():
         description=description,
         severity=severity,
         status='OPEN',
-        photo=photo
+        photo=None # Se guarda temporalmente vacío para obtener el ID
     )
     
     db.session.add(ticket)
     db.session.commit()
+
+    if photo and photo.startswith('data:image'):
+        try:
+            import os
+            import base64
+            from flask import current_app
+            
+            # extract extension and base64 string
+            header, encoded = photo.split(',', 1)
+            ext = header.split(';')[0].split('/')[1]
+            if ext == 'jpeg': ext = 'jpg'
+            
+            filename = f"ticket_{ticket.id}.{ext}"
+            filepath = os.path.join(current_app.root_path, 'uploads', filename)
+            
+            with open(filepath, "wb") as fh:
+                fh.write(base64.b64decode(encoded))
+                
+            ticket.photo = f"/uploads/{filename}"
+            db.session.commit()
+        except Exception as e:
+            print("Error guardando foto del ticket:", e)
     
     return jsonify({
         "message": "Reporte creado exitosamente.",

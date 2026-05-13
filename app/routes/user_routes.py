@@ -205,9 +205,28 @@ def update_profile_image():
         
     data = request.get_json()
     image_data = data.get('profile_image')
-    
-    # Esto reemplaza la imagen anterior en la BD
-    user.profile_image = image_data
+    # Procesar imagen en Base64 y guardarla físicamente
+    if image_data and image_data.startswith('data:image'):
+        try:
+            import os
+            import base64
+            from flask import current_app
+            
+            header, encoded = image_data.split(',', 1)
+            ext = header.split(';')[0].split('/')[1]
+            if ext == 'jpeg': ext = 'jpg'
+            
+            filename = f"profile_{user.id}.{ext}"
+            filepath = os.path.join(current_app.root_path, 'uploads', filename)
+            
+            with open(filepath, "wb") as fh:
+                fh.write(base64.b64decode(encoded))
+                
+            user.profile_image = f"/uploads/{filename}"
+        except Exception as e:
+            print("Error guardando foto de perfil:", e)
+    else:
+        user.profile_image = image_data
     
     log = AuditLog(user_id=user_id, action="PROFILE_IMAGE_UPDATED", entity="User")
     db.session.add(log)

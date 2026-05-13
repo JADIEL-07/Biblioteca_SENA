@@ -61,7 +61,8 @@ def get_maintenances():
             "status": m.status,
             "report_date": m.report_date.isoformat(),
             "maintenance_type": m.maintenance_type,
-            "cost": m.cost
+            "cost": m.cost,
+            "evidence_photo": m.evidence_photo
         })
     return jsonify(result), 200
 
@@ -138,6 +139,7 @@ def complete_maintenance(id):
     m.solution = data.get('solution')
     m.diagnosis = data.get('diagnosis')
     m.cost = data.get('cost', 0.0)
+    m.evidence_photo = None # Se procesará a continuación si hay una
     
     # Liberar equipo
     item = Item.query.get(m.item_id)
@@ -146,4 +148,27 @@ def complete_maintenance(id):
         item.status_id = avail_status.id
         
     db.session.commit()
+
+    # Procesar imagen en Base64 y guardarla físicamente
+    evidence_photo_b64 = data.get('evidence_photo')
+    if evidence_photo_b64 and evidence_photo_b64.startswith('data:image'):
+        try:
+            import os
+            import base64
+            from flask import current_app
+            
+            header, encoded = evidence_photo_b64.split(',', 1)
+            ext = header.split(';')[0].split('/')[1]
+            if ext == 'jpeg': ext = 'jpg'
+            
+            filename = f"maintenance_{m.id}.{ext}"
+            filepath = os.path.join(current_app.root_path, 'uploads', filename)
+            
+            with open(filepath, "wb") as fh:
+                fh.write(base64.b64decode(encoded))
+                
+            m.evidence_photo = f"/uploads/{filename}"
+            db.session.commit()
+        except Exception as e:
+            print("Error guardando foto del mantenimiento:", e)
     return jsonify({"success": True}), 200

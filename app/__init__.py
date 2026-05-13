@@ -124,10 +124,20 @@ def create_app():
     def index():
         return app.send_static_file('index.html')
 
+    # ── Uploads Config & Route ────────────────────────────────────────────────
+    UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+        
+    @app.route('/uploads/<filename>')
+    def uploaded_file(filename):
+        from flask import send_from_directory
+        return send_from_directory(UPLOAD_FOLDER, filename)
+
     # Catch-all for React Router: serve index.html for all non-API routes
     @app.route('/<path:path>')
     def spa_fallback(path):
-        if path.startswith('api/'):
+        if path.startswith('api/') or path.startswith('uploads/'):
             return jsonify({"message": "Not found"}), 404
         return app.send_static_file('index.html')
 

@@ -170,7 +170,7 @@ export const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ user, onClose, o
     if (tempPhoto && tempPhoto !== user.profile_image) {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/api/v1/users_mgmt/profile-image', {
+        const response = await fetch('/api/v1/users_mgmt/profile-image', {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -184,7 +184,7 @@ export const ProfileOverlay: React.FC<ProfileOverlayProps> = ({ user, onClose, o
           alert('Foto de perfil actualizada exitosamente en el sistema');
         } else {
           const err = await response.json();
-          alert('Error al guardar: ' + (err.error || 'Desconocido'));
+          alert('Error al guardar: ' + (err.error || err.msg || err.message || JSON.stringify(err)));
         }
       } catch (error) {
         console.error("Save error:", error);

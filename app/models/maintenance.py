@@ -31,6 +31,7 @@ class Maintenance(Base):
     cost = db.Column(db.Float, default=0.0)
     requires_replacement = db.Column(db.Boolean, default=False)
     observations = db.Column(db.Text)
+    evidence_photo = db.Column(db.Text, nullable=True) # Foto adjunta de la solución en base64
     
     is_deleted = db.Column(db.Boolean, default=False)
 

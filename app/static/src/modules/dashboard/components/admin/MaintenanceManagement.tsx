@@ -20,13 +20,17 @@ interface ActiveCase {
   report_date: string;
   maintenance_type: string;
   cost: number;
+  evidence_photo?: string;
+  failure_description?: string;
 }
 
 export const MaintenanceManagement: React.FC = () => {
+  const [allCases, setAllCases] = useState<ActiveCase[]>([]);
   const [activeCase, setActiveCase] = useState<ActiveCase | null>(null);
   const [loading, setLoading] = useState(true);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [evidencePhotoBase64, setEvidencePhotoBase64] = useState<string>('');
 
   const handleStatusChange = async (newStatus: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED') => {
     if (!activeCase) return;
@@ -60,10 +64,21 @@ export const MaintenanceManagement: React.FC = () => {
   const [solution, setSolution] = useState('');
   const [cost, setCost] = useState('0');
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setEvidencePhotoBase64(ev.target?.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
   const handleOpenCompleteModal = () => {
     setDiagnosis('');
     setSolution('');
     setCost('0');
+    setEvidencePhotoBase64('');
     setShowCompleteModal(true);
   };
 
@@ -82,7 +97,8 @@ export const MaintenanceManagement: React.FC = () => {
         body: JSON.stringify({ 
           diagnosis, 
           solution, 
-          cost: parseFloat(cost) || 0 
+          cost: parseFloat(cost) || 0,
+          evidence_photo: evidencePhotoBase64
         })
       });
       if (response.ok) {
@@ -108,6 +124,7 @@ export const MaintenanceManagement: React.FC = () => {
       });
       if (response.ok) {
         const data = await response.json();
+        setAllCases(data);
         // Filtrar el primer caso que requiera atención
         const pendingCase = data.find((r: ActiveCase) => r.status === 'IN_PROGRESS' || r.status === 'PENDING');
         setActiveCase(pendingCase || null);
@@ -337,6 +354,62 @@ export const MaintenanceManagement: React.FC = () => {
         </div>
       </div>
 
+      {/* HISTORY TABLE */}
+      <div className="at-section" style={{ marginTop: '2.5rem', background: 'var(--admin-bg-card, #0f172a)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--admin-border-color, rgba(255,255,255,0.08))' }}>
+        <h3 className="at-card-title" style={{ marginBottom: '1.5rem' }}>Historial de Mantenimientos Completados</h3>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--admin-border-color, rgba(255,255,255,0.08))', color: 'var(--admin-text-muted, #94a3b8)' }}>
+                <th style={{ padding: '0.75rem 1rem' }}>ID</th>
+                <th style={{ padding: '0.75rem 1rem' }}>Equipo</th>
+                <th style={{ padding: '0.75rem 1rem' }}>Soporte (Técnico)</th>
+                <th style={{ padding: '0.75rem 1rem' }}>Estado y Solución</th>
+                <th style={{ padding: '0.75rem 1rem' }}>Fecha Reporte</th>
+                <th style={{ padding: '0.75rem 1rem' }}>Adjunto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allCases.filter(c => c.status === 'COMPLETED' || c.status === 'CANCELLED').length === 0 ? (
+                <tr><td colSpan={6} style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--admin-text-muted)' }}>No hay mantenimientos en el historial.</td></tr>
+              ) : allCases.filter(c => c.status === 'COMPLETED' || c.status === 'CANCELLED').map(mCase => (
+                <tr key={mCase.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: 'var(--admin-text-primary)' }}>
+                  <td style={{ padding: '1rem' }}><span style={{ background: 'rgba(255,255,255,0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 'bold' }}>#{mCase.id}</span></td>
+                  <td style={{ padding: '1rem' }}>
+                    <strong>{mCase.item_name}</strong>
+                    <div style={{ color: 'var(--admin-text-muted)', fontSize: '0.75rem', marginTop: '0.25rem' }}>Cód: {mCase.item_code}</div>
+                  </td>
+                  <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <FiUser /> {mCase.technician_name || 'N/A'}
+                  </td>
+                  <td style={{ padding: '1rem' }}>
+                    <span style={{ color: mCase.status === 'COMPLETED' ? '#22c55e' : '#ef4444', fontWeight: 'bold' }}>
+                      {mCase.status === 'COMPLETED' ? 'Completado' : 'Cancelado'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem' }}>
+                    {new Date(mCase.report_date).toLocaleDateString()}
+                  </td>
+                  <td style={{ padding: '1rem' }}>
+                    {mCase.evidence_photo ? (
+                      <img 
+                        src={mCase.evidence_photo} 
+                        alt="Evidencia" 
+                        title="Ver evidencia"
+                        onClick={() => window.open(mCase.evidence_photo, '_blank')}
+                        style={{ cursor: 'pointer', width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}
+                      />
+                    ) : (
+                      <span style={{ color: 'var(--admin-text-muted)', fontSize: '0.8rem' }}>Sin foto</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* CUSTOM FLOATING BACKDROP BLUR MODAL */}
       {showCompleteModal && (
         <div className="at-modal-overlay">
@@ -366,6 +439,16 @@ export const MaintenanceManagement: React.FC = () => {
                   value={solution}
                   onChange={e => setSolution(e.target.value)}
                   className="at-modal-textarea"
+                />
+              </div>
+
+              <div className="at-form-group">
+                <label>Evidencia Fotográfica (Opcional)</label>
+                <input 
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="at-modal-input"
                 />
               </div>
               

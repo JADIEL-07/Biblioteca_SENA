@@ -14,6 +14,7 @@ interface Report {
   reported_by: string;
   support_person: string;
   created_at: string;
+  photo?: string;
 }
 
 export const SystemReports: React.FC = () => {
@@ -188,6 +189,7 @@ export const SystemReports: React.FC = () => {
               <th>Gravedad</th>
               <th>Fecha Reporte</th>
               <th>Estado</th>
+              <th>Adjuntos</th>
             </tr>
           </thead>
           <tbody>
@@ -227,6 +229,20 @@ export const SystemReports: React.FC = () => {
                   <span className={`status-tag ${report.status.toLowerCase()}`}>
                     {report.status}
                   </span>
+                </td>
+                <td>
+                  {report.photo ? (
+                    <img 
+                      src={report.photo} 
+                      alt="Adjunto" 
+                      style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--admin-border-color)' }}
+                      onClick={() => window.open(report.photo, '_blank')}
+                      title="Ver adjunto completo"
+                      style={{cursor: 'pointer', width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--admin-border-color)'}}
+                    />
+                  ) : (
+                    <span style={{color: 'var(--admin-text-muted)', fontSize: '0.8rem'}}>Sin adjunto</span>
+                  )}
                 </td>
               </tr>
             ))}
