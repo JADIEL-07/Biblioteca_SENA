@@ -21,8 +21,9 @@ bcrypt==4.1.3
 flask-cors==4.0.1
 flask-limiter==4.1.1
 
-# ── Correo ────────────────────────────────────────
+# ── Correo y Externos ─────────────────────────────
 flask-mail
+requests
 
 # ── Producción (WSGI server) ──────────────────────
 gunicorn==25.3.0
