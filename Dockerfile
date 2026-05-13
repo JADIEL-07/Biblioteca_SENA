@@ -2,11 +2,7 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Instalar dependencias del sistema necesarias (por ejemplo para psycopg2)
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+# No se requiere gcc ni libpq-dev porque requirements.txt usa psycopg2-binary precompilado
 
 # Copiar el archivo de dependencias e instalar
 COPY requirements.txt .
