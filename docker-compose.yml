@@ -12,6 +12,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - coolify
 
   backend:
     build:
@@ -36,6 +38,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - coolify
     command: >
       sh -c "flask --app run init-db &&
              gunicorn --bind 0.0.0.0:5000 --workers 2 run:app"
@@ -48,7 +52,13 @@ services:
       - "80"
     depends_on:
       - backend
+    networks:
+      - coolify
 
 volumes:
   postgres_data:
   uploads_data:
+
+networks:
+  coolify:
+    external: true
