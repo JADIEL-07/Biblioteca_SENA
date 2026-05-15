@@ -14,5 +14,5 @@ COPY . .
 # Exponer el puerto del servidor Flask
 EXPOSE 5000
 
-# Usar Gunicorn como servidor de producción
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "run:app"]
+# Comando para inicializar la DB y luego arrancar Gunicorn
+CMD ["bash", "-c", "flask --app run init-db && gunicorn --bind 0.0.0.0:5000 --workers 2 'run:app'"]
