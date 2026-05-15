@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB:-biblioteca_db}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_v2:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sena_user} -d ${POSTGRES_DB:-biblioteca_db}"]
       interval: 5s
@@ -56,7 +56,7 @@ services:
       - coolify
 
 volumes:
-  postgres_data:
+  postgres_data_v2:
   uploads_data:
 
 networks:
