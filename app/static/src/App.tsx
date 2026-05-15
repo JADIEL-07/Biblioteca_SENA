@@ -1,15 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { LoginForm } from './modules/auth/components/LoginForm';
-import { Terms } from './modules/legal/components/Terms';
-import { Privacy } from './modules/legal/components/Privacy';
-import { ForgotPassword } from './modules/auth/components/ForgotPassword';
-import { ResetPassword } from './modules/auth/components/ResetPassword';
-import { UserDashboard } from './modules/dashboard/components/UserDashboard';
-import { AdminDashboard } from './modules/dashboard/components/admin/AdminDashboard';
-import { BibliotecarioDashboard } from './modules/dashboard/components/bibliotecario/BibliotecarioDashboard';
-import { AlmacenistaDashboard } from './modules/dashboard/components/almacenista/AlmacenistaDashboard';
-import { SoporteDashboard } from './modules/dashboard/components/soporte/SoporteDashboard';
+
+// Lazy loaded modules (Code Splitting)
+const LoginForm = React.lazy(() => import('./modules/auth/components/LoginForm').then(m => ({ default: m.LoginForm })));
+const Terms = React.lazy(() => import('./modules/legal/components/Terms').then(m => ({ default: m.Terms })));
+const Privacy = React.lazy(() => import('./modules/legal/components/Privacy').then(m => ({ default: m.Privacy })));
+const ForgotPassword = React.lazy(() => import('./modules/auth/components/ForgotPassword').then(m => ({ default: m.ForgotPassword })));
+const ResetPassword = React.lazy(() => import('./modules/auth/components/ResetPassword').then(m => ({ default: m.ResetPassword })));
+const UserDashboard = React.lazy(() => import('./modules/dashboard/components/UserDashboard').then(m => ({ default: m.UserDashboard })));
+const AdminDashboard = React.lazy(() => import('./modules/dashboard/components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const BibliotecarioDashboard = React.lazy(() => import('./modules/dashboard/components/bibliotecario/BibliotecarioDashboard').then(m => ({ default: m.BibliotecarioDashboard })));
+const AlmacenistaDashboard = React.lazy(() => import('./modules/dashboard/components/almacenista/AlmacenistaDashboard').then(m => ({ default: m.AlmacenistaDashboard })));
+const SoporteDashboard = React.lazy(() => import('./modules/dashboard/components/soporte/SoporteDashboard').then(m => ({ default: m.SoporteDashboard })));
 import {
   FaTwitter,
   FaFacebookF,
@@ -284,94 +286,96 @@ function AppRoutes() {
   const isStaff = isBibliotecario || isAlmacenista || isSoporte;
 
   return (
-    <Routes>
-      {/* Public pages */}
-      <Route path="/" element={<Landing loggedUser={loggedUser} onLogout={handleLogout} />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw', background: 'var(--bg-main, #f0f2f5)' }}><div className="loading-spinner" style={{ border: '4px solid rgba(0,0,0,0.1)', borderLeftColor: '#39A900', borderRadius: '50%', width: '50px', height: '50px', animation: 'spin 1s linear infinite' }}></div><style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style></div>}>
+      <Routes>
+        {/* Public pages */}
+        <Route path="/" element={<Landing loggedUser={loggedUser} onLogout={handleLogout} />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* Auth */}
-      <Route
-        path="/login"
-        element={
-          loggedUser
-            ? <Navigate to={isAdmin ? '/admin' : isBibliotecario ? '/bibliotecario' : isAlmacenista ? '/almacenista' : isSoporte ? '/soporte' : '/dashboard'} replace />
-            : <LoginForm mode="login" onLoginSuccess={handleLoginSuccess} />
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          loggedUser
-            ? <Navigate to={isAdmin ? '/admin' : isBibliotecario ? '/bibliotecario' : isAlmacenista ? '/almacenista' : isSoporte ? '/soporte' : '/dashboard'} replace />
-            : <LoginForm mode="register" onLoginSuccess={handleLoginSuccess} />
-        }
-      />
+        {/* Auth */}
+        <Route
+          path="/login"
+          element={
+            loggedUser
+              ? <Navigate to={isAdmin ? '/admin' : isBibliotecario ? '/bibliotecario' : isAlmacenista ? '/almacenista' : isSoporte ? '/soporte' : '/dashboard'} replace />
+              : <LoginForm mode="login" onLoginSuccess={handleLoginSuccess} />
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            loggedUser
+              ? <Navigate to={isAdmin ? '/admin' : isBibliotecario ? '/bibliotecario' : isAlmacenista ? '/almacenista' : isSoporte ? '/soporte' : '/dashboard'} replace />
+              : <LoginForm mode="register" onLoginSuccess={handleLoginSuccess} />
+          }
+        />
 
-      {/* Admin dashboard */}
-      <Route
-        path="/admin/*"
-        element={
-          loggedUser && isAdmin
-            ? <AdminDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
-            : <Navigate to="/login" replace />
-        }
-      />
+        {/* Admin dashboard */}
+        <Route
+          path="/admin/*"
+          element={
+            loggedUser && isAdmin
+              ? <AdminDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
+              : <Navigate to="/login" replace />
+          }
+        />
 
-      {/* Bibliotecario dashboard */}
-      <Route
-        path="/bibliotecario/*"
-        element={
-          loggedUser && isBibliotecario
-            ? <BibliotecarioDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
-            : <Navigate to="/login" replace />
-        }
-      />
+        {/* Bibliotecario dashboard */}
+        <Route
+          path="/bibliotecario/*"
+          element={
+            loggedUser && isBibliotecario
+              ? <BibliotecarioDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
+              : <Navigate to="/login" replace />
+          }
+        />
 
-      {/* Almacenista dashboard */}
-      <Route
-        path="/almacenista/*"
-        element={
-          loggedUser && isAlmacenista
-            ? <AlmacenistaDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
-            : <Navigate to="/login" replace />
-        }
-      />
+        {/* Almacenista dashboard */}
+        <Route
+          path="/almacenista/*"
+          element={
+            loggedUser && isAlmacenista
+              ? <AlmacenistaDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
+              : <Navigate to="/login" replace />
+          }
+        />
 
-      {/* Soporte Técnico dashboard */}
-      <Route
-        path="/soporte/*"
-        element={
-          loggedUser && isSoporte
-            ? <SoporteDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
-            : <Navigate to="/login" replace />
-        }
-      />
+        {/* Soporte Técnico dashboard */}
+        <Route
+          path="/soporte/*"
+          element={
+            loggedUser && isSoporte
+              ? <SoporteDashboard user={loggedUser} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />
+              : <Navigate to="/login" replace />
+          }
+        />
 
-      {/* User / Aprendiz / Guest dashboard */}
-      <Route
-        path="/dashboard/*"
-        element={
-          loggedUser && isAdmin ? <Navigate to="/admin" replace />
-          : loggedUser && isBibliotecario ? <Navigate to="/bibliotecario" replace />
-          : loggedUser && isAlmacenista ? <Navigate to="/almacenista" replace />
-          : loggedUser && isSoporte ? <Navigate to="/soporte" replace />
-          : <UserDashboard
-              user={loggedUser ?? { nombre: 'Invitado SENA', rol: { nombre: 'Invitado' }, id: 0 }}
-              onLogout={loggedUser ? handleLogout : () => {}}
-              onGoToHome={() => {}}
-              onLogin={() => {}}
-              onRegister={() => {}}
-              onUserUpdate={loggedUser ? handleUserUpdate : undefined}
-            />
-        }
-      />
+        {/* User / Aprendiz / Guest dashboard */}
+        <Route
+          path="/dashboard/*"
+          element={
+            loggedUser && isAdmin ? <Navigate to="/admin" replace />
+            : loggedUser && isBibliotecario ? <Navigate to="/bibliotecario" replace />
+            : loggedUser && isAlmacenista ? <Navigate to="/almacenista" replace />
+            : loggedUser && isSoporte ? <Navigate to="/soporte" replace />
+            : <UserDashboard
+                user={loggedUser ?? { nombre: 'Invitado SENA', rol: { nombre: 'Invitado' }, id: 0 }}
+                onLogout={loggedUser ? handleLogout : () => {}}
+                onGoToHome={() => {}}
+                onLogin={() => {}}
+                onRegister={() => {}}
+                onUserUpdate={loggedUser ? handleUserUpdate : undefined}
+              />
+          }
+        />
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
 
