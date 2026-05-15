@@ -75,7 +75,7 @@ def toggle_user_active(id):
     user.is_active = not user.is_active
     
     action = "USER_DEACTIVATED" if not user.is_active else "USER_REACTIVATED"
-    log = AuditLog(user_id=get_jwt_identity(), action=action, entity_id=None, entity="User")
+    log = AuditLog(user_id=get_jwt_identity(), action=action, entity_id=id, entity="User")
     db.session.add(log)
     db.session.commit()
     
@@ -88,7 +88,7 @@ def unblock_user(id):
     user.is_blocked = False
     user.failed_attempts = 0
     
-    log = AuditLog(user_id=get_jwt_identity(), action="USER_UNBLOCKED", entity_id=None, entity="User")
+    log = AuditLog(user_id=get_jwt_identity(), action="USER_UNBLOCKED", entity_id=id, entity="User")
     db.session.add(log)
     db.session.commit()
     
@@ -106,7 +106,7 @@ def change_user_role(id):
         return jsonify({"error": "Rol no válido"}), 400
         
     user.role_id = role.id
-    log = AuditLog(user_id=get_jwt_identity(), action="ROLE_CHANGED", entity_id=None, entity="User", details=f"New role: {new_role_name}")
+    log = AuditLog(user_id=get_jwt_identity(), action="ROLE_CHANGED", entity_id=id, entity="User", details=f"New role: {new_role_name}")
     db.session.add(log)
     db.session.commit()
     
@@ -120,8 +120,8 @@ def get_user_detail(id):
     # Préstamos activos
     active_loans = Loan.query.filter_by(user_id=id, status='ACTIVE').count()
     
-    # Reservas activas
-    active_res = Reservation.query.filter_by(user_id=id, status='ACTIVE').count()
+    # Reservas activas (QUEUED o READY)
+    active_res = Reservation.query.filter_by(user_id=id).filter(Reservation.status.in_(['QUEUED', 'READY'])).count()
     
     # Últimos 10 logs de auditoría del usuario
     logs = AuditLog.query.filter_by(user_id=id).order_by(AuditLog.created_at.desc()).limit(10).all()

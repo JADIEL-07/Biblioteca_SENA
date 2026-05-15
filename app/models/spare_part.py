@@ -6,7 +6,7 @@ class SparePartRequest(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
-    requested_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    requested_by = db.Column(db.String(50), db.ForeignKey('users.id'), nullable=False)
     
     reason = db.Column(db.Text, nullable=False)
     cost = db.Column(db.Float, nullable=False)

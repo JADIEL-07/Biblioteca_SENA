@@ -35,17 +35,30 @@ def get_loans():
         )
         
     if start_date:
-        query = query.filter(Loan.loan_date >= f"{start_date} 00:00:00")
+        try:
+            start_dt = datetime.fromisoformat(start_date).replace(hour=0, minute=0, second=0)
+            query = query.filter(Loan.loan_date >= start_dt)
+        except ValueError:
+            pass
     if end_date:
-        query = query.filter(Loan.loan_date <= f"{end_date} 23:59:59")
+        try:
+            end_dt = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59)
+            query = query.filter(Loan.loan_date <= end_dt)
+        except ValueError:
+            pass
     if category != 'ALL':
         query = query.filter(Item.category.has(name=category))
 
     loans = query.order_by(Loan.loan_date.desc()).all()
+    
+    # Pre-fetch all users to avoid N+1 queries
+    user_ids = set([loan.user_id for loan in loans] + [loan.admin_id for loan in loans if loan.admin_id])
+    users_cache = {u.id: u for u in User.query.filter(User.id.in_(user_ids)).all()} if user_ids else {}
+    
     result = []
     for loan in loans:
-        user = User.query.get(loan.user_id)
-        admin = User.query.get(loan.admin_id) if loan.admin_id else None
+        user = users_cache.get(loan.user_id)
+        admin = users_cache.get(loan.admin_id) if loan.admin_id else None
         items = []
         for detail in loan.details:
             items.append({

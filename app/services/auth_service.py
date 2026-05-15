@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from flask import request
 from sqlalchemy import or_
 from ..extensions import db
-from ..models.user import User
+from ..models.user import User, Role
 from ..models.audit_log import AuditLog
 from ..models.token import PasswordResetToken
 from .token_service import TokenService
@@ -24,7 +24,9 @@ class AuthService:
         # Asignar rol APRENDIZ por defecto si no se provee uno
         if not role_id:
             role = Role.query.filter_by(name='APRENDIZ').first()
-            role_id = role.id if role else 3 # 3 suele ser Aprendiz según el seed
+            if not role:
+                return {"error": "El rol APRENDIZ no existe en la base de datos"}, 500
+            role_id = role.id
 
         # Ensure formation_ficha is None if empty string
         final_ficha = formation_ficha if formation_ficha and formation_ficha.strip() != "" else None

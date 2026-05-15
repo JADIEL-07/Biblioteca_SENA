@@ -4,6 +4,7 @@ from ..extensions import db
 from ..models.ticket import Ticket
 from ..models.user import User
 from sqlalchemy import func
+from datetime import datetime
 
 report_bp = Blueprint('reports', __name__)
 
@@ -40,15 +41,28 @@ def get_reports():
         )
         
     if start_date:
-        query = query.filter(Ticket.created_at >= f"{start_date} 00:00:00")
+        try:
+            start_dt = datetime.fromisoformat(start_date).replace(hour=0, minute=0, second=0)
+            query = query.filter(Ticket.created_at >= start_dt)
+        except ValueError:
+            pass
     if end_date:
-        query = query.filter(Ticket.created_at <= f"{end_date} 23:59:59")
+        try:
+            end_dt = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59)
+            query = query.filter(Ticket.created_at <= end_dt)
+        except ValueError:
+            pass
 
     tickets = query.order_by(Ticket.created_at.desc()).all()
+    
+    # Pre-fetch all users to avoid N+1 queries
+    user_ids = set([t.user_id for t in tickets] + [t.assigned_to for t in tickets if t.assigned_to])
+    users_cache = {u.id: u for u in User.query.filter(User.id.in_(user_ids)).all()} if user_ids else {}
+    
     result = []
     for t in tickets:
-        reporter = User.query.get(t.user_id)
-        support = User.query.get(t.assigned_to) if t.assigned_to else None
+        reporter = users_cache.get(t.user_id)
+        support = users_cache.get(t.assigned_to) if t.assigned_to else None
         
         result.append({
             "id": t.id,

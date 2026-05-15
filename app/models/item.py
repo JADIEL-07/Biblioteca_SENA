@@ -49,6 +49,7 @@ class Item(Base):
     serial_number = db.Column(db.String(100)) # ISBN para libros, Serial para equipos
     physical_condition = db.Column(db.String(100)) # Excelente, Bueno, etc.
     image_url = db.Column(db.Text) # URL o Base64 de la imagen
+    is_deleted = db.Column(db.Boolean, default=False) # Soft delete flag
 
     # Relations
     movements = db.relationship('Movement', backref='item', lazy=True)

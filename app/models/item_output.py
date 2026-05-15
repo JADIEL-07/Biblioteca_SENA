@@ -26,7 +26,7 @@ class ItemOutput(db.Model):
     description = db.Column(db.Text)
     reason_code = db.Column(db.String(50)) # DAÑO, TRASLADO, EVENTO
     
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     estimated_return_date = db.Column(db.DateTime, nullable=True)
     actual_return_date = db.Column(db.DateTime, nullable=True)
     

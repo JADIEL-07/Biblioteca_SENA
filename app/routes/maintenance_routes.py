@@ -34,18 +34,33 @@ def get_maintenances():
         )
         
     if start_date:
-        query = query.filter(Maintenance.report_date >= f"{start_date} 00:00:00")
+        try:
+            start_dt = datetime.fromisoformat(start_date).replace(hour=0, minute=0, second=0)
+            query = query.filter(Maintenance.report_date >= start_dt)
+        except ValueError:
+            pass
     if end_date:
-        query = query.filter(Maintenance.report_date <= f"{end_date} 23:59:59")
+        try:
+            end_dt = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59)
+            query = query.filter(Maintenance.report_date <= end_dt)
+        except ValueError:
+            pass
     if severity != 'ALL':
         query = query.filter(Maintenance.severity == severity)
 
     m_list = query.order_by(Maintenance.report_date.desc()).all()
+    
+    # Pre-fetch all users to avoid N+1 queries
+    user_ids = set([m.reported_by for m in m_list] + [m.technician_id for m in m_list if m.technician_id])
+    item_ids = set([m.item_id for m in m_list])
+    users_cache = {u.id: u for u in User.query.filter(User.id.in_(user_ids)).all()} if user_ids else {}
+    items_cache = {i.id: i for i in Item.query.filter(Item.id.in_(item_ids)).all()} if item_ids else {}
+    
     result = []
     for m in m_list:
-        item = Item.query.get(m.item_id)
-        reporter = User.query.get(m.reported_by)
-        tech = User.query.get(m.technician_id) if m.technician_id else None
+        item = items_cache.get(m.item_id)
+        reporter = users_cache.get(m.reported_by)
+        tech = users_cache.get(m.technician_id) if m.technician_id else None
         
         result.append({
             "id": m.id,

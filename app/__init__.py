@@ -108,6 +108,10 @@ def create_app():
     def handle_rate_limit(e):
         return jsonify({"message": "Too many requests"}), 429
 
+    @app.errorhandler(405)
+    def handle_method_not_allowed(e):
+        return jsonify({"error": "Method not allowed", "path": request.path}), 405
+
     @app.errorhandler(500)
     def handle_500(e):
         return jsonify({"error": "Internal server error", "detail": str(e)}), 500

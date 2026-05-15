@@ -86,18 +86,33 @@ def get_reservations():
         )
 
     if start_date:
-        query = query.filter(Reservation.reservation_date >= f"{start_date} 00:00:00")
+        try:
+            start_dt = datetime.fromisoformat(start_date).replace(hour=0, minute=0, second=0)
+            query = query.filter(Reservation.reservation_date >= start_dt)
+        except ValueError:
+            pass
     if end_date:
-        query = query.filter(Reservation.reservation_date <= f"{end_date} 23:59:59")
+        try:
+            end_dt = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59)
+            query = query.filter(Reservation.reservation_date <= end_dt)
+        except ValueError:
+            pass
     if category != 'ALL':
         query = query.filter(Item.category.has(name=category))
 
     res_list = query.order_by(Reservation.reservation_date.desc()).all()
+    
+    # Pre-fetch all users and items to avoid N+1 queries
+    user_ids = set([res.user_id for res in res_list] + [res.admin_id for res in res_list if res.admin_id])
+    item_ids = set([res.item_id for res in res_list])
+    users_cache = {u.id: u for u in User.query.filter(User.id.in_(user_ids)).all()} if user_ids else {}
+    items_cache = {i.id: i for i in Item.query.filter(Item.id.in_(item_ids)).all()} if item_ids else {}
+    
     result = []
     for res in res_list:
-        user = User.query.get(res.user_id)
-        admin = User.query.get(res.admin_id) if res.admin_id else None
-        item = Item.query.get(res.item_id)
+        user = users_cache.get(res.user_id)
+        admin = users_cache.get(res.admin_id) if res.admin_id else None
+        item = items_cache.get(res.item_id)
 
         result.append({
             "id": res.id,
