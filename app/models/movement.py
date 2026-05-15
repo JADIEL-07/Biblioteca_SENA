@@ -5,7 +5,7 @@ class Movement(db.Model):
     __tablename__ = 'movements'
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.String(50), db.ForeignKey('users.id'), nullable=False)
     movement_type = db.Column(db.String(50)) # ENTRY, EXIT, LOAN, RETURN, MAINTENANCE
     reference_id = db.Column(db.Integer) # ID of loan, maintenance, etc.
     date = db.Column(db.DateTime, default=datetime.utcnow)
