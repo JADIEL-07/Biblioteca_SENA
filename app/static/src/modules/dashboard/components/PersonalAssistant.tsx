@@ -422,143 +422,15 @@ export const PersonalAssistant: React.FC<PersonalAssistantProps> = ({ user }) =>
     }, 1100);
   };
 
-  const generateBotResponse = (query: string): { text: string; type: Message['type']; metadata?: any } => {
-    const q = query.toLowerCase();
-
-    // Hola / Saludo
-    if (q.includes('hola') || q.includes('saludos') || q.includes('buenos dias') || q.includes('buenas tardes')) {
-      return {
-        text: `¡Hola de nuevo, **${userName}**! 😊 Estoy listo para resolver cualquier duda que tengas sobre la biblioteca o el almacén de herramientas. ¿Qué deseas consultar?`,
-        type: 'text'
-      };
-    }
-
-    // Mis Préstamos
-    if (q.includes('préstamo') || q.includes('prestamo') || q.includes('mis prestamos') || q.includes('tengo prestado') || q.includes('mis préstamos') || q.includes('mis herramientas') || q.includes('mis libros')) {
-      if (isGuest) {
-        return {
-          text: `Como eres un **Usuario Invitado**, no tienes un registro de préstamos activos en el sistema. 🔒 ¡Inicia sesión o crea una cuenta para poder solicitar materiales y ver tu historial!`,
-          type: 'text'
-        };
-      }
-      
-      if (userLoans.length === 0) {
-        return {
-          text: `Consulté nuestro sistema de inventario y... ¡no tienes préstamos activos actualmente! 📚 Sigue explorando nuestro catálogo para solicitar herramientas, equipos o material bibliográfico.`,
-          type: 'text'
-        };
-      }
-
-      // Format the list of loans
-      const activeLoans = userLoans.filter(l => l.status === 'ACTIVE' || l.status === 'OVERDUE');
-      if (activeLoans.length === 0) {
-        return {
-          text: `Revisé tu historial y no tienes ningún préstamo pendiente por entregar. ¡Excelente! Tienes tu cuenta al día. ✨`,
-          type: 'text'
-        };
-      }
-
-      return {
-        text: `Actualmente tienes **${activeLoans.length} préstamo(s) activo(s)** bajo tu custodia. Aquí tienes el detalle de tus materiales:`,
-        type: 'loans',
-        metadata: activeLoans
-      };
-    }
-
-    // Cómo solicitar libro
-    if (q.includes('libro') || q.includes('solicitar libro') || q.includes('prestar libro') || q.includes('biblioteca')) {
-      return {
-        text: `Para solicitar un **libro** o material bibliográfico en la Biblioteca SENA, sigue estos sencillos pasos:\n\n1. 🔍 Ve al apartado **"Explorar Catálogo"** de tu menú lateral.\n2. 📄 Filtra por la categoría **"Libros"** o busca el título directamente.\n3. 📝 Haz clic en **"Reservar"** para asegurar el ejemplar.\n4. 🕒 Tienes un plazo máximo de **2 horas** para recoger el libro en la ventanilla de biblioteca con el bibliotecario de turno.\n\n*Nota: Los préstamos de libros tienen una vigencia estándar de **8 días calendario**, renovables si ningún otro aprendiz ha reservado el ejemplar.*`,
-        type: 'text'
-      };
-    }
-
-    // Cómo solicitar herramientas
-    if (q.includes('herramienta') || q.includes('equipo') || q.includes('almacen') || q.includes('almacén') || q.includes('arduino') || q.includes('maquina')) {
-      return {
-        text: `El préstamo de **herramientas, equipos tecnológicos o insumos** del almacén funciona bajo la siguiente normativa:\n\n1. 🛠️ Busca el equipo o herramienta que necesitas en el catálogo online.\n2. 🛒 Reserva el elemento desde tu portal.\n3. 💼 Dirígete al Almacén SENA y presenta tu documento de identidad junto con la autorización de tu instructor de taller si es un equipo pesado.\n4. ⏰ El tiempo máximo de préstamo es de **3 días hábiles** para asegurar que otros compañeros también puedan utilizarlos en sus prácticas formativas.\n\n⚠️ *Recuerda limpiar y ordenar las herramientas antes de devolverlas al almacén.*`,
-        type: 'text'
-      };
-    }
-
-    // Horarios
-    if (q.includes('horario') || q.includes('hora') || q.includes('abierto') || q.includes('tiempo') || q.includes('dias') || q.includes('días')) {
-      return {
-        text: `🕒 **Horarios de Atención — Biblioteca y Almacén SENA:**\n\n*   **Lunes a Viernes:** 6:00 AM – 10:00 PM\n*   *(Nota: Los miércoles abrimos a partir de las 6:30 AM por reuniones pedagógicas)*\n*   **Sábado y Domingo:** Cerrado (No hay servicio al público)\n\n¡Te recomendamos acercarte al menos 15 minutos antes de la hora de cierre para tramitar tus entregas o retiros sin inconvenientes! ⏳`,
-        type: 'text'
-      };
-    }
-
-    // Ubicación
-    if (q.includes('ubicación') || q.includes('ubicacion') || q.includes('donde') || q.includes('dónde') || q.includes('sede') || q.includes('velez') || q.includes('vélez')) {
-      return {
-        text: `📍 **Ubicación de nuestro Centro:**\n\nNos encontramos ubicados en la **Sede SENA de Vélez, Santander**, Colombia.\n\n*   **Biblioteca:** Bloque Principal, primer piso junto al área administrativa.\n*   **Almacén de Equipos:** Al fondo del pasillo técnico, contiguo a los talleres de electricidad y automatización.\n\nSi necesitas indicaciones precisas de cómo llegar o mapas interactivos, puedes hacer clic sobre el enlace de ubicación en el pie de página de la plataforma. 🗺️`,
-        type: 'text'
-      };
-    }
-
-    // Retrasos y multas
-    if (q.includes('retraso') || q.includes('retrasar') || q.includes('atraso') || q.includes('tarde') || q.includes('multa') || q.includes('sancion') || q.includes('sanción')) {
-      return {
-        text: `⚠️ **Políticas de Entrega y Sanciones:**\n\nEn el SENA promovemos la responsabilidad con el cuidado del bien público. Si te retrasas en la entrega de un material, se aplicará el reglamento de biblioteca e inventarios:\n\n*   **Suspensión Temporal:** Recibirás una suspensión de préstamos de **1 día por cada día de retraso** por cada elemento pendiente.\n*   **Reporte al Coordinador:** En caso de demoras mayores a 10 días o pérdida del equipo, se abrirá un reporte formal ante coordinación académica para comité pedagógico.\n*   **Pérdida/Daño:** Deberás reponer el elemento exacto o de características equivalentes/superiores en un plazo no mayor a 15 días hábiles.\n\n¡Por favor, si necesitas más tiempo, solicita una renovación a tiempo desde el panel o comunícate con el Bibliotecario! 📝`,
-        type: 'text'
-      };
-    }
-
-    // Quién eres
-    if (q.includes('quien eres') || q.includes('quién eres') || q.includes('que eres') || q.includes('bot') || q.includes('asistente') || q.includes('ayuda')) {
-      return {
-        text: `🤖 Soy **SENA Bot**, un asistente virtual inteligente diseñado con React y Flask para optimizar el servicio del centro de formación.\n\nMi objetivo es guiarte en el uso de la biblioteca y el almacén, darte respuestas inmediatas sobre normativas, mostrarte tus préstamos activos en tiempo real y ayudarte a navegar por el sistema de forma interactiva.\n\n¡Puedes probar preguntándome **"mis préstamos"** o **"cómo reservar un libro"**!`,
-        type: 'text'
-      };
-    }
-
-    // Cambiar contraseña
-    if (q.includes('contraseña') || q.includes('contrasena') || q.includes('password') || q.includes('cambiar clave') || q.includes('clave')) {
-      return {
-        text: `🔐 **Cómo cambiar o recuperar tu contraseña:**\n\n1. 👤 Ve a tu **Perfil de Usuario** haciendo clic en tu nombre en la esquina inferior izquierda del menú lateral.\n2. 📝 Selecciona la opción **"Editar Perfil"** o **"Seguridad"**.\n3. 🔑 Escribe tu contraseña actual, luego ingresa la nueva clave y confírmala.\n4. 💾 Haz clic en **"Guardar Cambios"**.\n\n*Nota: Si olvidaste tu contraseña por completo y no puedes ingresar, comunícate con el Administrador del Centro de Formación o el Bibliotecario de turno para que realice un restablecimiento manual de tu clave desde el panel de administración.*`,
-        type: 'text'
-      };
-    }
-
-    // Pérdidas o daños
-    if (q.includes('perdí') || q.includes('perdi') || q.includes('pérdida') || q.includes('perdida') || q.includes('dañó') || q.includes('daño') || q.includes('dano') || q.includes('rompí') || q.includes('rompi') || q.includes('dañar') || q.includes('perder')) {
-      return {
-        text: `⚠️ **Reporte de Pérdida o Daño de Elementos:**\n\nSi se te ha extraviado o dañado un libro, herramienta o equipo bajo tu préstamo, debes proceder de la siguiente manera:\n\n1. 📢 **Informa de inmediato** al Bibliotecario (para libros) o al Almacenista (para herramientas) para registrar el estado del elemento.\n2. 📦 **Reposición del Elemento:** Según el reglamento del SENA, tienes un plazo de **15 días hábiles** para reponer el elemento por uno exactamente idéntico o de características superiores (marca, modelo, estado).\n3. ❌ **Sanción Temporal:** Mientras no se realice la reposición física del elemento, tu cuenta de préstamos permanecerá suspendida de forma temporal.\n\n*¡La honestidad y el reporte oportuno evitan sanciones disciplinarias mayores en tu ficha académica!*`,
-        type: 'text'
-      };
-    }
-
-    // Registro o crear cuenta
-    if (q.includes('registro') || q.includes('registrar') || q.includes('crear cuenta') || q.includes('crear usuario') || q.includes('registrarse')) {
-      return {
-        text: `👤 **Cómo registrarse en la plataforma:**\n\nSi eres un nuevo aprendiz, instructor o administrativo y no tienes cuenta:\n\n1. 🌐 Dirígete a la página de inicio o haz clic en **"Crear Cuenta"** en la esquina superior derecha.\n2. 📝 Completa el formulario de registro con tus datos reales:\n   *   Nombre completo\n   *   Documento de identidad (Cédula o Tarjeta de Identidad)\n   *   Correo electrónico institucional o personal\n   *   Número de ficha (obligatorio para Aprendices)\n   *   Rol (Aprendiz, Instructor o Administrativo)\n3. 🔒 Define una contraseña segura y haz clic en **"Registrarse"**.\n\n*Nota: Tu cuenta se activará de forma inmediata para consultar el catálogo, pero tus solicitudes de préstamo físico serán aprobadas por el personal tras validar tu documento.*`,
-        type: 'text'
-      };
-    }
-
-    // Iniciar sesión
-    if (q.includes('iniciar sesión') || q.includes('iniciar sesion') || q.includes('login') || q.includes('entrar') || q.includes('ingresar') || q.includes('sesión') || q.includes('sesion')) {
-      return {
-        text: `🔑 **Cómo iniciar sesión en la plataforma:**\n\n1. 🌐 Haz clic en **"Iniciar Sesión"** en la barra superior derecha.\n2. 👤 Introduce tu correo registrado o tu número de documento de identidad.\n3. 🔒 Escribe tu contraseña de seguridad.\n4. 🚀 Haz clic en el botón **"Ingresar"**.\n\n*Si experimentas algún error de credenciales inactivas o problemas con el servidor, recuerda que puedes navegar por el catálogo en modo "Invitado", pero necesitarás iniciar sesión para agendar tus reservas.*`,
-        type: 'text'
-      };
-    }
-
-    // Quiénes pueden usar / Requisitos
-    if (q.includes('quienes') || q.includes('quiénes') || q.includes('requisito') || q.includes('requisitos') || q.includes('pueden') || q.includes('puedo pedir')) {
-      return {
-        text: `🎓 **¿Quiénes pueden solicitar préstamos de biblioteca y almacén?**\n\nEl servicio está habilitado para toda la comunidad educativa de la Sede Vélez:\n\n*   **Aprendices:** Con matrícula activa en cualquier programa de formación (Técnico, Tecnólogo o Especialización).\n*   **Instructores:** Con contrato vigente en el centro de formación.\n*   **Administrativos:** Personal de apoyo y coordinadores del centro.\n\n⚠️ **Requisitos obligatorios:**\n1. Tener una cuenta registrada y activa en la plataforma.\n2. Presentar tu carnet del SENA o documento de identidad físico al retirar el elemento.\n3. No poseer sanciones pendientes o préstamos vencidos en tu cuenta.`,
-        type: 'text'
-      };
-    }
-
-    // Fallback response with hints
+  // Mensaje de error simple para cuando el backend (que ya tiene su propio
+  // sistema de fallback con Gemini -> rule-based -> aprendizaje) no responde.
+  const generateBotResponse = (_query: string): { text: string; type: Message['type']; metadata?: any } => {
     return {
-      text: `Entiendo tu inquietud, pero no tengo una respuesta exacta registrada en mi base de conocimientos para esa pregunta. 🧐\n\n¿Por qué no pruebas preguntándome sobre **cómo cambiar mi contraseña, qué hacer si perdí algo, requisitos de préstamo, o cómo iniciar sesión**?`,
+      text: `No pude conectar con el servidor de la IA en este momento. Verifica tu conexion e intenta de nuevo en unos segundos.`,
       type: 'text'
     };
   };
+
 
   const handleEscalateToSupport = async (msgId: string, userQuery: string, aiResponse: string) => {
     if (!isApprentice || isGuest) return;

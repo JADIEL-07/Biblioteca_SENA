@@ -164,101 +164,103 @@ INSTRUCCIONES DE RESPUESTA:
         system_instruction += "\n\nREGLA MUY IMPORTANTE: Como este es el primer mensaje de la conversación, DEBES iniciar tu respuesta exactamente con la palabra 'TITULO: ' seguida de un breve resumen de máximo 4 a 5 palabras de lo que el usuario está consultando, luego haz un salto de línea y continúa con tu respuesta normal."
 
     # 5. Intentar llamar a Gemini API de Google usando REST API
+    # Cadena de modelos: intenta el primero, si da 429 (cuota agotada) cae al siguiente.
     api_key = os.environ.get('GEMINI_API_KEY')
-    
+    GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest']
+
     if api_key:
-        try:
-            # Cambiado a gemini-2.0-flash que tiene cuota gratuita más amplia
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-            
-            headers = {
-                "Content-Type": "application/json"
-            }
-            
-            contents = []
-            for msg in history[-10:]:
-                role = "user" if msg.get("role") == "user" else "model"
-                if "¡Hola" in msg.get("text", "") and role == "model":
-                    continue
-                # Si el rol es el mismo que el anterior, concatenar (Gemini no permite roles consecutivos iguales)
-                if contents and contents[-1]["role"] == role:
-                    contents[-1]["parts"][0]["text"] += "\n" + msg.get("text", "")
-                else:
-                    contents.append({
-                        "role": role,
-                        "parts": [{"text": msg.get("text", "")}]
-                    })
-            
-            # Asegurar que el query del usuario no rompa la alternancia
-            user_parts = [{"text": user_query}]
-            if media and media.get("data") and media.get("mimeType"):
-                user_parts.append({
-                    "inline_data": {
-                        "mime_type": media.get("mimeType"),
-                        "data": media.get("data")
-                    }
-                })
-
-            if contents and contents[-1]["role"] == "user":
-                contents[-1]["parts"].extend(user_parts)
+        # Construir contents una sola vez (compartido entre intentos)
+        contents = []
+        for msg in history[-10:]:
+            role = "user" if msg.get("role") == "user" else "model"
+            if "¡Hola" in msg.get("text", "") and role == "model":
+                continue
+            if contents and contents[-1]["role"] == role:
+                contents[-1]["parts"][0]["text"] += "\n" + msg.get("text", "")
             else:
-                contents.append({
-                    "role": "user",
-                    "parts": user_parts
-                })
-            
-            payload = {
-                "system_instruction": {
-                    "parts": [{"text": system_instruction}]
-                },
-                "contents": contents
-            }
-            
-            response = requests.post(url, json=payload, headers=headers, timeout=15)
-            
-            if response.status_code == 200:
-                res_data = response.json()
-                bot_text = res_data['candidates'][0]['content']['parts'][0]['text']
-                
-                title = None
-                if bot_text.startswith("TITULO:"):
-                    parts_text = bot_text.split('\n', 1)
-                    title = parts_text[0].replace("TITULO:", "").strip()
-                    bot_text = parts_text[1].strip() if len(parts_text) > 1 else bot_text
+                contents.append({"role": role, "parts": [{"text": msg.get("text", "")}]})
 
-                json_response = {
-                    "text": bot_text,
-                    "type": "text",
-                    "title": title,
-                    "metadata": active_loans_list if active_loans_list else None
+        user_parts = [{"text": user_query}]
+        if media and media.get("data") and media.get("mimeType"):
+            user_parts.append({
+                "inline_data": {
+                    "mime_type": media.get("mimeType"),
+                    "data": media.get("data")
                 }
-                
-                # Guardar en caché si aplica
-                if cache_key:
-                    cache_store[cache_key] = (json_response, time.time())
+            })
 
-                # GUARDAR CONOCIMIENTO (MEMORIA DINÁMICA OFFLINE)
-                try:
-                    kws = get_query_keywords(user_query)
-                    if len(kws) > 5 and len(bot_text) > 15:
-                        existing = AILearnedResponse.query.filter_by(query_keywords=kws).first()
-                        if not existing:
-                            new_knowledge = AILearnedResponse(
-                                query_text=user_query,
-                                query_keywords=kws,
-                                response_text=bot_text
-                            )
-                            db.session.add(new_knowledge)
-                            db.session.commit()
-                except Exception as db_e:
-                    db.session.rollback()
-                    print("Error guardando conocimiento IA:", db_e)
+        if contents and contents[-1]["role"] == "user":
+            contents[-1]["parts"].extend(user_parts)
+        else:
+            contents.append({"role": "user", "parts": user_parts})
 
-                return jsonify(json_response)
-            else:
-                print(f"Error Gemini API Status Code: {response.status_code}, Response: {response.text}")
-        except Exception as e:
-            print(f"Excepción al llamar a Gemini API: {str(e)}")
+        payload = {
+            "system_instruction": {"parts": [{"text": system_instruction}]},
+            "contents": contents
+        }
+        headers = {"Content-Type": "application/json"}
+
+        last_error = None
+        for model in GEMINI_MODELS:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+                response = requests.post(url, json=payload, headers=headers, timeout=20)
+
+                if response.status_code == 200:
+                    res_data = response.json()
+                    bot_text = res_data['candidates'][0]['content']['parts'][0]['text']
+                    print(f"[GEMINI OK] modelo={model}")
+
+                    title = None
+                    if bot_text.startswith("TITULO:"):
+                        parts_text = bot_text.split('\n', 1)
+                        title = parts_text[0].replace("TITULO:", "").strip()
+                        bot_text = parts_text[1].strip() if len(parts_text) > 1 else bot_text
+
+                    json_response = {
+                        "text": bot_text,
+                        "type": "text",
+                        "title": title,
+                        "metadata": active_loans_list if active_loans_list else None,
+                        "source": "gemini",
+                        "model": model,
+                    }
+
+                    if cache_key:
+                        cache_store[cache_key] = (json_response, time.time())
+
+                    # APRENDER: guardar la respuesta de Gemini para el modo offline futuro
+                    try:
+                        kws = get_query_keywords(user_query)
+                        if len(kws) > 5 and len(bot_text) > 15:
+                            existing = AILearnedResponse.query.filter_by(query_keywords=kws).first()
+                            if not existing:
+                                db.session.add(AILearnedResponse(
+                                    query_text=user_query,
+                                    query_keywords=kws,
+                                    response_text=bot_text
+                                ))
+                                db.session.commit()
+                    except Exception as db_e:
+                        db.session.rollback()
+                        print("Error guardando conocimiento IA:", db_e)
+
+                    return jsonify(json_response)
+
+                elif response.status_code == 429:
+                    print(f"[GEMINI 429] cuota agotada en {model}, probando siguiente modelo...")
+                    last_error = f"429 en {model}"
+                    continue
+                else:
+                    print(f"[GEMINI ERROR] modelo={model} status={response.status_code} body={response.text[:300]}")
+                    last_error = f"{response.status_code} en {model}"
+                    break  # error no recuperable, no probar mas modelos
+            except Exception as e:
+                print(f"[GEMINI EXC] modelo={model}: {e}")
+                last_error = str(e)
+                continue
+
+        print(f"[GEMINI] todos los modelos fallaron, cayendo a fallback local. Ultimo error: {last_error}")
 
     # 6. Fallback Rule-Based Inteligente con RAG (Si no hay API key o falló la llamada)
     fallback_text = ""
@@ -285,8 +287,12 @@ INSTRUCCIONES DE RESPUESTA:
                 if learned:
                     learned.use_count += 1
                     db.session.commit()
-                    fallback_text = f"🧠 *(Memoria Caché)*\n\n{learned.response_text}"
-                    return jsonify({"text": fallback_text, "type": "text"})
+                    fallback_text = f"🧠 *(Aprendido de IA anterior)*\n\n{learned.response_text}"
+                    return jsonify({
+                        "text": fallback_text,
+                        "type": "text",
+                        "source": "learned",
+                    })
     except Exception as e:
         print("Error buscando en memoria IA:", e)
 
@@ -462,5 +468,6 @@ INSTRUCCIONES DE RESPUESTA:
         "type": "text",
         "metadata": active_loans_list if active_loans_list else None,
         "suggest_support": suggest_support,
+        "source": "rules",
     })
 
