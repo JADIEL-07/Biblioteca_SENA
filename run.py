@@ -1,54 +1,16 @@
 import os
 import sys
+import socket
 import subprocess
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from app import create_app, db
-from app.models.user import User, Role, FormationProgram
-from app.models.item import Item, Category, Location, Status, Supplier
-from app.models.loan import Loan, LoanDetail
-from app.models.reservation import Reservation
-from app.models.maintenance import Maintenance
-from app.models.movement import Movement, Notification
-from app.models.item_output import ItemOutput
-
-app = create_app()
-
-@app.cli.command("init-db")
-def init_db():
-    """Inicializa la base de datos y crea los roles básicos."""
-    db.create_all()
-    seed_basic_roles()
-    print("Base de datos inicializada correctamente.")
-
-def seed_basic_roles():
-    if not Role.query.first():
-        roles = [
-            'ADMIN',
-            'BIBLIOTECARIO',
-            'ALMACENISTA',
-            'SOPORTE_TECNICO',
-            'EMPRESA',
-            'APRENDIZ',
-            'USUARIO'
-        ]
-        for r_name in roles:
-            db.session.add(Role(name=r_name))
-        db.session.commit()
-        print("Roles básicos creados.")
-
-    if not FormationProgram.query.first():
-        db.session.add(FormationProgram(id='2672153', name='ADSO'))
-        db.session.commit()
-        print("Programa de formación por defecto creado.")
 
 def _discover_container_ip(ssh_host, ssh_user, ssh_password, container_name):
     """Conecta SSH al VPS y obtiene la IP interna del container Postgres
     en la red Docker (el container NO expone puerto al host, asi que hay
     que reenviar el tunel a su IP interna)."""
-    # paramiko 3+ removio DSSKey pero sshtunnel aun lo referencia
     import paramiko
     if not hasattr(paramiko, 'DSSKey'):
         paramiko.DSSKey = paramiko.RSAKey
@@ -63,11 +25,10 @@ def _discover_container_ip(ssh_host, ssh_user, ssh_password, container_name):
         f"--format '{{{{range $k, $v := .NetworkSettings.Networks}}}}"
         f"{{{{$k}}}}={{{{$v.IPAddress}}}}|{{{{end}}}}'"
     )
-    stdin, stdout, stderr = client.exec_command(cmd)
+    _, stdout, _ = client.exec_command(cmd)
     out = stdout.read().decode().strip()
     client.close()
 
-    # Preferir red 'coolify' (mas estable); caer a la primera IP no vacia
     networks = {}
     for entry in out.split('|'):
         if '=' in entry:
@@ -79,9 +40,18 @@ def _discover_container_ip(ssh_host, ssh_user, ssh_password, container_name):
     return networks.get('coolify') or next(iter(networks.values()))
 
 
+def _find_free_port():
+    with socket.socket() as s:
+        s.bind(('127.0.0.1', 0))
+        return s.getsockname()[1]
+
+
 def start_ssh_tunnel():
-    """Levanta tunel SSH si hay credenciales SSH_* configuradas en .env.
-    Apunta dinamicamente a la IP del container Postgres en Docker."""
+    """Levanta tunel SSH si hay credenciales SSH_* en .env.
+    - Descubre IP del container Postgres en Docker dinamicamente.
+    - Elige un puerto local libre (no choca con Postgres local instalado).
+    - Parchea DATABASE_URL en os.environ antes de que Flask arranque.
+    Retorna el tunnel o None si no hay credenciales."""
     ssh_host = os.environ.get('SSH_HOST')
     ssh_user = os.environ.get('SSH_USER')
     ssh_password = os.environ.get('SSH_PASSWORD')
@@ -96,14 +66,15 @@ def start_ssh_tunnel():
     print(f"  Descubriendo IP del container {container_name}...")
     container_ip = _discover_container_ip(ssh_host, ssh_user, ssh_password, container_name)
     if not container_ip:
-        print(f"  [WARN] No se pudo obtener IP del container; tunel no levantado")
+        print("  [WARN] No se pudo obtener IP del container; tunel no levantado")
         return None
     print(f"  IP del container: {container_ip}")
 
-    # paramiko 3+ removio DSSKey pero sshtunnel aun lo referencia
     import paramiko
     if not hasattr(paramiko, 'DSSKey'):
         paramiko.DSSKey = paramiko.RSAKey
+
+    local_port = _find_free_port()
 
     from sshtunnel import SSHTunnelForwarder
     tunnel = SSHTunnelForwarder(
@@ -111,17 +82,54 @@ def start_ssh_tunnel():
         ssh_username=ssh_user,
         ssh_password=ssh_password,
         remote_bind_address=(container_ip, 5432),
-        local_bind_address=('127.0.0.1', 5432),
+        local_bind_address=('127.0.0.1', local_port),
     )
     tunnel.start()
-    print(f"  Tunel SSH activo: localhost:5432 -> {container_ip}:5432 (via {ssh_host})")
+    print(f"  Tunel SSH activo: 127.0.0.1:{local_port} -> {container_ip}:5432 (via {ssh_host})")
+
+    # Parchear DATABASE_URL para que Flask use el puerto del tunel
+    from urllib.parse import urlparse, urlunparse
+    raw_url = os.environ.get('DATABASE_URL', '')
+    parsed = urlparse(raw_url)
+    patched = parsed._replace(
+        netloc=f"{parsed.username}:{parsed.password}@127.0.0.1:{local_port}"
+    )
+    os.environ['DATABASE_URL'] = urlunparse(patched)
+    os.environ['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+    print(f"  DATABASE_URL -> 127.0.0.1:{local_port}")
+
     return tunnel
 
 
 if __name__ == "__main__":
     static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static')
 
+    # El tunel debe arrancar ANTES de importar create_app,
+    # porque parchea DATABASE_URL que Flask lee al inicializarse.
     tunnel = start_ssh_tunnel()
+
+    from app import create_app, db
+    from app.models.user import Role, FormationProgram
+
+    app = create_app()
+
+    @app.cli.command("init-db")
+    def init_db():
+        db.create_all()
+        _seed_basic_roles()
+        print("Base de datos inicializada correctamente.")
+
+    def _seed_basic_roles():
+        if not Role.query.first():
+            for r_name in ['ADMIN', 'BIBLIOTECARIO', 'ALMACENISTA',
+                           'SOPORTE_TECNICO', 'EMPRESA', 'APRENDIZ', 'USUARIO']:
+                db.session.add(Role(name=r_name))
+            db.session.commit()
+            print("Roles básicos creados.")
+        if not FormationProgram.query.first():
+            db.session.add(FormationProgram(id='2672153', name='ADSO'))
+            db.session.commit()
+            print("Programa de formación por defecto creado.")
 
     print("Iniciando Frontend (Vite)...")
     frontend_proc = subprocess.Popen(
@@ -140,12 +148,10 @@ if __name__ == "__main__":
     print("=" * 50 + "\n")
 
     try:
-        # Si el tunel SSH esta activo, estamos hablando con la BD remota:
-        # NO ejecutar create_all/seed para no tocar el esquema de produccion.
         if tunnel is None:
             with app.app_context():
                 db.create_all()
-                seed_basic_roles()
+                _seed_basic_roles()
         else:
             print("  BD remota detectada (tunel activo): se omite create_all/seed.")
 
