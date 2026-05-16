@@ -262,7 +262,14 @@ INSTRUCCIONES DE RESPUESTA:
 
     # 6. Fallback Rule-Based Inteligente con RAG (Si no hay API key o falló la llamada)
     fallback_text = ""
+    suggest_support = False  # Se activa cuando la IA no puede ayudar y el usuario es aprendiz
     q = user_query.lower()
+
+    # Determinar si el usuario actual puede escalar a soporte (solo aprendices logueados)
+    can_escalate = False
+    if user and user.role:
+        role_name_upper = (user.role.name or '').upper().strip()
+        can_escalate = role_name_upper in ('APRENDIZ', 'USUARIO')
     
     # 6.A BÚSQUEDA EN MEMORIA CACHÉ (DYNAMIC KNOWLEDGE CACHE)
     try:
@@ -428,6 +435,7 @@ INSTRUCCIONES DE RESPUESTA:
                         "Dado que actualmente mi conexión con los servidores de inteligencia de Google está inactiva y opero en **modo local de respaldo (offline)**, entiendo que mis respuestas puedan sentirse limitadas frente a tus expectativas.\n\n" \
                         "Tomaré muy en cuenta tu descontento para que los desarrolladores continúen ampliando mi sistema local de respaldo. " \
                         "Si hay algún problema específico que estés intentando resolver (como renovar tus materiales, ubicar un bloque o cambiar tu contraseña), por favor dímelo de otra forma e intentaré guiarte de la mejor manera posible."
+        suggest_support = can_escalate
 
     # CATEGORÍA 17: Capacidad de Lectura de Audios e Imágenes (Multimedia Offline)
     elif any(k in q for k in ['audio', 'audios', 'grabar', 'escuchar', 'imagen', 'imágenes', 'imagenes', 'foto', 'fotos', 'tomar foto', 'cargar', 'subir foto', 'leer audio', 'ver foto', 'reproducir']):
@@ -447,10 +455,12 @@ INSTRUCCIONES DE RESPUESTA:
                         f"*   ⚠️ **Sanciones, pérdidas o daños** en materiales.\n" \
                         f"*   ⚙️ **Cómo cambiar tu contraseña**, actualizar tu perfil o eliminar tu cuenta.\n\n" \
                         f"¿Deseas consultar alguno de estos temas, o prefieres buscar un elemento en el catálogo usando el buscador de arriba?"
+        suggest_support = can_escalate
 
     return jsonify({
         "text": fallback_text,
         "type": "text",
-        "metadata": active_loans_list if active_loans_list else None
+        "metadata": active_loans_list if active_loans_list else None,
+        "suggest_support": suggest_support,
     })
 

@@ -13,6 +13,7 @@ import { AprendizLoans } from './aprendiz/AprendizLoans';
 import { AprendizReservations } from './aprendiz/AprendizReservations';
 import { AprendizCatalog } from './aprendiz/AprendizCatalog';
 import { AprendizHistory } from './aprendiz/AprendizHistory';
+import { AprendizSolicitudes } from './aprendiz/AprendizSolicitudes';
 import { NotificationBell } from '../../../shared/NotificationBell';
 import { AnimatedRobotIcon } from '../../../components/ui/AnimatedRobotIcon';
 import { PersonalAssistant } from './PersonalAssistant';
@@ -192,6 +193,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
           {activeSection === 'loans' && currentRole === 'APRENDIZ' && <AprendizLoans />}
           {activeSection === 'reservations' && currentRole === 'APRENDIZ' && <AprendizReservations />}
           {activeSection === 'history' && currentRole === 'APRENDIZ' && <AprendizHistory />}
+          {activeSection === 'solicitudes' && currentRole === 'APRENDIZ' && <AprendizSolicitudes />}
           {(activeSection === 'config' || activeSection === 'update') && !isGuest && (
             <UserConfig user={user} />
           )}
