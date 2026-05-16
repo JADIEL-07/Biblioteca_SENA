@@ -104,9 +104,32 @@ def start_ssh_tunnel():
 if __name__ == "__main__":
     static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static')
 
-    # El tunel debe arrancar ANTES de importar create_app,
-    # porque parchea DATABASE_URL que Flask lee al inicializarse.
-    tunnel = start_ssh_tunnel()
+    # WERKZEUG_RUN_MAIN='true' indica que somos el proceso hijo del reloader.
+    # En ese caso DATABASE_URL ya viene parcheada en os.environ desde el proceso
+    # padre, y el tunel ya esta corriendo alli — no hay que levantarlo de nuevo.
+    is_reloader_child = os.environ.get('WERKZEUG_RUN_MAIN') == 'true'
+
+    if not is_reloader_child:
+        # Proceso padre: levanta tunel (parchea DATABASE_URL) y arranca Vite.
+        tunnel = start_ssh_tunnel()
+
+        frontend_proc = subprocess.Popen(
+            ['npm', 'run', 'dev'],
+            cwd=static_dir,
+            shell=True
+        )
+
+        print("\n" + "=" * 50)
+        print("  SISTEMA INTEGRAL BIBLIOTECA SENA")
+        print("=" * 50)
+        print(f"  Frontend:  http://localhost:5173")
+        print(f"  API:       http://localhost:5000/api/v1")
+        print("-" * 50)
+        print("  Presiona Ctrl+C para detener todo")
+        print("=" * 50 + "\n")
+    else:
+        tunnel = None
+        frontend_proc = None
 
     from app import create_app, db
     from app.models.user import Role, FormationProgram
@@ -131,42 +154,30 @@ if __name__ == "__main__":
             db.session.commit()
             print("Programa de formación por defecto creado.")
 
-    print("Iniciando Frontend (Vite)...")
-    frontend_proc = subprocess.Popen(
-        ['npm', 'run', 'dev'],
-        cwd=static_dir,
-        shell=True
-    )
-
-    print("\n" + "=" * 50)
-    print("  SISTEMA INTEGRAL BIBLIOTECA SENA")
-    print("=" * 50)
-    print(f"  Frontend:  http://localhost:5173")
-    print(f"  API:       http://localhost:5000/api/v1")
-    print("-" * 50)
-    print("  Presiona Ctrl+C para detener todo")
-    print("=" * 50 + "\n")
-
     try:
-        if tunnel is None:
+        # Solo en el padre (no reloader): verificar si hay BD remota activa
+        ssh_activo = os.environ.get('SSH_HOST') and not is_reloader_child
+        if not ssh_activo:
             with app.app_context():
                 db.create_all()
                 _seed_basic_roles()
-        else:
+        elif not is_reloader_child:
             print("  BD remota detectada (tunel activo): se omite create_all/seed.")
 
         is_dev = os.environ.get('FLASK_ENV', 'development') == 'development'
         app.run(host="0.0.0.0", port=5000, debug=is_dev)
     finally:
-        print("\nDeteniendo Frontend...")
-        if sys.platform == "win32":
-            subprocess.run(
-                ['taskkill', '/F', '/T', '/PID', str(frontend_proc.pid)],
-                capture_output=True
-            )
-        else:
-            frontend_proc.terminate()
-        if tunnel:
-            tunnel.stop()
-            print("Túnel SSH cerrado.")
-        print("Sistema cerrado correctamente.")
+        if not is_reloader_child:
+            print("\nDeteniendo Frontend...")
+            if frontend_proc:
+                if sys.platform == "win32":
+                    subprocess.run(
+                        ['taskkill', '/F', '/T', '/PID', str(frontend_proc.pid)],
+                        capture_output=True
+                    )
+                else:
+                    frontend_proc.terminate()
+            if tunnel:
+                tunnel.stop()
+                print("Túnel SSH cerrado.")
+            print("Sistema cerrado correctamente.")
