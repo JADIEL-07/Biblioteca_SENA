@@ -1,6 +1,9 @@
 import os
 import sys
 import subprocess
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from app import create_app, db
 from app.models.user import User, Role, FormationProgram
@@ -41,8 +44,32 @@ def seed_basic_roles():
         db.session.commit()
         print("Programa de formación por defecto creado.")
 
+def start_ssh_tunnel():
+    """Levanta túnel SSH si estamos en desarrollo y hay credenciales configuradas."""
+    ssh_host = os.environ.get('SSH_HOST')
+    ssh_user = os.environ.get('SSH_USER')
+    ssh_password = os.environ.get('SSH_PASSWORD')
+
+    if not all([ssh_host, ssh_user, ssh_password]):
+        return None
+
+    from sshtunnel import SSHTunnelForwarder
+    tunnel = SSHTunnelForwarder(
+        (ssh_host, 22),
+        ssh_username=ssh_user,
+        ssh_password=ssh_password,
+        remote_bind_address=('localhost', 5432),
+        local_bind_address=('localhost', 5432),
+    )
+    tunnel.start()
+    print(f"  Túnel SSH activo → {ssh_host}:5432")
+    return tunnel
+
+
 if __name__ == "__main__":
     static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static')
+
+    tunnel = start_ssh_tunnel()
 
     print("Iniciando Frontend (Vite)...")
     frontend_proc = subprocess.Popen(
@@ -76,4 +103,7 @@ if __name__ == "__main__":
             )
         else:
             frontend_proc.terminate()
+        if tunnel:
+            tunnel.stop()
+            print("Túnel SSH cerrado.")
         print("Sistema cerrado correctamente.")
