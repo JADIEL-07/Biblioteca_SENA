@@ -1,7 +1,8 @@
 import React from 'react';
 import {
   FiHome, FiAlertCircle, FiTool, FiMonitor, FiClipboard, FiBox, FiClock, FiFileText,
-  FiMessageSquare, FiCalendar, FiSettings, FiLogOut, FiMenu, FiUsers, FiMaximize, FiEdit3
+  FiMessageSquare, FiCalendar, FiSettings, FiLogOut, FiMenu, FiUsers, FiMaximize, FiEdit3,
+  FiHeadphones
 } from 'react-icons/fi';
 import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
 import '../admin/AdminDashboard.css';
@@ -40,7 +41,8 @@ export const SoporteSidebar: React.FC<SoporteSidebarProps> = ({
     { id: 'mantenimientos', label: 'Área de Trabajo', icon: <FiTool /> },
     { id: 'repuestos', label: 'Repuestos', icon: <FiBox /> },
     { id: 'historial', label: 'Historial técnico', icon: <FiClock /> },
-    { id: 'solicitudes', label: 'Solicitudes', icon: <FiMessageSquare /> },
+    { id: 'solicitudes', label: 'Solicitudes (Aprendices)', icon: <FiHeadphones /> },
+    { id: 'staff-chat', label: 'Chat Interno', icon: <FiUsers /> },
   ];
 
   const bottomItems = [

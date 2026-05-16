@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   FiHome, FiBox, FiBookOpen, FiSettings,
-  FiLogOut, FiMenu, FiEdit3, FiList, FiMapPin, FiLayers, FiChevronDown
+  FiLogOut, FiMenu, FiEdit3, FiList, FiMapPin, FiLayers, FiChevronDown, FiUsers
 } from 'react-icons/fi';
 import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
 
@@ -41,6 +41,7 @@ export const AlmacenistaSidebar: React.FC<Props> = ({
       ]
     },
     { id: 'loans', label: 'Préstamos & Reservas', icon: <FiBookOpen /> },
+    { id: 'solicitudes', label: 'Chat Interno', icon: <FiUsers /> },
   ];
 
   const bottomItems = [

@@ -11,6 +11,8 @@ import { SystemReports } from '../admin/SystemReports';
 import { SoporteIncidencias } from './SoporteIncidencias';
 import { SoporteHistorial } from './SoporteHistorial';
 import { SoporteRepuestos } from './SoporteRepuestos';
+import { SoporteSolicitudes } from './SoporteSolicitudes';
+import { StaffChat } from '../../../shared/StaffChat';
 import './SoporteDashboard.css';
 import '../UserDashboard.css';
 import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
@@ -74,7 +76,8 @@ export const SoporteDashboard: React.FC<SoporteDashboardProps> = ({ user, onLogo
     mantenimientos: 'Área de Trabajo',
     repuestos: 'Gestión de Repuestos',
     historial: 'Historial Técnico',
-    solicitudes: 'Solicitudes Internas',
+    solicitudes: 'Solicitudes de Aprendices',
+    'staff-chat': 'Chat Interno del Equipo',
     config: 'Configuración',
     help: 'Asistente Personal',
   };
@@ -154,7 +157,9 @@ export const SoporteDashboard: React.FC<SoporteDashboardProps> = ({ user, onLogo
             {activeSection === 'incidencias' && <SoporteIncidencias user={user} />}
             {activeSection === 'historial' && <SoporteHistorial />}
             {activeSection === 'repuestos' && <SoporteRepuestos />}
-            {!['dashboard', 'config', 'mantenimientos', 'help', 'reportes', 'incidencias', 'historial', 'repuestos'].includes(activeSection) && (
+            {activeSection === 'solicitudes' && <SoporteSolicitudes user={user} />}
+            {activeSection === 'staff-chat' && <StaffChat user={user} />}
+            {!['dashboard', 'config', 'mantenimientos', 'help', 'reportes', 'incidencias', 'historial', 'repuestos', 'solicitudes', 'staff-chat'].includes(activeSection) && (
               <div className="placeholder-view">
                 <h2>Sección en construcción</h2>
                 <p>El módulo de {sectionTitle[activeSection] || activeSection} estará disponible pronto.</p>

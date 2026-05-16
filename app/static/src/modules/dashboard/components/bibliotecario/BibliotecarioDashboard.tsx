@@ -8,6 +8,7 @@ import { InventoryManagement } from '../admin/InventoryManagement';
 import { StaffLoans } from '../staff/StaffLoans';
 import { StaffHome } from '../staff/StaffHome';
 import { ProfileOverlay } from '../admin/ProfileOverlay';
+import { StaffChat } from '../../../shared/StaffChat';
 import '../admin/AdminDashboard.css';
 import '../UserDashboard.css';
 import { AnimatedRobotIcon } from '../../../../components/ui/AnimatedRobotIcon';
@@ -113,6 +114,7 @@ export const BibliotecarioDashboard: React.FC<Props> = ({ user, onLogout, onUser
             {activeSection === 'loans'              && <StaffLoans user={user} />}
             {activeSection === 'config'             && <UserConfig user={user} />}
             {activeSection === 'help'               && <PersonalAssistant user={user} />}
+            {activeSection === 'solicitudes'        && <StaffChat user={user} />}
           </div>
         </main>
       </div>

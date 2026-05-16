@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  FiSend, FiCpu, FiBookOpen, FiTool, 
+import { useNavigate } from 'react-router-dom';
+import {
+  FiSend, FiCpu, FiBookOpen, FiTool,
   FiClock, FiAlertCircle, FiTrash2, FiInfo, FiCheckCircle, FiPlus, FiMessageSquare,
-  FiImage, FiMic, FiCamera, FiX
+  FiImage, FiMic, FiCamera, FiX, FiHeadphones
 } from 'react-icons/fi';
 import { AnimatedRobotIcon } from '../../../components/ui/AnimatedRobotIcon';
 import './PersonalAssistant.css';
@@ -60,6 +61,9 @@ interface Message {
   type?: 'text' | 'loans' | 'help' | 'rules';
   metadata?: any;
   media?: { data: string, mimeType: string, type: 'image' | 'audio', preview: string };
+  suggestSupport?: boolean;       // La IA no pudo ayudar: ofrecer escalar a Soporte
+  userQueryRef?: string;          // Pregunta que originó este mensaje (para el ticket)
+  escalated?: { ticketId: number }; // Marcador: ya se escaló este mensaje
 }
 
 interface ChatThread {
@@ -70,12 +74,17 @@ interface ChatThread {
 }
 
 export const PersonalAssistant: React.FC<PersonalAssistantProps> = ({ user }) => {
+  const navigate = useNavigate();
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [activeThreadId, setActiveThreadId] = useState<string>('');
   const [isTyping, setIsTyping] = useState(false);
   const [userLoans, setUserLoans] = useState<any[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [inputText, setInputText] = useState('');
+  const [escalating, setEscalating] = useState<string | null>(null); // ID del mensaje siendo escalado
+
+  const currentRole = (user as any)?.role?.name || (user as any)?.rol?.nombre || '';
+  const isApprentice = ['APRENDIZ', 'USUARIO'].includes((currentRole || '').toUpperCase());
 
   const [attachedMedia, setAttachedMedia] = useState<{data: string, mimeType: string, type: 'image' | 'audio', preview: string} | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -354,7 +363,9 @@ export const PersonalAssistant: React.FC<PersonalAssistantProps> = ({ user }) =>
           text: data.text,
           timestamp: new Date().toISOString(),
           type: data.type || 'text',
-          metadata: data.metadata
+          metadata: data.metadata,
+          suggestSupport: !!data.suggest_support && isApprentice && !isGuest,
+          userQueryRef: text,
         };
 
         const finalMessages = [...updatedMessages, newBotMsg];
@@ -549,6 +560,58 @@ export const PersonalAssistant: React.FC<PersonalAssistantProps> = ({ user }) =>
     };
   };
 
+  const handleEscalateToSupport = async (msgId: string, userQuery: string, aiResponse: string) => {
+    if (!isApprentice || isGuest) return;
+    setEscalating(msgId);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/v1/chat/escalate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_query: userQuery,
+          ai_response: aiResponse,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Error al escalar.');
+      }
+      const data = await res.json();
+
+      // Marcar el mensaje como ya escalado en el thread actual
+      const updatedThreads = threads.map((t) => {
+        if (t.id !== activeThreadId) return t;
+        return {
+          ...t,
+          messages: t.messages.map((m) =>
+            m.id === msgId
+              ? { ...m, escalated: { ticketId: data.ticket_id }, suggestSupport: false }
+              : m
+          ),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      setThreads(updatedThreads);
+      saveThreadsToStorage(updatedThreads);
+
+      // Confirmar y ofrecer ir a Solicitudes
+      const goNow = confirm(
+        `${data.message}\n\nTu ticket #${data.ticket_id} fue creado. ¿Quieres ir a "Solicitudes" para esperar la respuesta?`
+      );
+      if (goNow) {
+        navigate('/dashboard/solicitudes');
+      }
+    } catch (err: any) {
+      alert(err.message || 'No se pudo crear la solicitud.');
+    } finally {
+      setEscalating(null);
+    }
+  };
+
   const clearChat = () => {
     if (!activeThreadId) return;
     const defaultMsg: Message = {
@@ -665,6 +728,29 @@ export const PersonalAssistant: React.FC<PersonalAssistantProps> = ({ user }) =>
                       );
                     })}
                   </div>
+
+                  {/* ESCALACIÓN A SOPORTE — visible solo para aprendices cuando la IA no pudo ayudar */}
+                  {msg.sender === 'bot' && msg.suggestSupport && !msg.escalated && (
+                    <div className="support-escalation-box">
+                      <div className="support-escalation-text">
+                        <FiHeadphones size={16} />
+                        <span>¿Quieres que un agente de <strong>Soporte Técnico</strong> te ayude con esto?</span>
+                      </div>
+                      <button
+                        className="support-escalation-btn"
+                        onClick={() => handleEscalateToSupport(msg.id, msg.userQueryRef || '', msg.text)}
+                        disabled={escalating === msg.id || !msg.userQueryRef}
+                      >
+                        {escalating === msg.id ? 'Creando solicitud...' : 'Sí, hablar con Soporte'}
+                      </button>
+                    </div>
+                  )}
+
+                  {msg.escalated && (
+                    <div className="support-escalation-done">
+                      <FiCheckCircle size={14} /> Solicitud #{msg.escalated.ticketId} creada. Revisa tu sección <strong>Solicitudes</strong>.
+                    </div>
+                  )}
 
                   {/* CUSTOM COMPONENT: LOANS LIST */}
                   {msg.type === 'loans' && msg.metadata && (
